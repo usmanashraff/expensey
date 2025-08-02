@@ -133,7 +133,7 @@ export function UtilityCharts({ expenses }: UtilityChartsProps) {
       </Card>
 
       {/* Radar Chart */}
-      <Card className="md:col-span-2 lg:col-span-1">
+      <Card className="col-span-1 md:col-span-2 lg:col-span-1">
         <CardHeader>
           <CardTitle>Utility Distribution</CardTitle>
           <CardDescription>Relative spending across utilities</CardDescription>
@@ -164,7 +164,7 @@ export function UtilityCharts({ expenses }: UtilityChartsProps) {
       </Card>
 
       {/* Summary Statistics */}
-      <Card className="md:col-span-2">
+      <Card className="col-span-1 md:col-span-2 lg:col-span-3">
         <CardHeader>
           <CardTitle>Utility Breakdown</CardTitle>
           <CardDescription>Detailed spending by utility type</CardDescription>
