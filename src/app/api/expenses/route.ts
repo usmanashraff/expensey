@@ -1,20 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { ExpenseCategory } from '@/generated/prisma'
+import { getUserId } from '@/lib/auth'
 
 export async function GET() {
   try {
+    const userId = await getUserId()
+    
     const expenses = await prisma.expense.findMany({
+      where: { userId },
       orderBy: { date: 'desc' },
     })
     return NextResponse.json(expenses)
   } catch (error) {
+    console.error('Error fetching expenses:', error)
     return NextResponse.json({ error: 'Failed to fetch expenses' }, { status: 500 })
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
+    const userId = await getUserId()
     const body = await request.json()
     console.log('Received expense data:', body)
     const { amount, description, category, subcategory, date } = body
@@ -43,6 +49,7 @@ export async function POST(request: NextRequest) {
       category,
       subcategory,
       date: expenseDate,
+      userId,
     })
     
     const expense = await prisma.expense.create({
@@ -52,6 +59,7 @@ export async function POST(request: NextRequest) {
         category,
         subcategory: subcategory || null,
         date: expenseDate,
+        userId,
       },
     })
 
@@ -63,9 +71,10 @@ export async function POST(request: NextRequest) {
       // Update monthly savings
       await prisma.savings.upsert({
         where: {
-          month_year: {
+          month_year_userId: {
             month: expenseMonth,
             year: expenseYear,
+            userId,
           },
         },
         update: {
@@ -77,6 +86,7 @@ export async function POST(request: NextRequest) {
           amount: parseFloat(amount),
           month: expenseMonth,
           year: expenseYear,
+          userId,
         },
       })
       

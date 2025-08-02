@@ -13,7 +13,7 @@ import { toast } from 'sonner'
 import { ExpenseCharts } from './expense-charts'
 import { SavingsChart } from './savings-chart'
 import { UtilityCharts } from './utility-charts'
-import { ChevronDown, ChevronUp, BarChart3, ChevronLeft, ChevronRight, Calendar, Receipt, Zap, Eye, EyeOff } from 'lucide-react'
+import { ChevronDown, ChevronUp, BarChart3, ChevronLeft, ChevronRight, Calendar, Receipt, Zap, Eye, EyeOff, TrendingUp, PiggyBank, Wallet, Trash2 } from 'lucide-react'
 
 interface ExpenseListProps {
   refreshTrigger: number
@@ -140,18 +140,31 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
     }
   }
 
-  const categoryColors = {
-    NEED: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-    WANT: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
-    SELF_DEVELOPMENT: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-    SAVINGS: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
-  }
-
-  const categoryLabels = {
-    NEED: 'Need',
-    WANT: 'Want',
-    SELF_DEVELOPMENT: 'Self Development',
-    SAVINGS: 'Savings',
+  const categoryConfig = {
+    NEED: { 
+      label: 'Need',
+      color: 'from-yellow-500 to-orange-500',
+      bgColor: 'bg-yellow-100 dark:bg-yellow-900/30',
+      textColor: 'text-yellow-800 dark:text-yellow-300'
+    },
+    WANT: {
+      label: 'Want',
+      color: 'from-red-500 to-pink-500',
+      bgColor: 'bg-red-100 dark:bg-red-900/30',
+      textColor: 'text-red-800 dark:text-red-300'
+    },
+    SELF_DEVELOPMENT: {
+      label: 'Self Development',
+      color: 'from-green-500 to-emerald-500',
+      bgColor: 'bg-green-100 dark:bg-green-900/30',
+      textColor: 'text-green-800 dark:text-green-300'
+    },
+    SAVINGS: {
+      label: 'Savings',
+      color: 'from-blue-500 to-cyan-500',
+      bgColor: 'bg-purple-100 dark:bg-purple-900/30',
+      textColor: 'text-purple-800 dark:text-purple-300'
+    },
   }
 
   const formatDate = (date: Date | string) => {
@@ -256,7 +269,7 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
 
   if (loading) {
     return (
-      <Card className="w-full">
+      <Card className="w-full backdrop-blur-xl bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 border-white/20 dark:border-white/10">
         <CardContent className="p-6">
           <div className="text-center text-muted-foreground">Loading expenses...</div>
         </CardContent>
@@ -266,11 +279,22 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
+      {/* Monthly Summary Card */}
+      <Card className="relative backdrop-blur-xl bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 border-white/20 dark:border-white/10 rounded-3xl overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 dark:from-blue-500/10 dark:to-purple-500/10" />
+        
+        <CardHeader className="relative z-10">
           <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <CardTitle>Monthly Summary</CardTitle>
+            <div className="flex items-center gap-3">
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ duration: 0.5, type: "spring" }}
+                className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 shadow-lg"
+              >
+                <TrendingUp className="h-5 w-5 text-white" />
+              </motion.div>
+              <CardTitle className="text-2xl">Monthly Summary</CardTitle>
               <Button
                 variant="ghost"
                 size="sm"
@@ -409,51 +433,103 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
           </div>
           <CardDescription>Your spending breakdown for {monthName}</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="relative z-10">
           <div className="space-y-6">
             {/* Main expense breakdown */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center">
-                <p className="text-sm text-muted-foreground">Total Expenses</p>
-                <p className="text-2xl font-bold">{formatAmount(totalExpenses)}</p>
-              </div>
-              {Object.entries(categoryLabels).filter(([key]) => key !== 'SAVINGS').map(([key, label]) => (
-                <div key={key} className="text-center">
-                  <p className="text-sm text-muted-foreground">{label}</p>
-                  <p className="text-xl font-semibold">
+              <motion.div 
+                className="text-center p-4 rounded-2xl bg-gradient-to-br from-gray-100/50 to-gray-200/50 dark:from-gray-800/30 dark:to-gray-700/30"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <p className="text-sm text-muted-foreground mb-1">Total Expenses</p>
+                <p className="text-2xl font-bold bg-gradient-to-r from-gray-600 to-gray-800 dark:from-gray-300 dark:to-gray-100 bg-clip-text text-transparent">
+                  {formatAmount(totalExpenses)}
+                </p>
+              </motion.div>
+              {Object.entries(categoryConfig).filter(([key]) => key !== 'SAVINGS').map(([key, config], index) => (
+                <motion.div 
+                  key={key} 
+                  className="text-center p-4 rounded-2xl bg-gradient-to-br from-gray-100/30 to-gray-200/30 dark:from-gray-800/20 dark:to-gray-700/20 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.1 }}
+                >
+                  <p className="text-sm text-muted-foreground mb-1">{config.label}</p>
+                  <p className={`text-xl font-bold bg-gradient-to-r ${config.color} bg-clip-text text-transparent`}>
                     {formatAmount(expensesByCategory[key] || 0)}
                   </p>
-                </div>
+                </motion.div>
               ))}
             </div>
             
             {/* Savings section */}
             <div className="border-t pt-4">
-              <h4 className="text-sm font-medium mb-3">Savings Summary</h4>
+              <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
+                <PiggyBank className="h-4 w-4" />
+                Savings Summary
+              </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="text-center">
+                <motion.div 
+                  className="text-center p-4 rounded-2xl bg-gradient-to-br from-purple-500/10 to-pink-500/10"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
                   <p className="text-sm text-muted-foreground">
                     {new Date(selectedYear, selectedMonth - 1).toLocaleDateString('en-US', { month: 'short' })} Savings
                   </p>
-                  <p className="text-xl font-semibold text-purple-600">{formatAmount(monthlySavings)}</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-sm text-muted-foreground">Lifetime Total</p>
-                  <p className="text-xl font-semibold text-green-600">{formatAmount(totalSavings)}</p>
-                </div>
+                  <p className="text-xl font-semibold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                    {formatAmount(monthlySavings)}
+                  </p>
+                </motion.div>
+                <motion.div 
+                  className="text-center p-4 rounded-2xl bg-gradient-to-br from-green-500/10 to-emerald-500/10"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.3, delay: 0.1 }}
+                >
+                  <p className="text-sm text-muted-foreground">Lifetime Savings</p>
+                  <p className="text-xl font-semibold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                    {formatAmount(totalSavings)}
+                  </p>
+                </motion.div>
               </div>
             </div>
           </div>
         </CardContent>
+        
+        {/* Decorative element */}
+        <motion.div
+          className="absolute -bottom-10 -right-10 w-32 h-32 rounded-full bg-gradient-to-br from-blue-400/20 to-purple-400/20 blur-2xl"
+          animate={{ 
+            scale: [1, 1.2, 1],
+            rotate: [0, -90, 0]
+          }}
+          transition={{ 
+            duration: 10,
+            repeat: Infinity,
+            repeatType: "reverse"
+          }}
+        />
       </Card>
 
       {/* Charts Section with Toggle */}
-      <Card>
-        <CardHeader>
+      <Card className="relative backdrop-blur-xl bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 border-white/20 dark:border-white/10 rounded-3xl overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-blue-500/5 dark:from-purple-500/10 dark:to-blue-500/10" />
+        
+        <CardHeader className="relative z-10">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" />
-              <CardTitle>Analytics & Insights</CardTitle>
+            <div className="flex items-center gap-3">
+              <motion.div
+                whileHover={{ rotate: 360 }}
+                transition={{ duration: 0.5 }}
+                className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 shadow-lg"
+              >
+                <BarChart3 className="h-5 w-5 text-white" />
+              </motion.div>
+              <CardTitle className="text-xl">Analytics & Insights</CardTitle>
             </div>
             <Button
               variant="ghost"
@@ -487,7 +563,7 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
               }}
               className="overflow-hidden"
             >
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-6 relative z-10">
                 <motion.div
                   initial={{ y: -20 }}
                   animate={{ y: 0 }}
@@ -509,12 +585,20 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
       </Card>
 
       {/* Utility Analytics Section */}
-      <Card>
-        <CardHeader>
+      <Card className="relative backdrop-blur-xl bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 border-white/20 dark:border-white/10 rounded-3xl overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-yellow-500/5 dark:from-orange-500/10 dark:to-yellow-500/10" />
+        
+        <CardHeader className="relative z-10">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Zap className="h-5 w-5" />
-              <CardTitle>Utility Analytics</CardTitle>
+            <div className="flex items-center gap-3">
+              <motion.div
+                whileHover={{ scale: 1.1 }}
+                transition={{ duration: 0.3 }}
+                className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-yellow-500 shadow-lg"
+              >
+                <Zap className="h-5 w-5 text-white" />
+              </motion.div>
+              <CardTitle className="text-xl">Utility Analytics</CardTitle>
             </div>
             <Button
               variant="ghost"
@@ -548,7 +632,7 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
               }}
               className="overflow-hidden"
             >
-              <CardContent>
+              <CardContent className="relative z-10">
                 <motion.div
                   initial={{ y: -20 }}
                   animate={{ y: 0 }}
@@ -562,12 +646,22 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
         </AnimatePresence>
       </Card>
 
-      <Card>
-        <CardHeader>
+      {/* Recent Expenses Card */}
+      <Card className="relative backdrop-blur-xl bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 border-white/20 dark:border-white/10 rounded-3xl overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-blue-500/5 dark:from-green-500/10 dark:to-blue-500/10" />
+        
+        <CardHeader className="relative z-10">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Receipt className="h-5 w-5" />
-              <CardTitle>Recent Expenses</CardTitle>
+            <div className="flex items-center gap-3">
+              <motion.div
+                initial={{ rotate: -10 }}
+                animate={{ rotate: 10 }}
+                transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }}
+                className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-blue-500 shadow-lg"
+              >
+                <Receipt className="h-5 w-5 text-white" />
+              </motion.div>
+              <CardTitle className="text-xl">Recent Expenses</CardTitle>
             </div>
             <Button
               variant="ghost"
@@ -601,7 +695,7 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
               }}
               className="overflow-hidden"
             >
-              <CardContent>
+              <CardContent className="relative z-10">
                 {expenses.length === 0 ? (
                   <p className="text-center text-muted-foreground py-8">
                     No expenses yet. Add your first expense above!
@@ -615,34 +709,39 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, x: -100 }}
                     transition={{ duration: 0.3, delay: index * 0.05 }}
-                    className="flex items-center justify-between p-4 rounded-lg border bg-card hover:shadow-sm transition-shadow"
+                    whileHover={{ scale: 1.01 }}
+                    className="flex items-center justify-between p-4 rounded-2xl border bg-white/30 dark:bg-white/5 backdrop-blur-sm hover:shadow-lg transition-all duration-300"
                   >
                     <div className="flex-1">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 flex-wrap">
                         <h4 className="font-medium">{expense.description}</h4>
-                        <span className={`text-xs px-2 py-1 rounded-full ${categoryColors[expense.category]}`}>
-                          {categoryLabels[expense.category]}
+                        <span className={`text-xs px-3 py-1 rounded-full ${categoryConfig[expense.category].bgColor} ${categoryConfig[expense.category].textColor} font-medium`}>
+                          {categoryConfig[expense.category].label}
                         </span>
                         {expense.subcategory && (
-                          <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300">
+                          <span className="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300">
                             {expense.subcategory}
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-muted-foreground mt-1">
                         {formatDate(expense.date)} at {formatTime(expense.date)}
                       </p>
                     </div>
                     <div className="flex items-center gap-3">
-                      <p className="text-lg font-semibold">{formatAmount(expense.amount)}</p>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDelete(expense.id)}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        Delete
-                      </Button>
+                      <p className={`text-lg font-semibold bg-gradient-to-r ${categoryConfig[expense.category].color} bg-clip-text text-transparent`}>
+                        {formatAmount(expense.amount)}
+                      </p>
+                      <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(expense.id)}
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </motion.div>
                     </div>
                   </motion.div>
                 ))}

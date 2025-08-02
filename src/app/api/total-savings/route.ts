@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { getUserId } from '@/lib/auth'
 
 export async function GET() {
   try {
-    // Calculate total savings by summing all monthly savings
-    const allSavings = await prisma.savings.findMany()
+    const userId = await getUserId()
+    // Calculate total savings by summing all monthly savings for this user
+    const allSavings = await prisma.savings.findMany({
+      where: { userId }
+    })
     const totalSavings = allSavings.reduce((sum, saving) => sum + saving.amount, 0)
     
     return NextResponse.json({ totalSavings })

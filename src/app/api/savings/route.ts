@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { getUserId } from '@/lib/auth'
 
 export async function GET(request: NextRequest) {
   try {
+    const userId = await getUserId()
     const { searchParams } = new URL(request.url)
     const month = searchParams.get('month')
     const year = searchParams.get('year')
@@ -13,9 +15,10 @@ export async function GET(request: NextRequest) {
 
     const savings = await prisma.savings.findUnique({
       where: {
-        month_year: {
+        month_year_userId: {
           month: parseInt(month),
           year: parseInt(year),
+          userId,
         },
       },
     })
@@ -28,6 +31,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const userId = await getUserId()
     const body = await request.json()
     const { amount, month, year } = body
 
@@ -40,9 +44,10 @@ export async function POST(request: NextRequest) {
 
     const savings = await prisma.savings.upsert({
       where: {
-        month_year: {
+        month_year_userId: {
           month: parseInt(month),
           year: parseInt(year),
+          userId,
         },
       },
       update: {
@@ -52,6 +57,7 @@ export async function POST(request: NextRequest) {
         amount: parseFloat(amount),
         month: parseInt(month),
         year: parseInt(year),
+        userId,
       },
     })
 

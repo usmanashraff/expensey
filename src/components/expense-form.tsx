@@ -8,10 +8,11 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Calendar } from '@/components/ui/calendar'
-import { CalendarIcon } from 'lucide-react'
+import { CalendarIcon, PlusCircle, Wallet } from 'lucide-react'
 import { format } from 'date-fns'
 import { ExpenseCategory } from '@/generated/prisma'
 import { toast } from 'sonner'
+import { motion } from 'framer-motion'
 
 interface ExpenseFormProps {
   onExpenseAdded: () => void
@@ -105,22 +106,38 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger }: ExpenseFo
     }
   }, [utilityRefreshTrigger])
 
-  const categoryLabels = {
-    NEED: 'Need',
-    WANT: 'Want',
-    SELF_DEVELOPMENT: 'Self Development',
-    SAVINGS: 'Savings',
+  const categoryConfig = {
+    NEED: { label: 'Need', color: 'from-yellow-500 to-orange-500' },
+    WANT: { label: 'Want', color: 'from-red-500 to-pink-500' },
+    SELF_DEVELOPMENT: { label: 'Self Development', color: 'from-green-500 to-emerald-500' },
+    SAVINGS: { label: 'Savings', color: 'from-blue-500 to-cyan-500' },
   }
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle>Add New Expense</CardTitle>
+    <Card className="relative backdrop-blur-xl bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 border-white/20 dark:border-white/10 rounded-3xl overflow-hidden">
+      {/* Decorative gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 dark:from-blue-500/10 dark:to-purple-500/10" />
+      
+      <CardHeader className="relative z-10">
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 0.5, type: "spring" }}
+          className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-500 mb-4 shadow-lg"
+        >
+          <Wallet className="h-6 w-6 text-white" />
+        </motion.div>
+        <CardTitle className="text-2xl font-bold">Add New Expense</CardTitle>
         <CardDescription>Track your daily expenses by category</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="relative z-10">
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
+          <motion.div 
+            className="space-y-2"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3, delay: 0.1 }}
+          >
             <Label htmlFor="amount">Amount (PKR)</Label>
             <Input
               id="amount"
@@ -130,10 +147,16 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger }: ExpenseFo
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               required
+              className="backdrop-blur-sm bg-white/50 dark:bg-white/5"
             />
-          </div>
+          </motion.div>
 
-          <div className="space-y-2">
+          <motion.div 
+            className="space-y-2"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3, delay: 0.2 }}
+          >
             <Label htmlFor="description">Description</Label>
             <Input
               id="description"
@@ -142,29 +165,43 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger }: ExpenseFo
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               required
+              className="backdrop-blur-sm bg-white/50 dark:bg-white/5"
             />
-          </div>
+          </motion.div>
 
-          <div className="space-y-2">
+          <motion.div 
+            className="space-y-2"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3, delay: 0.3 }}
+          >
             <Label htmlFor="category">Category</Label>
             <Select value={category} onValueChange={(value) => setCategory(value as ExpenseCategory)}>
-              <SelectTrigger id="category">
+              <SelectTrigger id="category" className="backdrop-blur-sm bg-white/50 dark:bg-white/5">
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(categoryLabels).map(([value, label]) => (
+                {Object.entries(categoryConfig).map(([value, config]) => (
                   <SelectItem key={value} value={value}>
-                    {label}
+                    <div className="flex items-center gap-2">
+                      <div className={`w-3 h-3 rounded-full bg-gradient-to-r ${config.color}`} />
+                      {config.label}
+                    </div>
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </motion.div>
 
-          <div className="space-y-2">
+          <motion.div 
+            className="space-y-2"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3, delay: 0.4 }}
+          >
             <Label htmlFor="utilityType">Utility Type</Label>
             <Select value={utilityType} onValueChange={setUtilityType} required disabled={loadingUtilities}>
-              <SelectTrigger id="utilityType">
+              <SelectTrigger id="utilityType" className="backdrop-blur-sm bg-white/50 dark:bg-white/5">
                 <SelectValue placeholder={loadingUtilities ? "Loading..." : "Select utility type"} />
               </SelectTrigger>
               <SelectContent>
@@ -181,16 +218,21 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger }: ExpenseFo
                 )}
               </SelectContent>
             </Select>
-          </div>
+          </motion.div>
 
-          <div className="space-y-2">
+          <motion.div 
+            className="space-y-2"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3, delay: 0.5 }}
+          >
             <Label htmlFor="date">Date</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
                   id="date"
                   variant="outline"
-                  className="w-full justify-start text-left font-normal"
+                  className="w-full justify-start text-left font-normal backdrop-blur-sm bg-white/50 dark:bg-white/5"
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {date ? format(date, 'PPP') : 'Pick a date'}
@@ -209,13 +251,40 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger }: ExpenseFo
             <p className="text-xs text-muted-foreground">
               Leave empty to use today's date
             </p>
-          </div>
+          </motion.div>
 
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? 'Adding...' : 'Add Expense'}
-          </Button>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.6 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <Button 
+              type="submit" 
+              className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white shadow-lg" 
+              disabled={isSubmitting}
+            >
+              <PlusCircle className="mr-2 h-4 w-4" />
+              {isSubmitting ? 'Adding...' : 'Add Expense'}
+            </Button>
+          </motion.div>
         </form>
       </CardContent>
+      
+      {/* Decorative elements */}
+      <motion.div
+        className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-gradient-to-br from-purple-400/20 to-pink-400/20 blur-2xl"
+        animate={{ 
+          scale: [1, 1.2, 1],
+          rotate: [0, 90, 0]
+        }}
+        transition={{ 
+          duration: 8,
+          repeat: Infinity,
+          repeatType: "reverse"
+        }}
+      />
     </Card>
   )
 }

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
-import { Plus, Trash2, Settings, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react'
+import { Plus, Trash2, Settings, ChevronLeft, ChevronRight, ChevronDown, Sparkles } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 interface UtilityType {
@@ -125,17 +125,26 @@ export function UtilityTypeManager({ onUtilityTypesChanged }: UtilityTypeManager
   }, [utilityTypes.length, currentPage, totalPages])
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="relative backdrop-blur-xl bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 border-white/20 dark:border-white/10 rounded-3xl overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 to-indigo-500/5 dark:from-violet-500/10 dark:to-indigo-500/10" />
+      
+      <CardHeader className="relative z-10">
         <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <Settings className="h-5 w-5" />
-              <CardTitle>Manage Utility Types</CardTitle>
+          <div className="flex items-center gap-3">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ duration: 0.5, type: "spring" }}
+              className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-500 shadow-lg"
+            >
+              <Settings className="h-5 w-5 text-white" />
+            </motion.div>
+            <div>
+              <CardTitle className="text-xl">Manage Utility Types</CardTitle>
+              {showManager && (
+                <CardDescription className="mt-1">Create and manage utility categories</CardDescription>
+              )}
             </div>
-            {showManager && (
-              <CardDescription className="mt-1">Manage utility types</CardDescription>
-            )}
           </div>
           <Button
             variant="ghost"
@@ -166,99 +175,136 @@ export function UtilityTypeManager({ onUtilityTypesChanged }: UtilityTypeManager
             }}
             className="overflow-hidden"
           >
-            <CardContent>
-        <form onSubmit={handleAddType} className="flex gap-2 mb-6">
-          <Input
-            placeholder="Enter new utility type"
-            value={newTypeName}
-            onChange={(e) => setNewTypeName(e.target.value)}
-            disabled={isAdding}
-            className="flex-1"
-          />
-          <Button type="submit" disabled={isAdding}>
-            <Plus className="h-4 w-4 mr-1" />
-            Add
-          </Button>
-        </form>
+            <CardContent className="relative z-10">
+              <motion.form 
+                onSubmit={handleAddType} 
+                className="flex gap-2 mb-6"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Input
+                  placeholder="Enter new utility type"
+                  value={newTypeName}
+                  onChange={(e) => setNewTypeName(e.target.value)}
+                  disabled={isAdding}
+                  className="flex-1 backdrop-blur-sm bg-white/50 dark:bg-white/5"
+                />
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <Button 
+                    type="submit" 
+                    disabled={isAdding}
+                    className="bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 text-white shadow-lg"
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add
+                  </Button>
+                </motion.div>
+              </motion.form>
 
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <Label className="text-sm text-muted-foreground">
-              Current Utility Types {utilityTypes.length > 0 && `(${utilityTypes.length} total)`}
-            </Label>
-            {totalPages > 1 && (
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setCurrentPage(prev => Math.max(0, prev - 1))}
-                  disabled={currentPage === 0}
-                  className="h-8 w-8 p-0"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <span className="text-xs text-muted-foreground px-2">
-                  {currentPage + 1} / {totalPages}
-                </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setCurrentPage(prev => Math.min(totalPages - 1, prev + 1))}
-                  disabled={currentPage === totalPages - 1}
-                  className="h-8 w-8 p-0"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
-          </div>
-          
-          {utilityTypes.length === 0 ? (
-            <p className="text-center text-muted-foreground py-4">
-              No utility types yet. Add your first one above!
-            </p>
-          ) : (
-            <div className="relative overflow-hidden">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={currentPage}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.2 }}
-                  className="grid grid-cols-2 gap-2"
-                >
-                  {getCurrentPageItems().map((type) => (
-                    <motion.div
-                      key={type.id}
-                      layout
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
-                      transition={{ duration: 0.2 }}
-                      className="flex items-center justify-between p-3 rounded-lg border bg-card hover:shadow-sm transition-shadow"
-                    >
-                      <span className="font-medium text-sm truncate mr-2">{type.name}</span>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm text-muted-foreground flex items-center gap-2">
+                    <Sparkles className="h-4 w-4" />
+                    Current Utility Types {utilityTypes.length > 0 && `(${utilityTypes.length} total)`}
+                  </Label>
+                  {totalPages > 1 && (
+                    <div className="flex items-center gap-1">
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleDeleteType(type.id, type.name)}
-                        disabled={isLoading}
-                        className="text-destructive hover:text-destructive h-8 w-8 p-0 flex-shrink-0"
+                        onClick={() => setCurrentPage(prev => Math.max(0, prev - 1))}
+                        disabled={currentPage === 0}
+                        className="h-8 w-8 p-0"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <ChevronLeft className="h-4 w-4" />
                       </Button>
-                    </motion.div>
-                  ))}
-                </motion.div>
-              </AnimatePresence>
-            </div>
-          )}
-        </div>
+                      <span className="text-xs text-muted-foreground px-2">
+                        {currentPage + 1} / {totalPages}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setCurrentPage(prev => Math.min(totalPages - 1, prev + 1))}
+                        disabled={currentPage === totalPages - 1}
+                        className="h-8 w-8 p-0"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+                
+                {utilityTypes.length === 0 ? (
+                  <motion.p 
+                    className="text-center text-muted-foreground py-8"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    No utility types yet. Add your first one above!
+                  </motion.p>
+                ) : (
+                  <div className="relative overflow-hidden">
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={currentPage}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        transition={{ duration: 0.2 }}
+                        className="grid grid-cols-2 gap-3"
+                      >
+                        {getCurrentPageItems().map((type, index) => (
+                          <motion.div
+                            key={type.id}
+                            layout
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            transition={{ duration: 0.2, delay: index * 0.05 }}
+                            whileHover={{ scale: 1.02 }}
+                            className="flex items-center justify-between p-4 rounded-2xl border bg-white/30 dark:bg-white/5 backdrop-blur-sm hover:shadow-lg transition-all duration-300"
+                          >
+                            <span className="font-medium text-sm truncate mr-2">
+                              {type.name}
+                            </span>
+                            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeleteType(type.id, type.name)}
+                                disabled={isLoading}
+                                className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 w-8 p-0 flex-shrink-0"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </motion.div>
+                          </motion.div>
+                        ))}
+                      </motion.div>
+                    </AnimatePresence>
+                  </div>
+                )}
+              </div>
             </CardContent>
           </motion.div>
         )}
       </AnimatePresence>
+      
+      {/* Decorative element */}
+      <motion.div
+        className="absolute -top-10 -left-10 w-32 h-32 rounded-full bg-gradient-to-br from-violet-400/20 to-indigo-400/20 blur-2xl"
+        animate={{ 
+          scale: [1, 1.2, 1],
+          rotate: [0, 180, 0]
+        }}
+        transition={{ 
+          duration: 12,
+          repeat: Infinity,
+          repeatType: "reverse"
+        }}
+      />
     </Card>
   )
 }

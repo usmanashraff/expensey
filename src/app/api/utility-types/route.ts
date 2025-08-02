@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { getUserId } from '@/lib/auth'
 
 export async function GET() {
   try {
+    const userId = await getUserId()
     const utilityTypes = await prisma.utilityType.findMany({
+      where: { userId },
       orderBy: { createdAt: 'asc' },
     })
     return NextResponse.json(utilityTypes)
@@ -15,6 +18,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const userId = await getUserId()
     const body = await request.json()
     console.log('Creating utility type with data:', body)
     const { name } = body
@@ -29,9 +33,14 @@ export async function POST(request: NextRequest) {
 
     const trimmedName = name.trim()
 
-    // Check if utility type already exists
+    // Check if utility type already exists for this user
     const existing = await prisma.utilityType.findUnique({
-      where: { name: trimmedName },
+      where: { 
+        name_userId: {
+          name: trimmedName,
+          userId
+        }
+      },
     })
 
     if (existing) {
@@ -44,7 +53,10 @@ export async function POST(request: NextRequest) {
 
     console.log('Creating new utility type:', trimmedName)
     const utilityType = await prisma.utilityType.create({
-      data: { name: trimmedName },
+      data: { 
+        name: trimmedName,
+        userId 
+      },
     })
 
     console.log('Successfully created utility type:', utilityType)
@@ -63,6 +75,7 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    const userId = await getUserId()
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
 
@@ -73,28 +86,40 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    // Check if utility type is being used by any expenses
+    // Check if utility type is being used by any expenses for this user
     const expensesUsingType = await prisma.expense.findFirst({
-      where: { subcategory: id },
+      where: { 
+        subcategory: id,
+        userId 
+      },
     })
 
     if (expensesUsingType) {
       // Get the utility type name for better error message
       const utilityType = await prisma.utilityType.findUnique({
-        where: { id },
+        where: { 
+          id,
+          userId 
+        },
       })
       
       if (utilityType) {
         // Update expenses to use the utility type name instead of ID
         await prisma.expense.updateMany({
-          where: { subcategory: id },
+          where: { 
+            subcategory: id,
+            userId 
+          },
           data: { subcategory: utilityType.name },
         })
       }
     }
 
     await prisma.utilityType.delete({
-      where: { id },
+      where: { 
+        id,
+        userId 
+      },
     })
 
     return NextResponse.json({ success: true })

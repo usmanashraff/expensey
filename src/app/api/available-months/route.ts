@@ -1,10 +1,13 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { getUserId } from '@/lib/auth'
 
 export async function GET() {
   try {
-    // Get all unique month/year combinations that have expenses
+    const userId = await getUserId()
+    // Get all unique month/year combinations that have expenses for this user
     const expenses = await prisma.expense.findMany({
+      where: { userId },
       select: {
         date: true,
       },

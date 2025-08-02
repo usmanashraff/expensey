@@ -28,8 +28,11 @@ model Expense {
   category    ExpenseCategory
   subcategory String?
   date        DateTime        @default(now())
+  userId      String
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
+  
+  @@index([userId])
 }
 
 model Savings {
@@ -37,15 +40,21 @@ model Savings {
   amount    Float
   month     Int
   year      Int
+  userId    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
-  @@unique([month, year])
+  @@unique([month, year, userId])
+  @@index([userId])
 }
 
 model UtilityType {
   id        String   @id @default(cuid())
-  name      String   @unique
+  name      String
+  userId    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
+  @@unique([name, userId])
+  @@index([userId])
 }
