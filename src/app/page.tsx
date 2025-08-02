@@ -4,13 +4,19 @@ import { useState } from 'react'
 import { ExpenseForm } from '@/components/expense-form'
 import { ExpenseList } from '@/components/expense-list'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { UtilityTypeManager } from '@/components/utility-type-manager'
 import { motion } from 'framer-motion'
 
 export default function Home() {
   const [refreshTrigger, setRefreshTrigger] = useState(0)
+  const [utilityRefreshTrigger, setUtilityRefreshTrigger] = useState(0)
 
   const handleExpenseAdded = () => {
     setRefreshTrigger(prev => prev + 1)
+  }
+
+  const handleUtilityTypesChanged = () => {
+    setUtilityRefreshTrigger(prev => prev + 1)
   }
 
   return (
@@ -38,9 +44,10 @@ export default function Home() {
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="lg:col-span-1"
+            className="lg:col-span-1 space-y-6"
           >
-            <ExpenseForm onExpenseAdded={handleExpenseAdded} />
+            <ExpenseForm onExpenseAdded={handleExpenseAdded} utilityRefreshTrigger={utilityRefreshTrigger} />
+            <UtilityTypeManager onUtilityTypesChanged={handleUtilityTypesChanged} />
           </motion.div>
 
           <motion.div

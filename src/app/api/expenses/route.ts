@@ -16,29 +16,41 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { amount, description, category, date } = body
+    console.log('Received expense data:', body)
+    const { amount, description, category, subcategory, date } = body
 
-    if (!amount || !description || !category) {
+    if (!amount || !description || !category || !subcategory) {
+      console.log('Missing fields:', { amount: !amount, description: !description, category: !category, subcategory: !subcategory })
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Missing required fields. Amount, description, category, and utility type are required.' },
         { status: 400 }
       )
     }
 
     if (!Object.values(ExpenseCategory).includes(category)) {
+      console.log('Invalid category:', category, 'Valid categories:', Object.values(ExpenseCategory))
       return NextResponse.json(
-        { error: 'Invalid category' },
+        { error: `Invalid category: ${category}. Valid categories are: ${Object.values(ExpenseCategory).join(', ')}` },
         { status: 400 }
       )
     }
 
     const expenseDate = date ? new Date(date) : new Date()
     
+    console.log('Creating expense with data:', {
+      amount: parseFloat(amount),
+      description,
+      category,
+      subcategory,
+      date: expenseDate,
+    })
+    
     const expense = await prisma.expense.create({
       data: {
         amount: parseFloat(amount),
         description,
         category,
+        subcategory: subcategory || null,
         date: expenseDate,
       },
     })
@@ -74,6 +86,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(expense, { status: 201 })
   } catch (error) {
     console.error('Error creating expense:', error)
-    return NextResponse.json({ error: 'Failed to create expense' }, { status: 500 })
+    console.error('Error details:', error instanceof Error ? error.message : 'Unknown error')
+    console.error('Stack trace:', error instanceof Error ? error.stack : 'No stack trace')
+    
+    return NextResponse.json({ 
+      error: 'Failed to create expense',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 })
   }
 }

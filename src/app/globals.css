@@ -81,9 +81,9 @@
 .dark {
   --background: oklch(0.13 0.02 250);
   --foreground: oklch(0.95 0.01 250);
-  --card: oklch(0.16 0.015 250);
+  --card: oklch(0.22 0.025 255);
   --card-foreground: oklch(0.95 0.01 250);
-  --popover: oklch(0.16 0.015 250);
+  --popover: oklch(0.22 0.025 255);
   --popover-foreground: oklch(0.95 0.01 250);
   --primary: oklch(0.6 0.2 250);
   --primary-foreground: oklch(0.98 0 0);
@@ -190,12 +190,15 @@ body:not(.dark)::before {
 }
 
 .dark .card {
-  background: oklch(0.16 0.015 250 / 0.6);
-  backdrop-filter: blur(20px) saturate(1.5);
-  -webkit-backdrop-filter: blur(20px) saturate(1.5);
-  border: 1px solid oklch(0.3 0.01 250 / 0.2);
-  box-shadow: 0 8px 32px 0 oklch(0 0 0 / 0.3),
-              inset 0 1px 0 0 oklch(1 0 0 / 0.05);
+  background: oklch(0.22 0.025 255 / 0.75);
+  backdrop-filter: blur(24px) saturate(1.8);
+  -webkit-backdrop-filter: blur(24px) saturate(1.8);
+  border: 1px solid oklch(0.4 0.02 260 / 0.25);
+  box-shadow: 0 10px 40px 0 oklch(0 0 0 / 0.4),
+              0 2px 10px 0 oklch(0.5 0.15 280 / 0.1),
+              inset 0 1px 0 0 oklch(0.5 0.02 260 / 0.1);
+  position: relative;
+  overflow: hidden;
 }
 
 /* Hover effects */
@@ -205,8 +208,30 @@ body:not(.dark)::before {
 }
 
 .dark .card:hover {
-  box-shadow: 0 12px 40px 0 oklch(0 0 0 / 0.4),
-              inset 0 1px 0 0 oklch(1 0 0 / 0.08);
+  background: oklch(0.24 0.025 255 / 0.8);
+  box-shadow: 0 15px 50px 0 oklch(0 0 0 / 0.5),
+              0 5px 20px 0 oklch(0.6 0.2 280 / 0.15),
+              inset 0 1px 0 0 oklch(0.6 0.02 260 / 0.15);
+  border-color: oklch(0.45 0.03 260 / 0.3);
+}
+
+/* Premium gradient overlay for dark cards */
+.dark .card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, 
+    oklch(0.5 0.1 280 / 0.05) 0%,
+    transparent 40%,
+    oklch(0.5 0.1 220 / 0.03) 100%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+.dark .card > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* Premium chart styling for dark mode */

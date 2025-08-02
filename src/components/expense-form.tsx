@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,19 +15,28 @@ import { toast } from 'sonner'
 
 interface ExpenseFormProps {
   onExpenseAdded: () => void
+  utilityRefreshTrigger?: number
 }
 
-export function ExpenseForm({ onExpenseAdded }: ExpenseFormProps) {
+interface UtilityType {
+  id: string
+  name: string
+}
+
+export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger }: ExpenseFormProps) {
   const [amount, setAmount] = useState('')
   const [description, setDescription] = useState('')
   const [category, setCategory] = useState<ExpenseCategory | ''>('')
+  const [utilityType, setUtilityType] = useState('')
   const [date, setDate] = useState<Date | undefined>(new Date())
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [utilityTypes, setUtilityTypes] = useState<UtilityType[]>([])
+  const [loadingUtilities, setLoadingUtilities] = useState(true)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!amount || !description || !category) {
+    if (!amount || !description || !category || !utilityType) {
       toast.error('Please fill in all fields')
       return
     }
@@ -35,35 +44,66 @@ export function ExpenseForm({ onExpenseAdded }: ExpenseFormProps) {
     setIsSubmitting(true)
 
     try {
+      const payload = {
+        amount: parseFloat(amount),
+        description,
+        category,
+        subcategory: utilityType,
+        date: date?.toISOString(),
+      }
+      
+      console.log('Sending expense data:', payload)
+      
       const response = await fetch('/api/expenses', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          amount: parseFloat(amount),
-          description,
-          category,
-          date: date?.toISOString(),
-        }),
+        body: JSON.stringify(payload),
       })
 
       if (!response.ok) {
-        throw new Error('Failed to add expense')
+        const errorData = await response.json()
+        console.error('Failed to add expense:', errorData)
+        throw new Error(errorData.error || 'Failed to add expense')
       }
 
       setAmount('')
       setDescription('')
       setCategory('')
+      setUtilityType('')
       setDate(new Date())
       toast.success('Expense added successfully!')
       onExpenseAdded()
     } catch (error) {
-      toast.error('Failed to add expense. Please try again.')
+      const errorMessage = error instanceof Error ? error.message : 'Failed to add expense. Please try again.'
+      toast.error(errorMessage)
     } finally {
       setIsSubmitting(false)
     }
   }
+
+  const fetchUtilityTypes = async () => {
+    try {
+      const response = await fetch('/api/utility-types')
+      if (!response.ok) throw new Error('Failed to fetch utility types')
+      const data = await response.json()
+      setUtilityTypes(data)
+    } catch (error) {
+      console.error('Failed to fetch utility types:', error)
+      toast.error('Failed to load utility types')
+    } finally {
+      setLoadingUtilities(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchUtilityTypes()
+    // Reset utility type selection if the refresh trigger changes
+    if (utilityRefreshTrigger && utilityRefreshTrigger > 0) {
+      setUtilityType('')
+    }
+  }, [utilityRefreshTrigger])
 
   const categoryLabels = {
     NEED: 'Need',
@@ -117,6 +157,28 @@ export function ExpenseForm({ onExpenseAdded }: ExpenseFormProps) {
                     {label}
                   </SelectItem>
                 ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="utilityType">Utility Type</Label>
+            <Select value={utilityType} onValueChange={setUtilityType} required disabled={loadingUtilities}>
+              <SelectTrigger id="utilityType">
+                <SelectValue placeholder={loadingUtilities ? "Loading..." : "Select utility type"} />
+              </SelectTrigger>
+              <SelectContent>
+                {utilityTypes.length === 0 ? (
+                  <SelectItem value="none" disabled>
+                    No utility types available
+                  </SelectItem>
+                ) : (
+                  utilityTypes.map((type) => (
+                    <SelectItem key={type.id} value={type.name}>
+                      {type.name}
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
           </div>
