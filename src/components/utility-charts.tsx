@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import { Expense } from '@/generated/prisma'
-import { Bar, BarChart, Line, LineChart, PolarAngleAxis, PolarGrid, Radar, RadarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts'
+import { Area, AreaChart, CartesianGrid, PolarAngleAxis, PolarGrid, Radar, RadarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts'
 
 interface UtilityChartsProps {
   expenses: Expense[]
@@ -66,74 +66,67 @@ export function UtilityCharts({ expenses }: UtilityChartsProps) {
 
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      {/* Bar Chart */}
-      <Card className="md:col-span-2 lg:col-span-1">
+      {/* Interactive Area Chart */}
+      <Card className="md:col-span-2">
         <CardHeader>
-          <CardTitle>Utility Spending</CardTitle>
-          <CardDescription>Amount spent by utility type</CardDescription>
+          <CardTitle>Utility Analytics</CardTitle>
+          <CardDescription>Interactive spending overview by utility type</CardDescription>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={chartConfig} className="h-[300px] w-full">
+          <ChartContainer config={chartConfig} className="h-[350px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart
+              <AreaChart
                 data={utilityData}
-                layout="horizontal"
-                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                margin={{
+                  top: 10,
+                  right: 30,
+                  left: 0,
+                  bottom: 80,
+                }}
               >
+                <defs>
+                  <linearGradient id="colorUtility" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.1}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                 <XAxis
                   dataKey="utility"
                   angle={-45}
                   textAnchor="end"
                   height={80}
                   interval={0}
-                  tick={{ fontSize: 12 }}
+                  tick={{ fontSize: 12, fill: 'currentColor' }}
+                  className="text-xs"
                 />
-                <YAxis />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar
-                  dataKey="amount"
-                  radius={[8, 8, 0, 0]}
-                  fill="rgb(96 165 250)"
-                  fillOpacity={0.8}
+                <YAxis
+                  className="text-xs"
+                  tick={{ fill: 'currentColor' }}
+                  tickFormatter={(value) => `${value}`}
                 />
-              </BarChart>
-            </ResponsiveContainer>
-          </ChartContainer>
-        </CardContent>
-      </Card>
-
-      {/* Line Chart */}
-      <Card className="md:col-span-2 lg:col-span-1">
-        <CardHeader>
-          <CardTitle>Utility Trend</CardTitle>
-          <CardDescription>Spending pattern across utilities</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ChartContainer config={chartConfig} className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart
-                data={utilityData}
-                margin={{ top: 5, right: 30, left: 20, bottom: 80 }}
-              >
-                <XAxis
-                  dataKey="utility"
-                  angle={-45}
-                  textAnchor="end"
-                  height={80}
-                  interval={0}
-                  tick={{ fontSize: 12 }}
+                <ChartTooltip
+                  content={
+                    <ChartTooltipContent
+                      formatter={(value, name) => {
+                        const data = utilityData.find(d => d.amount === value)
+                        if (data) {
+                          return [`PKR ${value} (${data.percentage}%)`, 'Amount']
+                        }
+                        return [`PKR ${value}`, name]
+                      }}
+                    />
+                  }
                 />
-                <YAxis />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Line
+                <Area
                   type="monotone"
                   dataKey="amount"
-                  stroke="rgb(96 165 250)"
+                  stroke="#3b82f6"
                   strokeWidth={3}
-                  dot={{ fill: 'rgb(96 165 250)', r: 6 }}
-                  activeDot={{ r: 8 }}
+                  fill="url(#colorUtility)"
+                  activeDot={{ r: 8, fill: '#3b82f6' }}
                 />
-              </LineChart>
+              </AreaChart>
             </ResponsiveContainer>
           </ChartContainer>
         </CardContent>
@@ -171,7 +164,7 @@ export function UtilityCharts({ expenses }: UtilityChartsProps) {
       </Card>
 
       {/* Summary Statistics */}
-      <Card className="md:col-span-2 lg:col-span-3">
+      <Card className="md:col-span-2">
         <CardHeader>
           <CardTitle>Utility Breakdown</CardTitle>
           <CardDescription>Detailed spending by utility type</CardDescription>
