@@ -37,8 +37,14 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger }: ExpenseFo
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!amount || !description || !category || !utilityType) {
-      toast.error('Please fill in all fields')
+    if (!amount || !description || !category) {
+      toast.error('Please fill in all required fields')
+      return
+    }
+
+    // Utility type is required for all categories except SAVINGS
+    if (category !== 'SAVINGS' && !utilityType) {
+      toast.error('Please select a utility type')
       return
     }
 
@@ -49,7 +55,7 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger }: ExpenseFo
         amount: parseFloat(amount),
         description,
         category,
-        subcategory: utilityType,
+        subcategory: category === 'SAVINGS' ? null : utilityType || null,
         date: date?.toISOString(),
       }
       
@@ -176,7 +182,13 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger }: ExpenseFo
             transition={{ duration: 0.3, delay: 0.3 }}
           >
             <Label htmlFor="category">Category</Label>
-            <Select value={category} onValueChange={(value) => setCategory(value as ExpenseCategory)}>
+            <Select value={category} onValueChange={(value) => {
+              setCategory(value as ExpenseCategory)
+              // Clear utility type when switching to SAVINGS
+              if (value === 'SAVINGS') {
+                setUtilityType('')
+              }
+            }}>
               <SelectTrigger id="category" className="backdrop-blur-sm bg-white/50 dark:bg-white/5">
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
@@ -199,10 +211,21 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger }: ExpenseFo
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3, delay: 0.4 }}
           >
-            <Label htmlFor="utilityType">Utility Type</Label>
-            <Select value={utilityType} onValueChange={setUtilityType} required disabled={loadingUtilities}>
+            <Label htmlFor="utilityType">
+              Utility Type {category !== 'SAVINGS' && <span className="text-red-500">*</span>}
+            </Label>
+            <Select 
+              value={utilityType} 
+              onValueChange={setUtilityType} 
+              required={category !== 'SAVINGS'}
+              disabled={loadingUtilities || category === 'SAVINGS'}
+            >
               <SelectTrigger id="utilityType" className="backdrop-blur-sm bg-white/50 dark:bg-white/5">
-                <SelectValue placeholder={loadingUtilities ? "Loading..." : "Select utility type"} />
+                <SelectValue placeholder={
+                  loadingUtilities ? "Loading..." : 
+                  category === 'SAVINGS' ? "Not applicable for savings" : 
+                  "Select utility type"
+                } />
               </SelectTrigger>
               <SelectContent>
                 {utilityTypes.length === 0 ? (

@@ -25,10 +25,19 @@ export async function POST(request: NextRequest) {
     console.log('Received expense data:', body)
     const { amount, description, category, subcategory, date } = body
 
-    if (!amount || !description || !category || !subcategory) {
-      console.log('Missing fields:', { amount: !amount, description: !description, category: !category, subcategory: !subcategory })
+    if (!amount || !description || !category) {
+      console.log('Missing fields:', { amount: !amount, description: !description, category: !category })
       return NextResponse.json(
-        { error: 'Missing required fields. Amount, description, category, and utility type are required.' },
+        { error: 'Missing required fields. Amount, description, and category are required.' },
+        { status: 400 }
+      )
+    }
+
+    // Utility type (subcategory) is required for all categories except SAVINGS
+    if (category !== 'SAVINGS' && !subcategory) {
+      console.log('Missing utility type for non-SAVINGS category')
+      return NextResponse.json(
+        { error: 'Utility type is required for this category.' },
         { status: 400 }
       )
     }
