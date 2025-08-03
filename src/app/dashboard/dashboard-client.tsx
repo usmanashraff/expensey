@@ -58,7 +58,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
         />
       </div>
 
-      <div className="container mx-auto px-4 py-4 max-w-7xl relative z-10">
+      <div className="container mx-auto px-4 pb-4 max-w-7xl relative z-10">
         <motion.header
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -96,17 +96,17 @@ export function DashboardClient({ user }: DashboardClientProps) {
               <UserDropdown user={user} />
             </div>
           </div>
-          <motion.p 
+          {/* <motion.p 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.3 }}
             className="text-lg text-muted-foreground mt-4"
           >
             Track your expenses wisely, achieve your financial goals
-          </motion.p>
+          </motion.p> */}
         </motion.header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 -mt-8 gap-8">
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
