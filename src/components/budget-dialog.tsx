@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Wallet, TrendingUp, Sparkles, PiggyBank, Info, AlertCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useUserSettings } from '@/hooks/use-user-settings'
 
 interface BudgetDialogProps {
   selectedMonth: number
@@ -33,6 +34,7 @@ export function BudgetDialog({ selectedMonth, selectedYear, onBudgetUpdated }: B
   })
   const [errors, setErrors] = useState<Partial<Budget>>({})
   const [hasSubmitted, setHasSubmitted] = useState(false)
+  const { settings } = useUserSettings()
 
   const categoryConfig = {
     NEED: {
@@ -129,7 +131,8 @@ export function BudgetDialog({ selectedMonth, selectedYear, onBudgetUpdated }: B
           needBudget: budget.NEED,
           wantBudget: budget.WANT,
           selfDevelopmentBudget: budget.SELF_DEVELOPMENT,
-          savingsBudget: budget.SAVINGS
+          savingsBudget: budget.SAVINGS,
+          currency: settings.defaultCurrency || 'PKR'
         })
       })
 
@@ -236,7 +239,7 @@ export function BudgetDialog({ selectedMonth, selectedYear, onBudgetUpdated }: B
                 </div>
                 <div className="relative mt-1">
                   <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-gray-500 dark:text-gray-400 z-10">
-                    PKR
+                    {settings.defaultCurrency || 'PKR'}
                   </span>
                   <Input
                     id={key}

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis } from 'recharts'
+import { formatCurrency } from '@/lib/currency'
 
 interface SavingsData {
   month: number
@@ -68,7 +69,7 @@ export function SavingsChart() {
       <CardHeader>
         <CardTitle>Savings Over Time</CardTitle>
         <CardDescription>
-          Your savings journey - Total saved: PKR {totalSaved.toFixed(0)}
+          Your savings journey - Total saved: {formatCurrency(totalSaved, 'PKR')}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -109,12 +110,12 @@ export function SavingsChart() {
                   <ChartTooltipContent
                     formatter={(value, name) => {
                       if (name === 'cumulative') {
-                        return [`PKR ${value}`, 'Total Saved']
+                        return [`${formatCurrency(value as number, 'PKR')}`, 'Total Saved']
                       }
                       if (name === 'monthlyContribution') {
-                        return [`PKR ${value}`, 'Monthly Contribution']
+                        return [`${formatCurrency(value as number, 'PKR')}`, 'Monthly Contribution']
                       }
-                      return [`PKR ${value}`, name]
+                      return [`${formatCurrency(value as number, 'PKR')}`, name]
                     }}
                     labelFormatter={(value) => {
                       const data = savingsHistory.find(d => d.monthName === value)

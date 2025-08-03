@@ -21,6 +21,7 @@ import { ChevronDown, ChevronUp, BarChart3, ChevronLeft, ChevronRight, Calendar,
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { BudgetDialog } from './budget-dialog'
 import { Progress } from '@/components/ui/progress'
+import { formatCurrencyWithMask } from '@/lib/currency'
 
 interface ExpenseListProps {
   refreshTrigger: number
@@ -249,11 +250,8 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
     })
   }
 
-  const formatAmount = (amount: number) => {
-    if (showAmounts) {
-      return `PKR ${amount.toFixed(0)}`
-    }
-    return 'PKR ****'
+  const formatAmount = (amount: number, currency: string = 'PKR') => {
+    return formatCurrencyWithMask(showAmounts, amount, currency)
   }
 
   const totalExpenses = expenses
@@ -524,7 +522,7 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
               >
                 <p className="text-sm text-muted-foreground mb-1">Total Expenses</p>
                 <p className="text-2xl font-bold bg-gradient-to-r from-gray-600 to-gray-800 dark:from-gray-300 dark:to-gray-100 bg-clip-text text-transparent">
-                  {formatAmount(totalExpenses)}
+                  {formatAmount(totalExpenses, 'PKR')}
                 </p>
               </motion.div>
               {Object.entries(categoryConfig).filter(([key]) => key !== 'SAVINGS').map(([key, config], index) => (
@@ -537,7 +535,7 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
                 >
                   <p className="text-sm text-muted-foreground mb-1">{config.label}</p>
                   <p className={`text-xl font-bold bg-gradient-to-r ${config.color} bg-clip-text text-transparent`}>
-                    {formatAmount(expensesByCategory[key] || 0)}
+                    {formatAmount(expensesByCategory[key] || 0, 'PKR')}
                   </p>
                 </motion.div>
               ))}
@@ -560,7 +558,7 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
                     {new Date(selectedYear, selectedMonth - 1).toLocaleDateString('en-US', { month: 'short' })} Savings
                   </p>
                   <p className="text-xl font-semibold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                    {formatAmount(monthlySavings)}
+                    {formatAmount(monthlySavings, 'PKR')}
                   </p>
                 </motion.div>
                 <motion.div 
@@ -571,7 +569,7 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
                 >
                   <p className="text-sm text-muted-foreground">Lifetime Savings</p>
                   <p className="text-xl font-semibold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-                    {formatAmount(totalSavings)}
+                    {formatAmount(totalSavings, 'PKR')}
                   </p>
                 </motion.div>
               </div>
@@ -814,7 +812,7 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
                         </div>
                         <div className="flex items-center gap-3">
                           <p className={`text-lg font-semibold bg-gradient-to-r ${categoryConfig[expense.category].color} bg-clip-text text-transparent`}>
-                            {formatAmount(expense.amount)}
+                            {formatAmount(expense.amount, expense.currency || 'PKR')}
                           </p>
                           <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                             <Button
@@ -1168,7 +1166,7 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
                             <div>
                               <h4 className="font-medium">{config.label}</h4>
                               <p className="text-sm text-muted-foreground">
-                                {formatAmount(spentAmount)} / {formatAmount(budgetAmount)}
+                                {formatAmount(spentAmount, 'PKR')} / {formatAmount(budgetAmount, 'PKR')}
                                 {isSavings && spentAmount >= budgetAmount && (
                                   <span className="text-green-600 dark:text-green-400 ml-2">✓ Goal met!</span>
                                 )}
@@ -1187,7 +1185,7 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
                               <div className="space-y-1">
                                 <p className="text-xs text-red-600 dark:text-red-400">Over budget</p>
                                 <p className="text-xs font-medium text-red-600 dark:text-red-400">
-                                  +{formatAmount(spentAmount - budgetAmount)}
+                                  +{formatAmount(spentAmount - budgetAmount, 'PKR')}
                                 </p>
                               </div>
                             )}
@@ -1218,8 +1216,8 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
                         {isSavings && (
                           <p className="text-xs text-muted-foreground">
                             {spentAmount >= budgetAmount ? 
-                              `You've saved ${formatAmount(spentAmount - budgetAmount)} more than your minimum goal!` :
-                              `${formatAmount(budgetAmount - spentAmount)} more to reach your minimum savings goal`
+                              `You've saved ${formatAmount(spentAmount - budgetAmount, 'PKR')} more than your minimum goal!` :
+                              `${formatAmount(budgetAmount - spentAmount, 'PKR')} more to reach your minimum savings goal`
                             }
                           </p>
                         )}
@@ -1251,7 +1249,8 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
                           {formatAmount(
                             (budget.needBudget || 0) + 
                             (budget.wantBudget || 0) + 
-                            (budget.selfDevelopmentBudget || 0)
+                            (budget.selfDevelopmentBudget || 0),
+                            'PKR'
                           )}
                         </p>
                       </motion.div>
@@ -1262,7 +1261,7 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
                       >
                         <p className="text-sm text-muted-foreground">Total Spent</p>
                         <p className="text-xl font-semibold text-green-600 dark:text-green-400">
-                          {formatAmount(totalExpenses)}
+                          {formatAmount(totalExpenses, 'PKR')}
                         </p>
                       </motion.div>
                       
@@ -1276,7 +1275,8 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
                           'text-red-600 dark:text-red-400' : 'text-purple-600 dark:text-purple-400'
                         }`}>
                           {formatAmount(
-                            ((budget.needBudget || 0) + (budget.wantBudget || 0) + (budget.selfDevelopmentBudget || 0)) - totalExpenses
+                            ((budget.needBudget || 0) + (budget.wantBudget || 0) + (budget.selfDevelopmentBudget || 0)) - totalExpenses,
+                            'PKR'
                           )}
                         </p>
                       </motion.div>

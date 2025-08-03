@@ -44,7 +44,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { month, year, needBudget, wantBudget, selfDevelopmentBudget, savingsBudget } = body
+    const { month, year, needBudget, wantBudget, selfDevelopmentBudget, savingsBudget, currency } = body
 
     const budget = await prisma.budget.upsert({
       where: {
@@ -58,7 +58,8 @@ export async function POST(request: Request) {
         needBudget: parseFloat(needBudget) || 0,
         wantBudget: parseFloat(wantBudget) || 0,
         selfDevelopmentBudget: parseFloat(selfDevelopmentBudget) || 0,
-        savingsBudget: parseFloat(savingsBudget) || 0
+        savingsBudget: parseFloat(savingsBudget) || 0,
+        currency: currency || 'PKR'
       },
       create: {
         month: parseInt(month),
@@ -67,7 +68,8 @@ export async function POST(request: Request) {
         wantBudget: parseFloat(wantBudget) || 0,
         selfDevelopmentBudget: parseFloat(selfDevelopmentBudget) || 0,
         savingsBudget: parseFloat(savingsBudget) || 0,
-        userId: user.id
+        userId: user.id,
+        currency: currency || 'PKR'
       }
     })
 

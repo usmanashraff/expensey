@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import { Expense } from '@/generated/prisma'
 import { Cell, Pie, PieChart, RadialBar, RadialBarChart, ResponsiveContainer } from 'recharts'
+import { formatCurrency } from '@/lib/currency'
 
 interface ExpenseChartsProps {
   expenses: Expense[]
@@ -177,7 +178,7 @@ export function ExpenseCharts({ expenses }: ExpenseChartsProps) {
                   <span className="text-sm font-medium">{item.category}</span>
                 </div>
                 <span className="text-sm text-muted-foreground">
-                  PKR {item.value.toFixed(0)}
+                  {formatCurrency(item.value, 'PKR')}
                 </span>
               </div>
             ))}

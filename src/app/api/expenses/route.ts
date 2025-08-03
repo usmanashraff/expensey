@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     const userId = await getUserId()
     const body = await request.json()
     console.log('Received expense data:', body)
-    const { amount, description, category, subcategory, date } = body
+    const { amount, description, category, subcategory, date, currency } = body
 
     if (!amount || !description || !category) {
       console.log('Missing fields:', { amount: !amount, description: !description, category: !category })
@@ -59,6 +59,7 @@ export async function POST(request: NextRequest) {
       subcategory,
       date: expenseDate,
       userId,
+      currency: currency || 'PKR',
     })
     
     const expense = await prisma.expense.create({
@@ -69,6 +70,7 @@ export async function POST(request: NextRequest) {
         subcategory: subcategory || null,
         date: expenseDate,
         userId,
+        currency: currency || 'PKR',
       },
     })
 
@@ -96,6 +98,7 @@ export async function POST(request: NextRequest) {
           month: expenseMonth,
           year: expenseYear,
           userId,
+          currency: currency || 'PKR',
         },
       })
       

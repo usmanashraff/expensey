@@ -12,7 +12,8 @@ import {
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components"
-import { LogOut, User, ChevronDown } from 'lucide-react'
+import { LogOut, User, ChevronDown, Settings } from 'lucide-react'
+import Link from 'next/link'
 
 interface UserDropdownProps {
   user: {
@@ -36,7 +37,11 @@ export function UserDropdown({ user }: UserDropdownProps) {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-10 px-2 gap-2">
           <Avatar className="h-8 w-8">
-            <AvatarImage src={user.picture || undefined} alt={userName} />
+            <AvatarImage 
+              src={user.picture || undefined} 
+              alt={userName}
+              className="object-cover"
+            />
             <AvatarFallback className="text-xs">{userInitials}</AvatarFallback>
           </Avatar>
           <span className="hidden md:inline-block text-sm font-medium">{userName}</span>
@@ -54,10 +59,18 @@ export function UserDropdown({ user }: UserDropdownProps) {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <div className="flex items-center gap-2 text-muted-foreground">
+          {/* <div className="flex items-center gap-2 text-muted-foreground">
             <User className="h-4 w-4" />
             <span className="text-sm">Profile</span>
-          </div>
+          </div> */}
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/settings" className="w-full">
+            <div className="flex items-center gap-2 text-muted-foreground cursor-pointer">
+              <Settings className="h-4 w-4" />
+              <span className="text-sm">Settings</span>
+            </div>
+          </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>

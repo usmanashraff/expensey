@@ -13,6 +13,7 @@ import { format } from 'date-fns'
 import { ExpenseCategory } from '@/generated/prisma'
 import { toast } from 'sonner'
 import { motion } from 'framer-motion'
+import { useUserSettings } from '@/hooks/use-user-settings'
 
 interface ExpenseFormProps {
   onExpenseAdded: () => void
@@ -28,11 +29,17 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger }: ExpenseFo
   const [amount, setAmount] = useState('')
   const [description, setDescription] = useState('')
   const [category, setCategory] = useState<ExpenseCategory | ''>('')
+  const [currency, setCurrency] = useState('PKR')
   const [utilityType, setUtilityType] = useState('')
   const [date, setDate] = useState<Date | undefined>(new Date())
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [utilityTypes, setUtilityTypes] = useState<UtilityType[]>([])
   const [loadingUtilities, setLoadingUtilities] = useState(true)
+  const { settings } = useUserSettings()
+
+  useEffect(() => {
+    setCurrency(settings.defaultCurrency)
+  }, [settings.defaultCurrency])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -57,6 +64,7 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger }: ExpenseFo
         category,
         subcategory: category === 'SAVINGS' ? null : utilityType || null,
         date: date?.toISOString(),
+        currency: currency,
       }
       
       console.log('Sending expense data:', payload)
@@ -144,7 +152,7 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger }: ExpenseFo
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3, delay: 0.1 }}
           >
-            <Label htmlFor="amount">Amount (PKR)</Label>
+            <Label htmlFor="amount">Amount ({currency})</Label>
             <Input
               id="amount"
               type="number"

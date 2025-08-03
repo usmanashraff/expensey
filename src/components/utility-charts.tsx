@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import { Expense } from '@/generated/prisma'
 import { Area, AreaChart, CartesianGrid, PolarAngleAxis, PolarGrid, Radar, RadarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts'
+import { formatCurrency } from '@/lib/currency'
 
 interface UtilityChartsProps {
   expenses: Expense[]
@@ -32,7 +33,7 @@ export function UtilityCharts({ expenses }: UtilityChartsProps) {
 
   const chartConfig = {
     amount: {
-      label: 'Amount (PKR)',
+      label: 'Amount',
       color: 'hsl(var(--chart-1))',
     },
   } satisfies ChartConfig
@@ -111,9 +112,9 @@ export function UtilityCharts({ expenses }: UtilityChartsProps) {
                       formatter={(value, name) => {
                         const data = utilityData.find(d => d.amount === value)
                         if (data) {
-                          return [`PKR ${value} (${data.percentage}%)`, 'Amount']
+                          return [`${formatCurrency(value as number, 'PKR')} (${data.percentage}%)`, 'Amount']
                         }
-                        return [`PKR ${value}`, name]
+                        return [`${formatCurrency(value as number, 'PKR')}`, name]
                       }}
                     />
                   }
@@ -181,7 +182,7 @@ export function UtilityCharts({ expenses }: UtilityChartsProps) {
                   style={{ backgroundColor: utilityColors[item.utility] || 'rgb(107 114 128)' }}
                 />
                 <h4 className="font-medium text-sm text-center">{item.utility}</h4>
-                <p className="text-lg font-semibold mt-1">PKR {item.amount.toFixed(0)}</p>
+                <p className="text-lg font-semibold mt-1">{formatCurrency(item.amount, 'PKR')}</p>
                 <p className="text-xs text-muted-foreground">{item.percentage}%</p>
               </div>
             ))}

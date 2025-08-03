@@ -29,10 +29,12 @@ model Expense {
   subcategory String?
   date        DateTime        @default(now())
   userId      String
+  currency    String          @default("PKR")
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
   
   @@index([userId])
+  @@index([userId, currency])
 }
 
 model Savings {
@@ -41,6 +43,7 @@ model Savings {
   month     Int
   year      Int
   userId    String
+  currency  String   @default("PKR")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
@@ -68,9 +71,34 @@ model Budget {
   selfDevelopmentBudget Float    @default(0)
   savingsBudget         Float    @default(0)
   userId                String
+  currency              String   @default("PKR")
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
   
   @@unique([month, year, userId])
+  @@index([userId])
+}
+
+model User {
+  id               String   @id @default(cuid())
+  kindeId          String   @unique
+  email            String   @unique
+  firstName        String?
+  lastName         String?
+  profilePicture   String?  @db.Text // Store base64 image or URL
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  @@index([kindeId])
+  @@index([email])
+}
+
+model UserSettings {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  defaultCurrency  String   @default("PKR")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
   @@index([userId])
 }
