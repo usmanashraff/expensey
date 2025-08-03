@@ -13,8 +13,10 @@ import { toast } from 'sonner'
 import { ExpenseCharts } from './expense-charts'
 import { SavingsChart } from './savings-chart'
 import { UtilityCharts } from './utility-charts'
-import { ChevronDown, ChevronUp, BarChart3, ChevronLeft, ChevronRight, Calendar, Receipt, Zap, Eye, EyeOff, TrendingUp, PiggyBank, Wallet, Trash2, X } from 'lucide-react'
+import { ChevronDown, ChevronUp, BarChart3, ChevronLeft, ChevronRight, Calendar, Receipt, Zap, Eye, EyeOff, TrendingUp, PiggyBank, Wallet, Trash2, X, Target } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { BudgetDialog } from './budget-dialog'
+import { Progress } from '@/components/ui/progress'
 
 interface ExpenseListProps {
   refreshTrigger: number
@@ -31,6 +33,12 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
   const [showAmounts, setShowAmounts] = useState(false)
   const [showMonthPicker, setShowMonthPicker] = useState(false)
   const [availableMonths, setAvailableMonths] = useState<{year: number, month: number}[]>([])
+  const [budget, setBudget] = useState<{
+    needBudget: number
+    wantBudget: number
+    selfDevelopmentBudget: number
+    savingsBudget: number
+  } | null>(null)
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
@@ -112,11 +120,24 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
       console.error('Failed to fetch available months:', error)
     }
   }
+
+  const fetchBudget = async () => {
+    try {
+      const response = await fetch(`/api/budget?month=${selectedMonth}&year=${selectedYear}`)
+      if (response.ok) {
+        const data = await response.json()
+        setBudget(data)
+      }
+    } catch (error) {
+      console.error('Failed to fetch budget:', error)
+    }
+  }
   
 
   useEffect(() => {
     fetchExpenses()
     fetchSavings()
+    fetchBudget()
   }, [refreshTrigger, selectedMonth, selectedYear])
 
   useEffect(() => {
@@ -143,13 +164,13 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
 
   const categoryConfig = {
     NEED: { 
-      label: 'Need',
+      label: 'Needs',
       color: 'from-yellow-500 to-orange-500',
       bgColor: 'bg-yellow-100 dark:bg-yellow-900/30',
       textColor: 'text-yellow-800 dark:text-yellow-300'
     },
     WANT: {
-      label: 'Want',
+      label: 'Wants',
       color: 'from-red-500 to-pink-500',
       bgColor: 'bg-red-100 dark:bg-red-900/30',
       textColor: 'text-red-800 dark:text-red-300'
@@ -433,7 +454,17 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
               )}
             </div>
           </div>
-          <CardDescription>Your spending breakdown for {monthName}</CardDescription>
+          <div className="flex items-center justify-between">
+            <CardDescription>Your spending breakdown for {monthName}</CardDescription>
+            <BudgetDialog 
+              selectedMonth={selectedMonth} 
+              selectedYear={selectedYear}
+              onBudgetUpdated={() => {
+                fetchBudget()
+                fetchExpenses()
+              }}
+            />
+          </div>
         </CardHeader>
         <CardContent className="relative z-10">
           <div className="space-y-6">
@@ -524,9 +555,13 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
             <Receipt className="w-4 h-4 mr-2" />
             Recent Expenses
           </TabsTrigger>
+          <TabsTrigger value="budget" className="flex-1 data-[state=active]:bg-white/60 dark:data-[state=active]:bg-[oklch(0.25_0.02_250)]/50">
+            <Target className="w-4 h-4 mr-2" />
+            Budget Overview
+          </TabsTrigger>
           <TabsTrigger value="visualization" className="flex-1 data-[state=active]:bg-white/60 dark:data-[state=active]:bg-[oklch(0.25_0.02_250)]/50">
             <BarChart3 className="w-4 h-4 mr-2" />
-            Visualization & Insights
+            Visualization
           </TabsTrigger>
         </TabsList>
 
@@ -735,7 +770,7 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
                     >
                       <BarChart3 className="h-5 w-5 text-white" />
                     </motion.div>
-                    <CardTitle className="text-xl">Analytics & Insights</CardTitle>
+                    <CardTitle className="text-xl">Category Analytics</CardTitle>
                   </div>
                   <Button
                     variant="ghost"
@@ -876,6 +911,195 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
               </AnimatePresence>
             </Card>
           </div>
+        </TabsContent>
+
+        <TabsContent value="budget">
+          <Card className="relative backdrop-blur-xl bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 border-white/20 dark:border-white/10 rounded-3xl overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 dark:from-indigo-500/10 dark:to-purple-500/10" />
+            
+            <CardHeader className="relative z-10">
+              <div className="flex items-center gap-3">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ duration: 0.5, type: "spring" }}
+                  className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 shadow-lg"
+                >
+                  <Target className="h-5 w-5 text-white" />
+                </motion.div>
+                <CardTitle className="text-xl">Budget Overview</CardTitle>
+              </div>
+              <CardDescription>
+                Track your spending against your monthly budget
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent className="relative z-10 space-y-6">
+              {!budget ? (
+                <div className="text-center py-12">
+                  <Target className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground mb-4">No budget set for {monthName}</p>
+                  <BudgetDialog 
+                    selectedMonth={selectedMonth} 
+                    selectedYear={selectedYear}
+                    onBudgetUpdated={() => {
+                      fetchBudget()
+                      fetchExpenses()
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* Budget Progress Indicators */}
+                  {Object.entries(categoryConfig).map(([key, config], index) => {
+                    const budgetKey = key === 'NEED' ? 'needBudget' : 
+                                     key === 'WANT' ? 'wantBudget' : 
+                                     key === 'SELF_DEVELOPMENT' ? 'selfDevelopmentBudget' : 
+                                     'savingsBudget'
+                    const budgetAmount = budget[budgetKey as keyof typeof budget] || 0
+                    const spentAmount = expensesByCategory[key] || 0
+                    const percentage = budgetAmount > 0 ? (spentAmount / budgetAmount) * 100 : 0
+                    const isOverBudget = percentage > 100
+                    const isSavings = key === 'SAVINGS'
+                    
+                    // For savings, we want to show progress towards the minimum goal
+                    const savingsPercentage = isSavings && budgetAmount > 0 ? 
+                      Math.min((spentAmount / budgetAmount) * 100, 100) : percentage
+
+                    return (
+                      <motion.div
+                        key={key}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="space-y-3"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className={`inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-r ${config.color} shadow-sm`}>
+                              <Wallet className="h-5 w-5 text-white" />
+                            </div>
+                            <div>
+                              <h4 className="font-medium">{config.label}</h4>
+                              <p className="text-sm text-muted-foreground">
+                                {formatAmount(spentAmount)} / {formatAmount(budgetAmount)}
+                                {isSavings && spentAmount >= budgetAmount && (
+                                  <span className="text-green-600 dark:text-green-400 ml-2">✓ Goal met!</span>
+                                )}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className={`text-lg font-semibold ${
+                              isOverBudget && !isSavings ? 'text-red-600 dark:text-red-400' : 
+                              isSavings && spentAmount >= budgetAmount ? 'text-green-600 dark:text-green-400' :
+                              'text-muted-foreground'
+                            }`}>
+                              {isSavings ? savingsPercentage.toFixed(0) : percentage.toFixed(0)}%
+                            </p>
+                            {isOverBudget && !isSavings && (
+                              <div className="space-y-1">
+                                <p className="text-xs text-red-600 dark:text-red-400">Over budget</p>
+                                <p className="text-xs font-medium text-red-600 dark:text-red-400">
+                                  +{formatAmount(spentAmount - budgetAmount)}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <div className="relative">
+                          <Progress 
+                            value={isSavings ? savingsPercentage : Math.min(percentage, 100)} 
+                            className={`h-3 ${
+                              isOverBudget && !isSavings ? 'bg-red-100 dark:bg-red-900/20' : 
+                              'bg-gray-100 dark:bg-gray-800'
+                            }`}
+                          />
+                          {isOverBudget && !isSavings && (
+                            <>
+                              <div 
+                                className="absolute top-0 right-0 h-3 bg-red-600 dark:bg-red-400 rounded-r animate-pulse"
+                                style={{ width: `${Math.min((percentage - 100) * 0.5, 50)}%` }}
+                              />
+                              <div className="absolute -right-2 top-1/2 -translate-y-1/2 bg-red-600 dark:bg-red-400 text-white text-xs px-2 py-1 rounded-full shadow-lg">
+                                <span className="font-medium">+{((percentage - 100).toFixed(0))}%</span>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                        
+                        {isSavings && (
+                          <p className="text-xs text-muted-foreground">
+                            {spentAmount >= budgetAmount ? 
+                              `You've saved ${formatAmount(spentAmount - budgetAmount)} more than your minimum goal!` :
+                              `${formatAmount(budgetAmount - spentAmount)} more to reach your minimum savings goal`
+                            }
+                          </p>
+                        )}
+                      </motion.div>
+                    )
+                  })}
+                  
+                  {/* Total Budget Summary */}
+                  <div className="border-t pt-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-lg font-semibold">Total Budget Summary</h4>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowAmounts(!showAmounts)}
+                        className="h-8 w-8 p-0"
+                      >
+                        {showAmounts ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <motion.div 
+                        className="text-center p-4 rounded-2xl bg-gradient-to-br from-blue-100/50 to-indigo-100/50 dark:from-blue-900/20 dark:to-indigo-900/20"
+                        whileHover={{ scale: 1.02 }}
+                      >
+                        <p className="text-sm text-muted-foreground">Total Budget</p>
+                        <p className="text-xl font-semibold text-blue-600 dark:text-blue-400">
+                          {formatAmount(
+                            (budget.needBudget || 0) + 
+                            (budget.wantBudget || 0) + 
+                            (budget.selfDevelopmentBudget || 0)
+                          )}
+                        </p>
+                      </motion.div>
+                      
+                      <motion.div 
+                        className="text-center p-4 rounded-2xl bg-gradient-to-br from-green-100/50 to-emerald-100/50 dark:from-green-900/20 dark:to-emerald-900/20"
+                        whileHover={{ scale: 1.02 }}
+                      >
+                        <p className="text-sm text-muted-foreground">Total Spent</p>
+                        <p className="text-xl font-semibold text-green-600 dark:text-green-400">
+                          {formatAmount(totalExpenses)}
+                        </p>
+                      </motion.div>
+                      
+                      <motion.div 
+                        className="text-center p-4 rounded-2xl bg-gradient-to-br from-purple-100/50 to-pink-100/50 dark:from-purple-900/20 dark:to-pink-900/20"
+                        whileHover={{ scale: 1.02 }}
+                      >
+                        <p className="text-sm text-muted-foreground">Remaining</p>
+                        <p className={`text-xl font-semibold ${
+                          totalExpenses > ((budget.needBudget || 0) + (budget.wantBudget || 0) + (budget.selfDevelopmentBudget || 0)) ?
+                          'text-red-600 dark:text-red-400' : 'text-purple-600 dark:text-purple-400'
+                        }`}>
+                          {formatAmount(
+                            ((budget.needBudget || 0) + (budget.wantBudget || 0) + (budget.selfDevelopmentBudget || 0)) - totalExpenses
+                          )}
+                        </p>
+                      </motion.div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
