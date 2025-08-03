@@ -13,7 +13,8 @@ import { toast } from 'sonner'
 import { ExpenseCharts } from './expense-charts'
 import { SavingsChart } from './savings-chart'
 import { UtilityCharts } from './utility-charts'
-import { ChevronDown, ChevronUp, BarChart3, ChevronLeft, ChevronRight, Calendar, Receipt, Zap, Eye, EyeOff, TrendingUp, PiggyBank, Wallet, Trash2 } from 'lucide-react'
+import { ChevronDown, ChevronUp, BarChart3, ChevronLeft, ChevronRight, Calendar, Receipt, Zap, Eye, EyeOff, TrendingUp, PiggyBank, Wallet, Trash2, X } from 'lucide-react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 interface ExpenseListProps {
   refreshTrigger: number
@@ -26,7 +27,7 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
   const [totalSavings, setTotalSavings] = useState<number>(0)
   const [showCharts, setShowCharts] = useState(false)
   const [showUtilityCharts, setShowUtilityCharts] = useState(false)
-  const [showExpenses, setShowExpenses] = useState(true)
+  const [showExpenses, setShowExpenses] = useState(false)
   const [showAmounts, setShowAmounts] = useState(false)
   const [showMonthPicker, setShowMonthPicker] = useState(false)
   const [availableMonths, setAvailableMonths] = useState<{year: number, month: number}[]>([])
@@ -277,6 +278,7 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
     )
   }
 
+
   return (
     <div className="space-y-6">
       {/* Monthly Summary Card */}
@@ -515,302 +517,367 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
         />
       </Card>
 
-      {/* Charts Section with Toggle */}
-      <Card className="relative backdrop-blur-xl bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 border-white/20 dark:border-white/10 rounded-3xl overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-blue-500/5 dark:from-purple-500/10 dark:to-blue-500/10" />
-        
-        <CardHeader className="relative z-10">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <motion.div
-                whileHover={{ rotate: 360 }}
-                transition={{ duration: 0.5 }}
-                className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 shadow-lg"
-              >
-                <BarChart3 className="h-5 w-5 text-white" />
-              </motion.div>
-              <CardTitle className="text-xl">Analytics & Insights</CardTitle>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowCharts(!showCharts)}
-              className="flex items-center gap-2"
-            >
-              <motion.div
-                animate={{ rotate: showCharts ? 180 : 0 }}
-                transition={{ duration: 0.3 }}
-                className="h-4 w-4"
-              >
-                <ChevronDown className="h-4 w-4" />
-              </motion.div>
-              {showCharts ? 'Hide Charts' : 'Show Charts'}
-            </Button>
-          </div>
-          {showCharts && (
-            <CardDescription>Visual representation of your financial data</CardDescription>
-          )}
-        </CardHeader>
-        <AnimatePresence>
-          {showCharts && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{
-                height: { duration: 0.4, ease: "easeInOut" },
-                opacity: { duration: 0.3, ease: "easeInOut" }
-              }}
-              className="overflow-hidden"
-            >
-              <CardContent className="space-y-6 relative z-10">
-                <motion.div
-                  initial={{ y: -20 }}
-                  animate={{ y: 0 }}
-                  transition={{ delay: 0.2, duration: 0.3 }}
-                >
-                  <ExpenseCharts expenses={expenses} />
-                </motion.div>
-                <motion.div
-                  initial={{ y: -20 }}
-                  animate={{ y: 0 }}
-                  transition={{ delay: 0.3, duration: 0.3 }}
-                >
-                  <SavingsChart />
-                </motion.div>
-              </CardContent>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </Card>
+      {/* Tabs for Recent Expenses and Visualization & Insights */}
+      <Tabs defaultValue="expenses" className="space-y-6">
+        <TabsList className="w-full bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 backdrop-blur-xl border border-white/20 dark:border-white/10">
+          <TabsTrigger value="expenses" className="flex-1 data-[state=active]:bg-white/60 dark:data-[state=active]:bg-[oklch(0.25_0.02_250)]/50">
+            <Receipt className="w-4 h-4 mr-2" />
+            Recent Expenses
+          </TabsTrigger>
+          <TabsTrigger value="visualization" className="flex-1 data-[state=active]:bg-white/60 dark:data-[state=active]:bg-[oklch(0.25_0.02_250)]/50">
+            <BarChart3 className="w-4 h-4 mr-2" />
+            Visualization & Insights
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Utility Analytics Section */}
-      <Card className="relative backdrop-blur-xl bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 border-white/20 dark:border-white/10 rounded-3xl overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-yellow-500/5 dark:from-orange-500/10 dark:to-yellow-500/10" />
-        
-        <CardHeader className="relative z-10">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <motion.div
-                whileHover={{ scale: 1.1 }}
-                transition={{ duration: 0.3 }}
-                className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-yellow-500 shadow-lg"
-              >
-                <Zap className="h-5 w-5 text-white" />
-              </motion.div>
-              <CardTitle className="text-xl">Utility Analytics</CardTitle>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowUtilityCharts(!showUtilityCharts)}
-              className="flex items-center gap-2"
-            >
-              <motion.div
-                animate={{ rotate: showUtilityCharts ? 180 : 0 }}
-                transition={{ duration: 0.3 }}
-                className="h-4 w-4"
-              >
-                <ChevronDown className="h-4 w-4" />
-              </motion.div>
-              {showUtilityCharts ? 'Hide Charts' : 'Show Charts'}
-            </Button>
-          </div>
-          {showUtilityCharts && (
-            <CardDescription>Breakdown of your spending by utility type</CardDescription>
-          )}
-        </CardHeader>
-        <AnimatePresence>
-          {showUtilityCharts && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{
-                height: { duration: 0.4, ease: "easeInOut" },
-                opacity: { duration: 0.3, ease: "easeInOut" }
-              }}
-              className="overflow-hidden"
-            >
-              <CardContent className="relative z-10">
-                <motion.div
-                  initial={{ y: -20 }}
-                  animate={{ y: 0 }}
-                  transition={{ delay: 0.2, duration: 0.3 }}
-                >
-                  <UtilityCharts expenses={expenses} />
-                </motion.div>
-              </CardContent>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </Card>
-
-      {/* Recent Expenses Card */}
-      <Card className="relative backdrop-blur-xl bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 border-white/20 dark:border-white/10 rounded-3xl overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-blue-500/5 dark:from-green-500/10 dark:to-blue-500/10" />
-        
-        <CardHeader className="relative z-10">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <motion.div
-                initial={{ rotate: -10 }}
-                animate={{ rotate: 10 }}
-                transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }}
-                className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-blue-500 shadow-lg"
-              >
-                <Receipt className="h-5 w-5 text-white" />
-              </motion.div>
-              <CardTitle className="text-xl">Recent Expenses</CardTitle>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowExpenses(!showExpenses)}
-              className="flex items-center gap-2"
-            >
-              <motion.div
-                animate={{ rotate: showExpenses ? 180 : 0 }}
-                transition={{ duration: 0.3 }}
-                className="h-4 w-4"
-              >
-                <ChevronDown className="h-4 w-4" />
-              </motion.div>
-              {showExpenses ? 'Hide Expenses' : 'Show Expenses'}
-            </Button>
-          </div>
-          {showExpenses && (
-            <CardDescription>Your expense history for {monthName}</CardDescription>
-          )}
-        </CardHeader>
-        <AnimatePresence>
-          {showExpenses && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{
-                height: { duration: 0.4, ease: "easeInOut" },
-                opacity: { duration: 0.3, ease: "easeInOut" }
-              }}
-              className="overflow-hidden"
-            >
-              <CardContent className="relative z-10">
-                {expenses.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">
-                    No expenses yet. Add your first expense above!
-                  </p>
-                ) : (
-                  <div className="space-y-3">
-                    {paginatedExpenses.map((expense, index) => (
+        <TabsContent value="expenses">
+          {/* Recent Expenses Card */}
+          <Card className="relative backdrop-blur-xl bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 border-white/20 dark:border-white/10 rounded-3xl overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-blue-500/5 dark:from-green-500/10 dark:to-blue-500/10" />
+            
+            <CardHeader className="relative z-10">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
                   <motion.div
-                    key={expense.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, x: -100 }}
-                    transition={{ duration: 0.3, delay: index * 0.05 }}
-                    whileHover={{ scale: 1.01 }}
-                    className="flex items-center justify-between p-4 rounded-2xl border bg-white/30 dark:bg-white/5 backdrop-blur-sm hover:shadow-lg transition-all duration-300"
+                    initial={{ rotate: -10 }}
+                    animate={{ rotate: 10 }}
+                    transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }}
+                    className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-blue-500 shadow-lg"
                   >
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 flex-wrap">
-                        <h4 className="font-medium">{expense.description}</h4>
-                        <span className={`text-xs px-3 py-1 rounded-full ${categoryConfig[expense.category].bgColor} ${categoryConfig[expense.category].textColor} font-medium`}>
-                          {categoryConfig[expense.category].label}
-                        </span>
-                        {expense.subcategory && (
-                          <span className="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300">
-                            {expense.subcategory}
-                          </span>
-                        )}
+                    <Receipt className="h-5 w-5 text-white" />
+                  </motion.div>
+                  <CardTitle className="text-xl">Recent Expenses</CardTitle>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowExpenses(!showExpenses)}
+                  className="flex items-center gap-2"
+                >
+                  <motion.div
+                    animate={{ rotate: showExpenses ? 180 : 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="h-4 w-4"
+                  >
+                    <ChevronDown className="h-4 w-4" />
+                  </motion.div>
+                  {showExpenses ? 'Hide Expenses' : 'Show Expenses'}
+                </Button>
+              </div>
+              {showExpenses && (
+                <CardDescription>Your expense history for {monthName}</CardDescription>
+              )}
+            </CardHeader>
+            <AnimatePresence>
+              {showExpenses && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{
+                    height: { duration: 0.4, ease: "easeInOut" },
+                    opacity: { duration: 0.3, ease: "easeInOut" }
+                  }}
+                  className="overflow-hidden"
+                >
+                  <CardContent className="relative z-10" id="expenses-content">
+                    {expenses.length === 0 ? (
+                      <p className="text-center text-muted-foreground py-8">
+                        No expenses yet. Add your first expense above!
+                      </p>
+                    ) : (
+                      <div className="space-y-3">
+                        {paginatedExpenses.map((expense, index) => (
+                      <motion.div
+                        key={expense.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, x: -100 }}
+                        transition={{ duration: 0.3, delay: index * 0.05 }}
+                        whileHover={{ scale: 1.01 }}
+                        className="flex items-center justify-between p-4 rounded-2xl border bg-white/30 dark:bg-white/5 backdrop-blur-sm hover:shadow-lg transition-all duration-300"
+                      >
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 flex-wrap">
+                            <h4 className="font-medium">{expense.description}</h4>
+                            <span className={`text-xs px-3 py-1 rounded-full ${categoryConfig[expense.category].bgColor} ${categoryConfig[expense.category].textColor} font-medium`}>
+                              {categoryConfig[expense.category].label}
+                            </span>
+                            {expense.subcategory && (
+                              <span className="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300">
+                                {expense.subcategory}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {formatDate(expense.date)} at {formatTime(expense.date)}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <p className={`text-lg font-semibold bg-gradient-to-r ${categoryConfig[expense.category].color} bg-clip-text text-transparent`}>
+                            {formatAmount(expense.amount)}
+                          </p>
+                          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDelete(expense.id)}
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </motion.div>
+                        </div>
+                      </motion.div>
+                    ))}
                       </div>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {formatDate(expense.date)} at {formatTime(expense.date)}
-                      </p>
+                    )}
+                    
+                    {/* Pagination Controls */}
+                    {expenses.length > itemsPerPage && (
+                      <div className="flex items-center justify-between mt-6 pt-4 border-t">
+                        <p className="text-sm text-muted-foreground">
+                          Showing {startIndex + 1}-{Math.min(endIndex, expenses.length)} of {expenses.length} expenses
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setCurrentPage(page => Math.max(1, page - 1))}
+                            disabled={currentPage === 1}
+                            className="h-8 w-8 p-0"
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                          </Button>
+                          
+                          <div className="flex items-center gap-1">
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => {
+                              // Show only a few page numbers around current page
+                              if (
+                                page === 1 ||
+                                page === totalPages ||
+                                (page >= currentPage - 1 && page <= currentPage + 1)
+                              ) {
+                                return (
+                                  <Button
+                                    key={page}
+                                    variant={currentPage === page ? "default" : "outline"}
+                                    size="sm"
+                                    onClick={() => setCurrentPage(page)}
+                                    className="h-8 w-8 p-0"
+                                  >
+                                    {page}
+                                  </Button>
+                                )
+                              } else if (
+                                page === currentPage - 2 ||
+                                page === currentPage + 2
+                              ) {
+                                return <span key={page} className="px-1">...</span>
+                              }
+                              return null
+                            })}
+                          </div>
+                          
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setCurrentPage(page => Math.min(totalPages, page + 1))}
+                            disabled={currentPage === totalPages}
+                            className="h-8 w-8 p-0"
+                          >
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Hide button at the bottom */}
+                    <div className="flex justify-center mt-6 pt-4 border-t">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          const element = document.getElementById('expenses-content');
+                          if (element) {
+                            element.style.transition = 'all 0.4s ease-in-out';
+                            element.style.opacity = '0';
+                            element.style.transform = 'translateY(-10px)';
+                          }
+                          setTimeout(() => setShowExpenses(false), 300);
+                        }}
+                        className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+                      >
+                        <ChevronUp className="h-4 w-4" />
+                        Hide Recent Expenses
+                      </Button>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <p className={`text-lg font-semibold bg-gradient-to-r ${categoryConfig[expense.category].color} bg-clip-text text-transparent`}>
-                        {formatAmount(expense.amount)}
-                      </p>
-                      <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                  </CardContent>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="visualization">
+          <div className="space-y-6">
+            {/* Analytics & Insights Chart */}
+            <Card className="relative backdrop-blur-xl bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 border-white/20 dark:border-white/10 rounded-3xl overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-blue-500/5 dark:from-purple-500/10 dark:to-blue-500/10" />
+              
+              <CardHeader className="relative z-10">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <motion.div
+                      whileHover={{ rotate: 360 }}
+                      transition={{ duration: 0.5 }}
+                      className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 shadow-lg"
+                    >
+                      <BarChart3 className="h-5 w-5 text-white" />
+                    </motion.div>
+                    <CardTitle className="text-xl">Analytics & Insights</CardTitle>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowCharts(!showCharts)}
+                    className="flex items-center gap-2"
+                  >
+                    <motion.div
+                      animate={{ rotate: showCharts ? 180 : 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="h-4 w-4"
+                    >
+                      <ChevronDown className="h-4 w-4" />
+                    </motion.div>
+                    {showCharts ? 'Hide Charts' : 'Show Charts'}
+                  </Button>
+                </div>
+                {showCharts && (
+                  <CardDescription>Visual representation of your financial data</CardDescription>
+                )}
+              </CardHeader>
+              <AnimatePresence>
+                {showCharts && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{
+                      height: { duration: 0.4, ease: "easeInOut" },
+                      opacity: { duration: 0.3, ease: "easeInOut" }
+                    }}
+                    className="overflow-hidden"
+                  >
+                    <CardContent className="space-y-6 relative z-10" id="analytics-content">
+                      <ExpenseCharts expenses={expenses} />
+                      <SavingsChart />
+                      
+                      {/* Hide button at the bottom */}
+                      <div className="flex justify-center pt-4 border-t">
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleDelete(expense.id)}
-                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => {
+                            const element = document.getElementById('analytics-content');
+                            if (element) {
+                              element.style.transition = 'all 0.4s ease-in-out';
+                              element.style.opacity = '0';
+                              element.style.transform = 'translateY(-10px)';
+                            }
+                            setTimeout(() => setShowCharts(false), 300);
+                          }}
+                          className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <ChevronUp className="h-4 w-4" />
+                          Hide Analytics
                         </Button>
-                      </motion.div>
-                    </div>
-                  </motion.div>
-                ))}
-                  </div>
-                )}
-                
-                {/* Pagination Controls */}
-                {expenses.length > itemsPerPage && (
-                  <div className="flex items-center justify-between mt-6 pt-4 border-t">
-                    <p className="text-sm text-muted-foreground">
-                      Showing {startIndex + 1}-{Math.min(endIndex, expenses.length)} of {expenses.length} expenses
-                    </p>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentPage(page => Math.max(1, page - 1))}
-                        disabled={currentPage === 1}
-                        className="h-8 w-8 p-0"
-                      >
-                        <ChevronLeft className="h-4 w-4" />
-                      </Button>
-                      
-                      <div className="flex items-center gap-1">
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => {
-                          // Show only a few page numbers around current page
-                          if (
-                            page === 1 ||
-                            page === totalPages ||
-                            (page >= currentPage - 1 && page <= currentPage + 1)
-                          ) {
-                            return (
-                              <Button
-                                key={page}
-                                variant={currentPage === page ? "default" : "outline"}
-                                size="sm"
-                                onClick={() => setCurrentPage(page)}
-                                className="h-8 w-8 p-0"
-                              >
-                                {page}
-                              </Button>
-                            )
-                          } else if (
-                            page === currentPage - 2 ||
-                            page === currentPage + 2
-                          ) {
-                            return <span key={page} className="px-1">...</span>
-                          }
-                          return null
-                        })}
                       </div>
-                      
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentPage(page => Math.min(totalPages, page + 1))}
-                        disabled={currentPage === totalPages}
-                        className="h-8 w-8 p-0"
-                      >
-                        <ChevronRight className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
+                    </CardContent>
+                  </motion.div>
                 )}
-              </CardContent>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </Card>
+              </AnimatePresence>
+            </Card>
+
+            {/* Utility Analytics Chart */}
+            <Card className="relative backdrop-blur-xl bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 border-white/20 dark:border-white/10 rounded-3xl overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-yellow-500/5 dark:from-orange-500/10 dark:to-yellow-500/10" />
+              
+              <CardHeader className="relative z-10">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <motion.div
+                      whileHover={{ scale: 1.1 }}
+                      transition={{ duration: 0.3 }}
+                      className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-yellow-500 shadow-lg"
+                    >
+                      <Zap className="h-5 w-5 text-white" />
+                    </motion.div>
+                    <CardTitle className="text-xl">Utility Analytics</CardTitle>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowUtilityCharts(!showUtilityCharts)}
+                    className="flex items-center gap-2"
+                  >
+                    <motion.div
+                      animate={{ rotate: showUtilityCharts ? 180 : 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="h-4 w-4"
+                    >
+                      <ChevronDown className="h-4 w-4" />
+                    </motion.div>
+                    {showUtilityCharts ? 'Hide Charts' : 'Show Charts'}
+                  </Button>
+                </div>
+                {showUtilityCharts && (
+                  <CardDescription>Breakdown of your spending by utility type</CardDescription>
+                )}
+              </CardHeader>
+              <AnimatePresence>
+                {showUtilityCharts && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{
+                      height: { duration: 0.4, ease: "easeInOut" },
+                      opacity: { duration: 0.3, ease: "easeInOut" }
+                    }}
+                    className="overflow-hidden"
+                  >
+                    <CardContent className="relative z-10" id="utility-content">
+                      <UtilityCharts expenses={expenses} />
+                      
+                      {/* Hide button at the bottom */}
+                      <div className="flex justify-center mt-6 pt-4 border-t">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            const element = document.getElementById('utility-content');
+                            if (element) {
+                              element.style.transition = 'all 0.4s ease-in-out';
+                              element.style.opacity = '0';
+                              element.style.transform = 'translateY(-10px)';
+                            }
+                            setTimeout(() => setShowUtilityCharts(false), 300);
+                          }}
+                          className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+                        >
+                          <ChevronUp className="h-4 w-4" />
+                          Hide Utility Analytics
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

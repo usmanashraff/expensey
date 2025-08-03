@@ -71,8 +71,8 @@ export function DashboardClient({ user }: DashboardClientProps) {
                 <Image 
                   src="/logo.png" 
                   alt="Expensey Logo" 
-                  width={100} 
-                  height={25}
+                  width={80} 
+                  height={20}
                   className="object-contain"
                   priority
                 />
