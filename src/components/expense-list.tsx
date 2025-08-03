@@ -7,6 +7,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { CalendarIcon } from 'lucide-react'
+import { format } from 'date-fns'
+import { cn } from '@/lib/utils'
+import { Calendar as CalendarComponent } from '@/components/ui/calendar'
 import { Expense } from '@/generated/prisma'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
@@ -46,6 +50,13 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
   
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1)
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
+  
+  // Date filtering state - must be after selectedMonth and selectedYear
+  const [dateFilter, setDateFilter] = useState<'day' | 'week' | 'month'>('month')
+  const [selectedDate, setSelectedDate] = useState<Date>(() => {
+    // Initialize with the first day of the selected month
+    return new Date(selectedYear, selectedMonth - 1, 1)
+  })
   
   const currentMonth = new Date().getMonth() + 1
   const currentYear = new Date().getFullYear()
@@ -87,6 +98,38 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
     } finally {
       setLoading(false)
     }
+  }
+  
+  // Filter expenses based on date filter selection
+  const getFilteredExpenses = () => {
+    if (dateFilter === 'month') {
+      return expenses
+    }
+    
+    const now = new Date()
+    const filterDate = selectedDate
+    
+    return expenses.filter(expense => {
+      const expenseDate = new Date(expense.date)
+      
+      if (dateFilter === 'day') {
+        return expenseDate.toDateString() === filterDate.toDateString()
+      } else if (dateFilter === 'week') {
+        // Get start of week (Sunday)
+        const startOfWeek = new Date(filterDate)
+        startOfWeek.setDate(filterDate.getDate() - filterDate.getDay())
+        startOfWeek.setHours(0, 0, 0, 0)
+        
+        // Get end of week (Saturday)
+        const endOfWeek = new Date(startOfWeek)
+        endOfWeek.setDate(startOfWeek.getDate() + 6)
+        endOfWeek.setHours(23, 59, 59, 999)
+        
+        return expenseDate >= startOfWeek && expenseDate <= endOfWeek
+      }
+      
+      return true
+    })
   }
   
   const fetchSavings = async () => {
@@ -138,6 +181,8 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
     fetchExpenses()
     fetchSavings()
     fetchBudget()
+    // Update selectedDate to the first day of the new month
+    setSelectedDate(new Date(selectedYear, selectedMonth - 1, 1))
   }, [refreshTrigger, selectedMonth, selectedYear])
 
   useEffect(() => {
@@ -279,15 +324,16 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
   })
 
   // Pagination calculations
-  const totalPages = Math.ceil(expenses.length / itemsPerPage)
+  const filteredExpenses = getFilteredExpenses()
+  const totalPages = Math.ceil(filteredExpenses.length / itemsPerPage)
   const startIndex = (currentPage - 1) * itemsPerPage
   const endIndex = startIndex + itemsPerPage
-  const paginatedExpenses = expenses.slice(startIndex, endIndex)
+  const paginatedExpenses = filteredExpenses.slice(startIndex, endIndex)
 
-  // Reset to page 1 when month changes
+  // Reset to page 1 when month or filter changes
   useEffect(() => {
     setCurrentPage(1)
-  }, [selectedMonth, selectedYear])
+  }, [selectedMonth, selectedYear, dateFilter, selectedDate])
 
   if (loading) {
     return (
@@ -566,8 +612,18 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
         </TabsList>
 
         <TabsContent value="expenses">
-          {/* Recent Expenses Card */}
-          <Card className="relative backdrop-blur-xl bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 border-white/20 dark:border-white/10 rounded-3xl overflow-hidden">
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            transition={{ 
+              duration: 0.4,
+              ease: "easeOut",
+              scale: { duration: 0.3 }
+            }}
+          >
+            {/* Recent Expenses Card */}
+            <Card className="relative backdrop-blur-xl bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 border-white/20 dark:border-white/10 rounded-3xl overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-blue-500/5 dark:from-green-500/10 dark:to-blue-500/10" />
             
             <CardHeader className="relative z-10">
@@ -600,7 +656,110 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
                 </Button>
               </div>
               {showExpenses && (
-                <CardDescription>Your expense history for {monthName}</CardDescription>
+                <>
+                  <CardDescription>Your expense history for {monthName}</CardDescription>
+                  
+                  {/* Date Filter Controls */}
+                  <div className="space-y-3 mt-4">
+                    <div className="flex flex-wrap items-center gap-4">
+                      <div className="flex items-center gap-2">
+                        <Label className="text-sm font-medium">View:</Label>
+                        <Select
+                          value={dateFilter}
+                          onValueChange={(value: 'day' | 'week' | 'month') => {
+                            setDateFilter(value)
+                            setCurrentPage(1) // Reset pagination
+                          }}
+                        >
+                          <SelectTrigger className="w-[120px] h-9">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="day">Day</SelectItem>
+                            <SelectItem value="week">Week</SelectItem>
+                            <SelectItem value="month">Month</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      {dateFilter !== 'month' && (
+                        <motion.div
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          className="flex items-center gap-2"
+                        >
+                          <Label className="text-sm font-medium">
+                            {dateFilter === 'day' ? 'Date:' : 'Week of:'}
+                          </Label>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                className={cn(
+                                  dateFilter === 'week' ? "w-[280px]" : "w-[200px]",
+                                  "h-9 justify-start text-left font-normal",
+                                  !selectedDate && "text-muted-foreground"
+                                )}
+                              >
+                                <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
+                                <span className="truncate">
+                                  {selectedDate ? (
+                                    dateFilter === 'day' 
+                                      ? format(selectedDate, "PPP")
+                                      : format(selectedDate, "MMM d") + " - " + format(
+                                          new Date(selectedDate.getTime() + 6 * 24 * 60 * 60 * 1000),
+                                          "MMM d, yyyy"
+                                        )
+                                  ) : (
+                                    "Pick a date"
+                                  )}
+                                </span>
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <CalendarComponent
+                                mode="single"
+                                selected={selectedDate}
+                                onSelect={(date) => {
+                                  if (date) {
+                                    setSelectedDate(date)
+                                    setCurrentPage(1) // Reset pagination
+                                  }
+                                }}
+                                defaultMonth={new Date(selectedYear, selectedMonth - 1)}
+                                initialFocus
+                                disabled={(date) => {
+                                  // Disable future dates and dates outside the selected month
+                                  const today = new Date()
+                                  today.setHours(23, 59, 59, 999)
+                                  return date > today || 
+                                         date.getMonth() + 1 !== selectedMonth || 
+                                         date.getFullYear() !== selectedYear
+                                }}
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        </motion.div>
+                      )}
+                    </div>
+                    
+                    {/* Filter Summary - on separate line */}
+                    {dateFilter !== 'month' && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-sm text-muted-foreground"
+                      >
+                        Showing {filteredExpenses.length} expense{filteredExpenses.length !== 1 ? 's' : ''}
+                        {dateFilter === 'week' && selectedDate && (
+                          <span className="ml-1">
+                            for the week of {format(selectedDate, "MMMM d, yyyy")}
+                          </span>
+                        )}
+                      </motion.div>
+                    )}
+                  </div>
+                </>
               )}
             </CardHeader>
             <AnimatePresence>
@@ -616,9 +775,14 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
                   className="overflow-hidden"
                 >
                   <CardContent className="relative z-10" id="expenses-content">
-                    {expenses.length === 0 ? (
+                    {filteredExpenses.length === 0 ? (
                       <p className="text-center text-muted-foreground py-8">
-                        No expenses yet. Add your first expense above!
+                        {dateFilter === 'day' 
+                          ? `No expenses for ${format(selectedDate, "PPP")}`
+                          : dateFilter === 'week'
+                          ? `No expenses for the week of ${format(selectedDate, "PPP")}`
+                          : "No expenses yet. Add your first expense above!"
+                        }
                       </p>
                     ) : (
                       <div className="space-y-3">
@@ -669,10 +833,10 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
                     )}
                     
                     {/* Pagination Controls */}
-                    {expenses.length > itemsPerPage && (
+                    {filteredExpenses.length > itemsPerPage && (
                       <div className="flex items-center justify-between mt-6 pt-4 border-t">
                         <p className="text-sm text-muted-foreground">
-                          Showing {startIndex + 1}-{Math.min(endIndex, expenses.length)} of {expenses.length} expenses
+                          Showing {startIndex + 1}-{Math.min(endIndex, filteredExpenses.length)} of {filteredExpenses.length} expenses
                         </p>
                         <div className="flex items-center gap-2">
                           <Button
@@ -752,11 +916,22 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
               )}
             </AnimatePresence>
           </Card>
+          </motion.div>
         </TabsContent>
 
         <TabsContent value="visualization">
-          <div className="space-y-6">
-            {/* Analytics & Insights Chart */}
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            transition={{ 
+              duration: 0.4,
+              ease: "easeOut",
+              scale: { duration: 0.3 }
+            }}
+          >
+            <div className="space-y-6">
+              {/* Analytics & Insights Chart */}
             <Card className="relative backdrop-blur-xl bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 border-white/20 dark:border-white/10 rounded-3xl overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-blue-500/5 dark:from-purple-500/10 dark:to-blue-500/10" />
               
@@ -911,10 +1086,21 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
               </AnimatePresence>
             </Card>
           </div>
+          </motion.div>
         </TabsContent>
 
         <TabsContent value="budget">
-          <Card className="relative backdrop-blur-xl bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 border-white/20 dark:border-white/10 rounded-3xl overflow-hidden">
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            transition={{ 
+              duration: 0.4,
+              ease: "easeOut",
+              scale: { duration: 0.3 }
+            }}
+          >
+            <Card className="relative backdrop-blur-xl bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 border-white/20 dark:border-white/10 rounded-3xl overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 dark:from-indigo-500/10 dark:to-purple-500/10" />
             
             <CardHeader className="relative z-10">
@@ -1100,6 +1286,7 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
               )}
             </CardContent>
           </Card>
+          </motion.div>
         </TabsContent>
       </Tabs>
     </div>
