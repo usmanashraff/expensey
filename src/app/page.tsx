@@ -164,7 +164,7 @@ export default function Home() {
           </motion.div>
         </motion.div>
 
-        <div className="grid md:grid-cols-3 gap-8 mt-32 max-w-5xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-8 mt-32 max-w-5xl mx-auto md:items-stretch">
           {[
             {
               icon: TrendingUp,
@@ -194,10 +194,10 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: feature.delay }}
               whileHover={{ scale: 1.05, y: -5 }}
-              className="relative group"
+              className="relative group flex"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-purple-400/20 dark:from-blue-600/10 dark:to-purple-600/10 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-300" />
-              <div className="relative text-center p-8 rounded-3xl bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/30 backdrop-blur-lg border border-white/20 dark:border-white/10 shadow-xl">
+              <div className="relative text-center p-8 rounded-3xl bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/30 backdrop-blur-lg border border-white/20 dark:border-white/10 shadow-xl flex-1 flex flex-col">
                 <motion.div 
                   className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-${feature.color}-100 dark:bg-${feature.color}-900/30 mb-4 relative`}
                   whileHover={{ rotate: 360 }}
@@ -207,7 +207,7 @@ export default function Home() {
                   <div className={`absolute inset-0 rounded-2xl bg-${feature.color}-400/20 blur-lg`} />
                 </motion.div>
                 <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
-                <p className="text-muted-foreground">
+                <p className="text-muted-foreground flex-1">
                   {feature.description}
                 </p>
               </div>
