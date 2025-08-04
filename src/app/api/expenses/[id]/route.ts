@@ -92,3 +92,47 @@ export async function PUT(
     return NextResponse.json({ error: 'Failed to update expense' }, { status: 500 })
   }
 }
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const userId = await getUserId()
+    const { id } = await params
+    const body = await request.json()
+    
+    // First check if the expense belongs to the user
+    const expense = await prisma.expense.findFirst({
+      where: {
+        id,
+        userId,
+      },
+    })
+    
+    if (!expense) {
+      return NextResponse.json({ error: 'Expense not found' }, { status: 404 })
+    }
+    
+    // Update the expense with both receipt and receipts fields
+    const updateData: any = {}
+    
+    if ('receipt' in body) {
+      updateData.receipt = body.receipt
+    }
+    
+    if ('receipts' in body) {
+      updateData.receipts = body.receipts
+    }
+    
+    const updatedExpense = await prisma.expense.update({
+      where: { id },
+      data: updateData,
+    })
+    
+    return NextResponse.json(updatedExpense)
+  } catch (error) {
+    console.error('Error updating expense:', error)
+    return NextResponse.json({ error: 'Failed to update expense' }, { status: 500 })
+  }
+}

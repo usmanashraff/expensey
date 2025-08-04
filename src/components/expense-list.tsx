@@ -17,11 +17,13 @@ import { toast } from 'sonner'
 import { ExpenseCharts } from './expense-charts'
 import { SavingsChart } from './savings-chart'
 import { UtilityCharts } from './utility-charts'
-import { ChevronDown, ChevronUp, BarChart3, ChevronLeft, ChevronRight, Calendar, Receipt, Zap, Eye, EyeOff, TrendingUp, PiggyBank, Wallet, Trash2, X, Target } from 'lucide-react'
+import { ChevronDown, ChevronUp, BarChart3, ChevronLeft, ChevronRight, Calendar, Receipt, Zap, Eye, EyeOff, TrendingUp, PiggyBank, Wallet, Trash2, X, Target, Download, Loader2 } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { BudgetDialog } from './budget-dialog'
 import { Progress } from '@/components/ui/progress'
 import { formatCurrencyWithMask } from '@/lib/currency'
+import { DeleteExpenseDialog } from './delete-expense-dialog'
+import { ExpenseDetailsDialog } from './expense-details-dialog'
 
 interface ExpenseListProps {
   refreshTrigger: number
@@ -58,6 +60,12 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
     // Initialize with the first day of the selected month
     return new Date(selectedYear, selectedMonth - 1, 1)
   })
+  const [selectedWeek, setSelectedWeek] = useState<number>(1)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [expenseToDelete, setExpenseToDelete] = useState<Expense | null>(null)
+  const [deletingExpenseId, setDeletingExpenseId] = useState<string | null>(null)
+  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false)
+  const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null)
   
   const currentMonth = new Date().getMonth() + 1
   const currentYear = new Date().getFullYear()
@@ -79,6 +87,37 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
     { value: 11, label: 'November' },
     { value: 12, label: 'December' },
   ]
+
+  // Helper function to get week boundaries for a month
+  const getWeekBoundaries = (weekNumber: number, month: number, year: number) => {
+    const firstDay = new Date(year, month - 1, 1)
+    const startOfWeek = new Date(firstDay)
+    startOfWeek.setDate(1 + (weekNumber - 1) * 7)
+    
+    const endOfWeek = new Date(startOfWeek)
+    endOfWeek.setDate(startOfWeek.getDate() + 6)
+    
+    // Ensure end of week doesn't go into next month
+    const lastDayOfMonth = new Date(year, month, 0)
+    if (endOfWeek > lastDayOfMonth) {
+      endOfWeek.setTime(lastDayOfMonth.getTime())
+    }
+    
+    return { start: startOfWeek, end: endOfWeek }
+  }
+  
+  // Get the current week number for a given date within a month
+  const getWeekOfMonth = (date: Date) => {
+    const dayOfMonth = date.getDate()
+    return Math.ceil(dayOfMonth / 7)
+  }
+  
+  // Check if a week is in the future
+  const isWeekInFuture = (weekNumber: number, month: number, year: number) => {
+    const now = new Date()
+    const { start } = getWeekBoundaries(weekNumber, month, year)
+    return start > now
+  }
 
   const fetchExpenses = async () => {
     try {
@@ -107,26 +146,18 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
       return expenses
     }
     
-    const now = new Date()
-    const filterDate = selectedDate
-    
     return expenses.filter(expense => {
       const expenseDate = new Date(expense.date)
       
       if (dateFilter === 'day') {
-        return expenseDate.toDateString() === filterDate.toDateString()
+        return expenseDate.toDateString() === selectedDate.toDateString()
       } else if (dateFilter === 'week') {
-        // Get start of week (Sunday)
-        const startOfWeek = new Date(filterDate)
-        startOfWeek.setDate(filterDate.getDate() - filterDate.getDay())
-        startOfWeek.setHours(0, 0, 0, 0)
+        // Use the selected week boundaries
+        const { start, end } = getWeekBoundaries(selectedWeek, selectedMonth, selectedYear)
+        start.setHours(0, 0, 0, 0)
+        end.setHours(23, 59, 59, 999)
         
-        // Get end of week (Saturday)
-        const endOfWeek = new Date(startOfWeek)
-        endOfWeek.setDate(startOfWeek.getDate() + 6)
-        endOfWeek.setHours(23, 59, 59, 999)
-        
-        return expenseDate >= startOfWeek && expenseDate <= endOfWeek
+        return expenseDate >= start && expenseDate <= end
       }
       
       return true
@@ -184,27 +215,101 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
     fetchBudget()
     // Update selectedDate to the first day of the new month
     setSelectedDate(new Date(selectedYear, selectedMonth - 1, 1))
+    // Reset to week 1 when month changes
+    setSelectedWeek(1)
   }, [refreshTrigger, selectedMonth, selectedYear])
 
   useEffect(() => {
     fetchAvailableMonths()
   }, [refreshTrigger])
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this expense?')) return
+  const handleDeleteClick = (expense: Expense) => {
+    setExpenseToDelete(expense)
+    setDeleteDialogOpen(true)
+  }
 
+  const handleExpenseClick = (expense: Expense) => {
+    setSelectedExpense(expense)
+    setDetailsDialogOpen(true)
+  }
+
+  const handleDeleteFromDetails = async () => {
+    if (!selectedExpense) return
+    
+    setExpenseToDelete(selectedExpense)
+    setDetailsDialogOpen(false)
+    setDeleteDialogOpen(true)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!expenseToDelete) return
+
+    setDeletingExpenseId(expenseToDelete.id)
+    
     try {
-      const response = await fetch(`/api/expenses/${id}`, {
+      const response = await fetch(`/api/expenses/${expenseToDelete.id}`, {
         method: 'DELETE',
       })
       
       if (!response.ok) throw new Error('Failed to delete')
       
-      fetchExpenses()
-      fetchSavings() // Refresh savings in case a SAVINGS expense was deleted
+      await fetchExpenses()
+      await fetchSavings() // Refresh savings in case a SAVINGS expense was deleted
       toast.success('Expense deleted successfully!')
+      setDeleteDialogOpen(false)
     } catch (error) {
       toast.error('Failed to delete expense')
+    } finally {
+      setDeletingExpenseId(null)
+      setExpenseToDelete(null)
+    }
+  }
+
+  const handleDownloadReceipt = (expense: Expense) => {
+    if (!expense.receipt) return
+
+    try {
+      // Extract base64 data and file type
+      const matches = expense.receipt.match(/^data:(.+);base64,(.+)$/)
+      if (!matches) {
+        toast.error('Invalid receipt format')
+        return
+      }
+
+      const mimeType = matches[1]
+      const base64Data = matches[2]
+      
+      // Convert base64 to blob
+      const byteCharacters = atob(base64Data)
+      const byteNumbers = new Array(byteCharacters.length)
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i)
+      }
+      const byteArray = new Uint8Array(byteNumbers)
+      const blob = new Blob([byteArray], { type: mimeType })
+
+      // Create download link
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      
+      // Generate filename
+      const extension = mimeType.includes('pdf') ? 'pdf' : 
+                       mimeType.includes('png') ? 'png' : 
+                       mimeType.includes('jpeg') || mimeType.includes('jpg') ? 'jpg' : 
+                       'webp'
+      const date = new Date(expense.date).toISOString().split('T')[0]
+      a.download = `receipt_${expense.description.replace(/\s+/g, '_')}_${date}.${extension}`
+      
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+      
+      toast.success('Receipt downloaded!')
+    } catch (error) {
+      console.error('Failed to download receipt:', error)
+      toast.error('Failed to download receipt')
     }
   }
 
@@ -680,37 +785,26 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
                         </Select>
                       </div>
                       
-                      {dateFilter !== 'month' && (
+                      {dateFilter === 'day' && (
                         <motion.div
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
                           className="flex items-center gap-2"
                         >
-                          <Label className="text-sm font-medium">
-                            {dateFilter === 'day' ? 'Date:' : 'Week of:'}
-                          </Label>
+                          <Label className="text-sm font-medium">Date:</Label>
                           <Popover>
                             <PopoverTrigger asChild>
                               <Button
                                 variant="outline"
                                 className={cn(
-                                  dateFilter === 'week' ? "w-[280px]" : "w-[200px]",
+                                  "w-[200px]",
                                   "h-9 justify-start text-left font-normal",
                                   !selectedDate && "text-muted-foreground"
                                 )}
                               >
                                 <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
                                 <span className="truncate">
-                                  {selectedDate ? (
-                                    dateFilter === 'day' 
-                                      ? format(selectedDate, "PPP")
-                                      : format(selectedDate, "MMM d") + " - " + format(
-                                          new Date(selectedDate.getTime() + 6 * 24 * 60 * 60 * 1000),
-                                          "MMM d, yyyy"
-                                        )
-                                  ) : (
-                                    "Pick a date"
-                                  )}
+                                  {selectedDate ? format(selectedDate, "PPP") : "Pick a date"}
                                 </span>
                               </Button>
                             </PopoverTrigger>
@@ -739,6 +833,43 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
                           </Popover>
                         </motion.div>
                       )}
+                      
+                      {dateFilter === 'week' && (
+                        <motion.div
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          className="flex items-center gap-2"
+                        >
+                          <Label className="text-sm font-medium">Week:</Label>
+                          <Select
+                            value={selectedWeek.toString()}
+                            onValueChange={(value) => {
+                              setSelectedWeek(parseInt(value))
+                              setCurrentPage(1) // Reset pagination
+                            }}
+                          >
+                            <SelectTrigger className="w-[200px] h-9">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {[1, 2, 3, 4].map(week => {
+                                const { start, end } = getWeekBoundaries(week, selectedMonth, selectedYear)
+                                const isDisabled = isWeekInFuture(week, selectedMonth, selectedYear)
+                                return (
+                                  <SelectItem 
+                                    key={week} 
+                                    value={week.toString()}
+                                    disabled={isDisabled}
+                                  >
+                                    Week {week} ({format(start, "MMM d")} - {format(end, "MMM d")})
+                                    {isDisabled && " (Future)"}
+                                  </SelectItem>
+                                )
+                              })}
+                            </SelectContent>
+                          </Select>
+                        </motion.div>
+                      )}
                     </div>
                     
                     {/* Filter Summary - on separate line */}
@@ -749,9 +880,14 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
                         className="text-sm text-muted-foreground"
                       >
                         Showing {filteredExpenses.length} expense{filteredExpenses.length !== 1 ? 's' : ''}
-                        {dateFilter === 'week' && selectedDate && (
+                        {dateFilter === 'week' && (
                           <span className="ml-1">
-                            for the week of {format(selectedDate, "MMMM d, yyyy")}
+                            for Week {selectedWeek} of {format(new Date(selectedYear, selectedMonth - 1), "MMMM yyyy")}
+                          </span>
+                        )}
+                        {dateFilter === 'day' && (
+                          <span className="ml-1">
+                            for {format(selectedDate, "MMMM d, yyyy")}
                           </span>
                         )}
                       </motion.div>
@@ -778,7 +914,7 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
                         {dateFilter === 'day' 
                           ? `No expenses for ${format(selectedDate, "PPP")}`
                           : dateFilter === 'week'
-                          ? `No expenses for the week of ${format(selectedDate, "PPP")}`
+                          ? `No expenses for Week ${selectedWeek} of ${format(new Date(selectedYear, selectedMonth - 1), "MMMM yyyy")}`
                           : "No expenses yet. Add your first expense above!"
                         }
                       </p>
@@ -792,7 +928,8 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
                         exit={{ opacity: 0, x: -100 }}
                         transition={{ duration: 0.3, delay: index * 0.05 }}
                         whileHover={{ scale: 1.01 }}
-                        className="flex items-center justify-between p-4 rounded-2xl border bg-white/30 dark:bg-white/5 backdrop-blur-sm hover:shadow-lg transition-all duration-300"
+                        className="flex items-center justify-between p-4 rounded-2xl border bg-white/30 dark:bg-white/5 backdrop-blur-sm hover:shadow-lg transition-all duration-300 cursor-pointer"
+                        onClick={() => handleExpenseClick(expense)}
                       >
                         <div className="flex-1">
                           <div className="flex items-center gap-3 flex-wrap">
@@ -814,14 +951,43 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
                           <p className={`text-lg font-semibold bg-gradient-to-r ${categoryConfig[expense.category].color} bg-clip-text text-transparent`}>
                             {formatAmount(expense.amount, expense.currency || 'PKR')}
                           </p>
+                          {expense.receipt && (
+                            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleDownloadReceipt(expense)
+                                }}
+                                className="text-blue-600 hover:text-blue-700 hover:bg-blue-100 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/20"
+                                title="Download receipt"
+                              >
+                                <Download className="h-4 w-4" />
+                              </Button>
+                            </motion.div>
+                          )}
                           <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleDelete(expense.id)}
-                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleDeleteClick(expense)
+                              }}
+                              disabled={deletingExpenseId === expense.id}
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10 disabled:opacity-50"
                             >
-                              <Trash2 className="h-4 w-4" />
+                              {deletingExpenseId === expense.id ? (
+                                <motion.div
+                                  animate={{ rotate: 360 }}
+                                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                                >
+                                  <Loader2 className="h-4 w-4" />
+                                </motion.div>
+                              ) : (
+                                <Trash2 className="h-4 w-4" />
+                              )}
                             </Button>
                           </motion.div>
                         </div>
@@ -1289,6 +1455,34 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
           </motion.div>
         </TabsContent>
       </Tabs>
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteExpenseDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDeleteConfirm}
+        expense={expenseToDelete ? {
+          description: expenseToDelete.description,
+          amount: expenseToDelete.amount,
+          currency: expenseToDelete.currency || 'PKR',
+          category: expenseToDelete.category
+        } : null}
+        showAmounts={showAmounts}
+      />
+
+      {/* Expense Details Dialog */}
+      <ExpenseDetailsDialog
+        open={detailsDialogOpen}
+        onOpenChange={setDetailsDialogOpen}
+        expense={selectedExpense}
+        showAmounts={showAmounts}
+        onDelete={handleDeleteFromDetails}
+        onUpdate={() => {
+          fetchExpenses()
+          setSelectedExpense(null)
+          setDetailsDialogOpen(false)
+        }}
+      />
     </div>
   )
 }

@@ -21,9 +21,24 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const userId = await getUserId()
+    
+    // Log request size
+    const contentLength = request.headers.get('content-length')
+    console.log('Request content-length:', contentLength)
+    
     const body = await request.json()
-    console.log('Received expense data:', body)
-    const { amount, description, category, subcategory, date, currency } = body
+    console.log('Received expense data (without receipt):', {
+      amount: body.amount,
+      description: body.description,
+      category: body.category,
+      subcategory: body.subcategory,
+      date: body.date,
+      currency: body.currency,
+      hasReceipt: !!body.receipt,
+      receiptSize: body.receipt ? body.receipt.length : 0
+    })
+    
+    const { amount, description, category, subcategory, date, currency, receipt, receipts } = body
 
     if (!amount || !description || !category) {
       console.log('Missing fields:', { amount: !amount, description: !description, category: !category })
@@ -60,6 +75,8 @@ export async function POST(request: NextRequest) {
       date: expenseDate,
       userId,
       currency: currency || 'PKR',
+      hasReceipt: !!receipt,
+      receiptSize: receipt ? receipt.length : 0
     })
     
     const expense = await prisma.expense.create({
@@ -71,6 +88,8 @@ export async function POST(request: NextRequest) {
         date: expenseDate,
         userId,
         currency: currency || 'PKR',
+        receipt: receipt || null,
+        receipts: receipts || [],
       },
     })
 

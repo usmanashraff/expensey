@@ -30,6 +30,8 @@ model Expense {
   date        DateTime        @default(now())
   userId      String
   currency    String          @default("PKR")
+  receipt     String?         @db.Text // Store base64 image or URL (legacy)
+  receipts    String[]        @default([]) // Array of base64 images
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
   

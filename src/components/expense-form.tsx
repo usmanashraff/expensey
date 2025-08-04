@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Calendar } from '@/components/ui/calendar'
-import { CalendarIcon, PlusCircle, Wallet } from 'lucide-react'
+import { CalendarIcon, PlusCircle, Wallet, Paperclip, X } from 'lucide-react'
 import { format } from 'date-fns'
 import { ExpenseCategory } from '@/generated/prisma'
 import { toast } from 'sonner'
@@ -35,11 +35,49 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger }: ExpenseFo
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [utilityTypes, setUtilityTypes] = useState<UtilityType[]>([])
   const [loadingUtilities, setLoadingUtilities] = useState(true)
+  const [receipt, setReceipt] = useState<File | null>(null)
+  const [receiptPreview, setReceiptPreview] = useState<string | null>(null)
   const { settings } = useUserSettings()
 
   useEffect(() => {
     setCurrency(settings.defaultCurrency)
   }, [settings.defaultCurrency])
+
+  const handleReceiptUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf']
+    if (!validTypes.includes(file.type)) {
+      toast.error('Please upload a valid image (JPEG, PNG, WebP) or PDF file')
+      return
+    }
+
+    // Validate file size (2MB limit to account for base64 encoding overhead)
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('Receipt file size must be less than 2MB')
+      return
+    }
+
+    setReceipt(file)
+    
+    // Create preview for images
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setReceiptPreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    } else {
+      setReceiptPreview(null)
+    }
+  }
+
+  const removeReceipt = () => {
+    setReceipt(null)
+    setReceiptPreview(null)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -58,6 +96,18 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger }: ExpenseFo
     setIsSubmitting(true)
 
     try {
+      let receiptData = null
+      
+      // Convert receipt to base64 if present
+      if (receipt) {
+        const reader = new FileReader()
+        receiptData = await new Promise<string>((resolve, reject) => {
+          reader.onloadend = () => resolve(reader.result as string)
+          reader.onerror = reject
+          reader.readAsDataURL(receipt)
+        })
+      }
+
       const payload = {
         amount: parseFloat(amount),
         description,
@@ -65,6 +115,8 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger }: ExpenseFo
         subcategory: category === 'SAVINGS' ? null : utilityType || null,
         date: date?.toISOString(),
         currency: currency,
+        receipt: receiptData,
+        receipts: receiptData ? [receiptData] : [],
       }
       
       console.log('Sending expense data:', payload)
@@ -88,6 +140,8 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger }: ExpenseFo
       setCategory('')
       setUtilityType('')
       setDate(new Date())
+      setReceipt(null)
+      setReceiptPreview(null)
       toast.success('Expense added successfully!')
       onExpenseAdded()
     } catch (error) {
@@ -284,10 +338,73 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger }: ExpenseFo
             </p>
           </motion.div>
 
+          <motion.div 
+            className="space-y-2"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3, delay: 0.6 }}
+          >
+            <Label htmlFor="receipt">Receipt (Optional)</Label>
+            <div className="space-y-2">
+              {!receipt && (
+                <div className="flex items-center justify-center w-full">
+                  <label htmlFor="receipt-upload" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-white/50 dark:bg-white/5 hover:bg-white/70 dark:hover:bg-white/10 transition-colors">
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <Paperclip className="w-8 h-8 mb-2 text-gray-400" />
+                      <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                        <span className="font-semibold">Click to upload</span> receipt
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">PNG, JPG, WebP or PDF (MAX. 2MB)</p>
+                    </div>
+                    <input
+                      id="receipt-upload"
+                      type="file"
+                      className="hidden"
+                      accept="image/jpeg,image/jpg,image/png,image/webp,application/pdf"
+                      onChange={handleReceiptUpload}
+                    />
+                  </label>
+                </div>
+              )}
+              
+              {receipt && (
+                <div className="relative p-4 border rounded-lg bg-white/50 dark:bg-white/5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <Paperclip className="w-5 h-5 text-gray-400" />
+                      <div>
+                        <p className="text-sm font-medium">{receipt.name}</p>
+                        <p className="text-xs text-gray-500">
+                          {(receipt.size / 1024).toFixed(1)} KB
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={removeReceipt}
+                      className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                  {receiptPreview && (
+                    <div className="mt-3">
+                      <img
+                        src={receiptPreview}
+                        alt="Receipt preview"
+                        className="w-full h-32 object-cover rounded"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </motion.div>
+
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.6 }}
+            transition={{ duration: 0.3, delay: 0.7 }}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
