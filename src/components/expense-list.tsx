@@ -1,6 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+// PDF generation types
+declare module 'jspdf' {
+  interface jsPDF {
+    autoTable: (options: any) => jsPDF;
+  }
+}
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -18,7 +24,7 @@ import { toast } from 'sonner'
 import { ExpenseCharts } from './expense-charts'
 import { SavingsChart } from './savings-chart'
 import { UtilityCharts } from './utility-charts'
-import { ChevronDown, ChevronUp, BarChart3, ChevronLeft, ChevronRight, Calendar, Receipt, Zap, Eye, EyeOff, TrendingUp, PiggyBank, Wallet, Trash2, X, Target, Download, Loader2, Menu, Settings } from 'lucide-react'
+import { ChevronDown, ChevronUp, BarChart3, ChevronLeft, ChevronRight, Calendar, Receipt, Zap, Eye, EyeOff, TrendingUp, PiggyBank, Wallet, Trash2, X, Target, Download, Loader2, Menu, Settings, FileDown } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { BudgetDialog } from './budget-dialog'
 import { Progress } from '@/components/ui/progress'
@@ -451,6 +457,353 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities }: ExpenseListProp
     // Always allow current month
     if (month === currentMonth && year === currentYear) return true
     return isMonthAvailable(month, year)
+  }
+
+  const exportToPDF = async () => {
+    try {
+      // Dynamic import to handle client-side loading
+      const jsPDFModule = await import('jspdf')
+      const jsPDF = jsPDFModule.default
+      
+      // Import autoTable plugin - this extends jsPDF prototype
+      await import('jspdf-autotable')
+      
+      const pdf = new jsPDF()
+      
+      // Helper function to clean text and prevent special characters
+      const cleanText = (text: string) => {
+        return text.replace(/[^\x20-\x7E]/g, '').replace(/[^\w\s\-\(\)\/\.,]/g, '').trim()
+      }
+      
+      // Define colors matching the actual chart components
+      const colors = {
+        primary: [59, 130, 246], // Blue
+        need: [251, 191, 36], // amber-400 - vibrant yellow (from ExpenseCharts)
+        want: [251, 113, 133], // rose-400 - vibrant pink-red (from ExpenseCharts) 
+        selfDev: [52, 211, 153], // emerald-400 - vibrant green (from ExpenseCharts)
+        savings: [167, 139, 250], // violet-400 - vibrant purple (from ExpenseCharts)
+        background: [248, 250, 252], // Light gray
+        text: [15, 23, 42], // Dark slate
+        accent: [147, 51, 234] // Purple
+      }
+      
+      const categoryLabels = {
+        NEED: 'Need',
+        WANT: 'Want', 
+        SELF_DEVELOPMENT: 'Self Development',
+        SAVINGS: 'Savings'
+      }
+      
+      const categoryColors = {
+        NEED: colors.need,
+        WANT: colors.want,
+        SELF_DEVELOPMENT: colors.selfDev,
+        SAVINGS: colors.savings
+      }
+      
+      // Header with gradient-like background
+      pdf.setFillColor(...colors.primary)
+      pdf.rect(0, 0, 210, 50, 'F')
+      
+      // Title
+      pdf.setTextColor(255, 255, 255)
+      pdf.setFontSize(24)
+      pdf.setFont('helvetica', 'bold')
+      pdf.text('EXPENSEY - Monthly Expense Summary', 20, 25)
+      
+      // Subtitle
+      pdf.setFontSize(16)
+      pdf.setFont('helvetica', 'normal')
+      pdf.text(monthName, 20, 40)
+      
+      // Reset text color
+      pdf.setTextColor(...colors.text)
+      let yPosition = 70
+      
+      // ==== SECTION 1: OVERALL MONTHLY SUMMARY ====
+      pdf.setFillColor(...colors.background)
+      pdf.rect(15, yPosition - 5, 180, 85, 'F')
+      pdf.setDrawColor(200, 200, 200)
+      pdf.rect(15, yPosition - 5, 180, 85, 'S')
+      
+      pdf.setFontSize(16)
+      pdf.setFont('helvetica', 'bold')
+      pdf.setTextColor(...colors.accent)
+      pdf.text('Overall Monthly Summary', 25, yPosition + 10)
+      
+      pdf.setTextColor(...colors.text)
+      pdf.setFontSize(12)
+      pdf.setFont('helvetica', 'normal')
+      
+      const totalAmount = filteredExpenses.reduce((sum, expense) => sum + expense.amount, 0)
+      const summaryData = [
+        [`Total Expenses:`, `${filteredExpenses.length} transactions`],
+        [`Total Amount Spent:`, `PKR ${totalAmount.toLocaleString()}`],
+        [`Monthly Savings:`, `PKR ${monthlySavings.toLocaleString()}`],
+        [`Period:`, monthName]
+      ]
+      
+      yPosition += 25
+      summaryData.forEach(([label, value]) => {
+        pdf.setFont('helvetica', 'bold')
+        pdf.text(label, 25, yPosition)
+        pdf.setFont('helvetica', 'normal')
+        pdf.text(value, 120, yPosition)
+        yPosition += 12
+      })
+      
+      yPosition += 20
+      
+      // ==== SECTION 2: CATEGORY BREAKDOWN WITH VISUAL BARS ====
+      pdf.setFillColor(...colors.background)
+      pdf.rect(15, yPosition - 5, 180, 100, 'F')
+      pdf.rect(15, yPosition - 5, 180, 100, 'S')
+      
+      pdf.setFontSize(16)
+      pdf.setFont('helvetica', 'bold')
+      pdf.setTextColor(...colors.accent)
+      pdf.text('Category Breakdown', 25, yPosition + 10)
+      
+      yPosition += 25
+      
+      // Calculate percentages and create visual bars
+      Object.entries(expensesByCategory).forEach(([category, amount]) => {
+        const percentage = totalAmount > 0 ? (amount / totalAmount) * 100 : 0
+        const label = categoryLabels[category as keyof typeof categoryLabels] || category
+        const color = categoryColors[category as keyof typeof categoryColors] || colors.primary
+        
+        // Category name and amount
+        pdf.setTextColor(...colors.text)
+        pdf.setFont('helvetica', 'bold')
+        pdf.text(label, 25, yPosition)
+        pdf.setFont('helvetica', 'normal')
+        pdf.text(`PKR ${amount.toLocaleString()} (${percentage.toFixed(1)}%)`, 120, yPosition)
+        
+        // Visual bar
+        const barWidth = (percentage / 100) * 120
+        pdf.setFillColor(...color)
+        pdf.rect(25, yPosition + 3, barWidth, 6, 'F')
+        pdf.setDrawColor(...color)
+        pdf.rect(25, yPosition + 3, 120, 6, 'S')
+        
+        yPosition += 18
+      })
+      
+      
+      // ==== SAVINGS SUMMARY ====
+      if (yPosition + 90 > 280) { // Check if we need a new page (increased space check)
+        pdf.addPage()
+        yPosition = 30
+      }
+      
+      pdf.setFillColor(...colors.background)
+      pdf.rect(15, yPosition - 5, 180, 85, 'F') // Increased container height for 5 items
+      pdf.rect(15, yPosition - 5, 180, 85, 'S')
+      
+      pdf.setFontSize(16)
+      pdf.setFont('helvetica', 'bold')
+      pdf.setTextColor(...colors.accent)
+      pdf.text('Savings Summary', 25, yPosition + 10)
+      
+      yPosition += 25
+      
+      // Enhanced savings metrics with overall savings
+      const savingsData = [
+        ['Monthly Savings:', `PKR ${monthlySavings.toLocaleString()}`],
+        ['Lifetime Savings:', `PKR ${totalSavings.toLocaleString()}`],
+        ['Total Spent:', `PKR ${totalAmount.toLocaleString()}`],
+        ['Savings Rate:', `${totalAmount > 0 ? ((monthlySavings / (totalAmount + monthlySavings)) * 100).toFixed(1) : 0}%`],
+        ['Net Cash Flow:', `PKR ${(monthlySavings - totalAmount).toLocaleString()}`]
+      ]
+      
+      pdf.setFontSize(11)
+      savingsData.forEach(([label, value], index) => {
+        const y = yPosition + index * 12 // Increased spacing between lines
+        
+        pdf.setFont('helvetica', 'bold')
+        pdf.setTextColor(...colors.text)
+        pdf.text(label, 25, y)
+        
+        pdf.setFont('helvetica', 'normal')
+        pdf.setTextColor(...colors.primary)
+        pdf.text(value, 120, y)
+      })
+      
+      yPosition += 65 // Increased to account for larger container with 5 items
+      
+      // ==== NEW PAGE FOR EXPENSE TABLE ====
+      pdf.addPage()
+      yPosition = 30
+      
+      pdf.setFillColor(...colors.background)
+      pdf.rect(15, yPosition - 5, 180, 25, 'F')
+      pdf.rect(15, yPosition - 5, 180, 25, 'S')
+      
+      pdf.setFontSize(16)
+      pdf.setFont('helvetica', 'bold')
+      pdf.setTextColor(...colors.accent)
+      pdf.text('Detailed Expense List', 25, yPosition + 10)
+      
+      yPosition += 35
+      
+      if (filteredExpenses.length > 0) {
+        // Check if autoTable is available
+        if (typeof (pdf as any).autoTable === 'function') {
+          // Helper function to clean text and prevent special characters
+          const cleanText = (text: string) => {
+            return text.replace(/[^\x20-\x7E]/g, '').trim()
+          }
+          
+          const tableData = filteredExpenses.map(expense => {
+            const categoryLabel = categoryLabels[expense.category as keyof typeof categoryLabels] || expense.category
+            return [
+              new Date(expense.date).toLocaleDateString(),
+              cleanText(expense.description),
+              cleanText(categoryLabel),
+              cleanText(expense.subcategory || 'N/A'),
+              `PKR ${expense.amount.toLocaleString()}`
+            ]
+          })
+          
+          // Use autoTable for the expenses table
+          ;(pdf as any).autoTable({
+            head: [['Date', 'Description', 'Category', 'Utility Type', 'Amount']],
+            body: tableData,
+            startY: yPosition,
+            styles: { 
+              fontSize: 10,
+              cellPadding: 6,
+              lineColor: [200, 200, 200],
+              lineWidth: 0.5
+            },
+            headStyles: { 
+              fillColor: colors.primary,
+              textColor: [255, 255, 255],
+              fontStyle: 'bold',
+              fontSize: 11
+            },
+            alternateRowStyles: {
+              fillColor: [248, 250, 252]
+            },
+            columnStyles: {
+              0: { cellWidth: 22 }, // Date
+              1: { cellWidth: 50 }, // Description
+              2: { cellWidth: 30 }, // Category
+              3: { cellWidth: 45 }, // Utility Type (increased)
+              4: { cellWidth: 30, halign: 'right' } // Amount
+            },
+            margin: { left: 15, right: 15 },
+            didParseCell: function(data: any) {
+              // Color code rows based on category
+              if (data.section === 'body') {
+                const category = data.row.raw[2]
+                let color = colors.primary
+                
+                if (category === 'Need') color = colors.need
+                else if (category === 'Want') color = colors.want
+                else if (category === 'Self Development') color = colors.selfDev
+                else if (category === 'Savings') color = colors.savings
+                
+                // Add subtle color to category column
+                if (data.column.index === 2) {
+                  data.cell.styles.fillColor = [...color, 0.1] // Very light background
+                  data.cell.styles.textColor = color
+                  data.cell.styles.fontStyle = 'bold'
+                }
+              }
+            }
+          })
+        } else {
+          // Fallback method with better formatting
+          pdf.setFontSize(11)
+          pdf.setFont('helvetica', 'bold')
+          
+          // Table headers with colored background
+          pdf.setFillColor(...colors.primary)
+          pdf.rect(15, yPosition - 2, 180, 12, 'F')
+          pdf.setTextColor(255, 255, 255)
+          pdf.text('Date', 18, yPosition + 6)
+          pdf.text('Description', 45, yPosition + 6)
+          pdf.text('Category', 100, yPosition + 6)
+          pdf.text('Utility Type', 135, yPosition + 6)
+          pdf.text('Amount', 175, yPosition + 6)
+          
+          yPosition += 20
+          pdf.setTextColor(...colors.text)
+          pdf.setFont('helvetica', 'normal')
+          pdf.setFontSize(10)
+          
+          filteredExpenses.slice(0, 25).forEach((expense, index) => {
+            // Alternate row colors
+            if (index % 2 === 0) {
+              pdf.setFillColor(248, 250, 252)
+              pdf.rect(15, yPosition - 4, 180, 12, 'F')
+            }
+            
+            const date = new Date(expense.date).toLocaleDateString()
+            const category = categoryLabels[expense.category as keyof typeof categoryLabels] || expense.category
+            const amount = `PKR ${expense.amount.toLocaleString()}`
+            
+            // Clean text to prevent special characters
+            const cleanText = (text: string) => text.replace(/[^\x20-\x7E]/g, '').trim()
+            const description = cleanText(expense.description.substring(0, 18))
+            const utility = cleanText((expense.subcategory || 'N/A').substring(0, 25))
+            
+            pdf.text(date, 18, yPosition + 2)
+            pdf.text(description, 45, yPosition + 2)
+            
+            // Category with color
+            const categoryColor = categoryColors[expense.category as keyof typeof categoryColors] || colors.primary
+            pdf.setTextColor(...categoryColor)
+            pdf.setFont('helvetica', 'bold')
+            pdf.text(category, 100, yPosition + 2)
+            
+            pdf.setTextColor(...colors.text)
+            pdf.setFont('helvetica', 'normal')
+            pdf.text(utility, 135, yPosition + 2)
+            pdf.text(amount, 175, yPosition + 2)
+            
+            yPosition += 12
+            
+            // Add new page if needed
+            if (yPosition > 270) {
+              pdf.addPage()
+              yPosition = 30
+            }
+          })
+          
+          if (filteredExpenses.length > 25) {
+            yPosition += 10
+            pdf.setFont('helvetica', 'italic')
+            pdf.text(`... and ${filteredExpenses.length - 25} more expenses`, 20, yPosition)
+          }
+        }
+      } else {
+        pdf.setFont('helvetica', 'italic')
+        pdf.setTextColor(128, 128, 128)
+        pdf.text('No expenses found for this month.', 25, yPosition + 20)
+      }
+      
+      // Footer on last page
+      const pageCount = pdf.getNumberOfPages()
+      for (let i = 1; i <= pageCount; i++) {
+        pdf.setPage(i)
+        pdf.setFontSize(8)
+        pdf.setFont('helvetica', 'normal')
+        pdf.setTextColor(128, 128, 128)
+        pdf.text(`Generated on ${new Date().toLocaleDateString()} - Page ${i} of ${pageCount}`, 15, 285)
+        pdf.text('Expensey - Your Personal Finance Tracker', 150, 285)
+      }
+      
+      // Save the PDF
+      const fileName = `expense-summary-${monthName.replace(/\s+/g, '-').toLowerCase()}.pdf`
+      pdf.save(fileName)
+      toast.success('PDF exported successfully!')
+      
+    } catch (error) {
+      console.error('Error exporting PDF:', error)
+      toast.error(`Failed to export PDF: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
   }
 
   const monthName = new Date(selectedYear, selectedMonth - 1).toLocaleDateString('en-US', { 
@@ -1512,6 +1865,16 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities }: ExpenseListProp
                   Today
                 </Button>
               )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={exportToPDF}
+                className="ml-1 sm:ml-2 text-xs sm:text-sm px-2 sm:px-3 hover:bg-blue-50 hover:border-blue-300 dark:hover:bg-blue-900/20"
+                title="Export monthly summary as PDF"
+              >
+                <FileDown className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                <span className="hidden sm:inline">Export PDF</span>
+              </Button>
             </div>
           </div>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">

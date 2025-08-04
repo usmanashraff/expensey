@@ -3,22 +3,42 @@
 import * as React from "react"
 import { Moon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
-
-import { Button } from "@/components/ui/button"
+import { motion } from "framer-motion"
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme()
+  const isDark = theme === "dark"
 
   return (
-    <Button
-      variant="ghost"
-      size="icon"
+    <motion.button
       onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-      className="h-9 w-9"
+      className="relative flex items-center justify-between w-16 h-8 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-gray-700 dark:to-gray-600 rounded-full p-1 transition-colors duration-300 hover:shadow-lg"
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
     >
-      <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-      <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+      {/* Background track */}
+      <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-200/50 to-purple-200/50 dark:from-gray-600 dark:to-gray-500" />
+      
+      {/* Icons */}
+      <div className="relative z-10 flex items-center justify-between w-full px-1">
+        <Sun className={`h-4 w-4 transition-colors duration-300 ${!isDark ? 'text-orange-500' : 'text-gray-400'}`} />
+        <Moon className={`h-4 w-4 transition-colors duration-300 ${isDark ? 'text-blue-400' : 'text-gray-400'}`} />
+      </div>
+      
+      {/* Sliding indicator */}
+      <motion.div
+        className="absolute top-1 w-6 h-6 bg-white dark:bg-gray-800 rounded-full shadow-md border border-gray-200 dark:border-gray-600"
+        animate={{
+          x: isDark ? 32 : 0,
+        }}
+        transition={{
+          type: "spring",
+          stiffness: 500,
+          damping: 30
+        }}
+      />
+      
       <span className="sr-only">Toggle theme</span>
-    </Button>
+    </motion.button>
   )
 }
