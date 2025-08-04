@@ -77,7 +77,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
         />
       </div>
 
-      <div className="container mx-auto px-4 pt-4 sm:pt-0 pb-4 max-w-7xl relative z-10">
+      <div className="container mx-auto pl-4 pr-2 sm:px-4 pt-4 sm:pt-0 pb-4 max-w-7xl relative z-10">
         <motion.header
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -133,7 +133,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
-                className="fixed bottom-6 right-6 z-50"
+                className="fixed bottom-6 right-4 z-50"
               >
                 <Button
                   onClick={() => setShowExpenseDialog(true)}
