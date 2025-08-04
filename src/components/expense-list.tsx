@@ -460,6 +460,12 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities }: ExpenseListProp
   }
 
   const exportToPDF = async () => {
+    // Validate that there's data to export
+    if (filteredExpenses.length === 0 && monthlySavings === 0) {
+      toast.error('No data available to export for this month')
+      return
+    }
+
     try {
       // Dynamic import to handle client-side loading
       const jsPDFModule = await import('jspdf')
@@ -477,14 +483,14 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities }: ExpenseListProp
       
       // Define colors matching the actual chart components
       const colors = {
-        primary: [59, 130, 246], // Blue
-        need: [251, 191, 36], // amber-400 - vibrant yellow (from ExpenseCharts)
-        want: [251, 113, 133], // rose-400 - vibrant pink-red (from ExpenseCharts) 
-        selfDev: [52, 211, 153], // emerald-400 - vibrant green (from ExpenseCharts)
-        savings: [167, 139, 250], // violet-400 - vibrant purple (from ExpenseCharts)
-        background: [248, 250, 252], // Light gray
-        text: [15, 23, 42], // Dark slate
-        accent: [147, 51, 234] // Purple
+        primary: [59, 130, 246] as [number, number, number], // Blue
+        need: [251, 191, 36] as [number, number, number], // amber-400 - vibrant yellow (from ExpenseCharts)
+        want: [251, 113, 133] as [number, number, number], // rose-400 - vibrant pink-red (from ExpenseCharts) 
+        selfDev: [52, 211, 153] as [number, number, number], // emerald-400 - vibrant green (from ExpenseCharts)
+        savings: [167, 139, 250] as [number, number, number], // violet-400 - vibrant purple (from ExpenseCharts)
+        background: [248, 250, 252] as [number, number, number], // Light gray
+        text: [15, 23, 42] as [number, number, number], // Dark slate
+        accent: [147, 51, 234] as [number, number, number] // Purple
       }
       
       const categoryLabels = {
@@ -1865,16 +1871,50 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities }: ExpenseListProp
                   Today
                 </Button>
               )}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={exportToPDF}
-                className="ml-1 sm:ml-2 text-xs sm:text-sm px-2 sm:px-3 hover:bg-blue-50 hover:border-blue-300 dark:hover:bg-blue-900/20"
-                title="Export monthly summary as PDF"
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ duration: 0.2 }}
               >
-                <FileDown className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                <span className="hidden sm:inline">Export PDF</span>
-              </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={exportToPDF}
+                  disabled={filteredExpenses.length === 0 && monthlySavings === 0}
+                  className="relative flex items-center gap-2 ml-1 sm:ml-2 text-xs sm:text-sm px-2 sm:px-3 bg-gradient-to-r from-green-500/10 to-emerald-500/10 hover:from-green-500/20 hover:to-emerald-500/20 border-green-300/50 dark:border-green-700/50 hover:border-green-400 dark:hover:border-green-600 transition-all duration-300 shadow-sm hover:shadow-lg hover:shadow-green-500/20 dark:hover:shadow-green-400/20 group overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                  title={filteredExpenses.length === 0 && monthlySavings === 0 ? "No data available for export" : "Export monthly summary as PDF"}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-500 opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
+                  <motion.div
+                    animate={{ 
+                      y: [0, -2, 0],
+                    }}
+                    transition={{ 
+                      duration: 2,
+                      repeat: Infinity,
+                      repeatDelay: 3,
+                      ease: "easeInOut"
+                    }}
+                  >
+                    <FileDown className="h-3 w-3 sm:h-4 sm:w-4 text-green-600 dark:text-green-400 group-hover:text-green-700 dark:group-hover:text-green-300 transition-colors relative z-10" />
+                  </motion.div>
+                  <span className="hidden sm:inline font-medium text-green-700 dark:text-green-300 group-hover:text-green-800 dark:group-hover:text-green-200 transition-colors relative z-10">Export PDF</span>
+                  <motion.div
+                    className="absolute -right-1 -top-1"
+                    animate={{ 
+                      scale: [1, 1.2, 1],
+                      opacity: [0.7, 1, 0.7]
+                    }}
+                    transition={{ 
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
+                  >
+                    <div className="w-2 h-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full" />
+                  </motion.div>
+                </Button>
+              </motion.div>
             </div>
           </div>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
