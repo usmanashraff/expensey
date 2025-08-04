@@ -66,23 +66,23 @@ export function UtilityCharts({ expenses }: UtilityChartsProps) {
   }))
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
       {/* Interactive Area Chart */}
-      <Card className="md:col-span-2">
+      <Card className="col-span-1 md:col-span-2">
         <CardHeader>
-          <CardTitle>Utility Analytics</CardTitle>
+          <CardTitle className="text-lg sm:text-xl">Utility Analytics</CardTitle>
           <CardDescription>Interactive spending overview by utility type</CardDescription>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={chartConfig} className="h-[350px] w-full">
+          <ChartContainer config={chartConfig} className="h-[250px] sm:h-[350px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart
                 data={utilityData}
                 margin={{
                   top: 10,
-                  right: 30,
+                  right: 10,
                   left: 0,
-                  bottom: 80,
+                  bottom: 100,
                 }}
               >
                 <defs>
@@ -98,12 +98,12 @@ export function UtilityCharts({ expenses }: UtilityChartsProps) {
                   textAnchor="end"
                   height={80}
                   interval={0}
-                  tick={{ fontSize: 12, fill: 'currentColor' }}
-                  className="text-xs"
+                  tick={{ fontSize: 10, fill: 'currentColor' }}
+                  className="text-[10px] sm:text-xs"
                 />
                 <YAxis
-                  className="text-xs"
-                  tick={{ fill: 'currentColor' }}
+                  className="text-[10px] sm:text-xs"
+                  tick={{ fontSize: 10, fill: 'currentColor' }}
                   tickFormatter={(value) => `${value}`}
                 />
                 <ChartTooltip
@@ -136,18 +136,18 @@ export function UtilityCharts({ expenses }: UtilityChartsProps) {
       {/* Radar Chart */}
       <Card className="col-span-1 md:col-span-2 lg:col-span-1">
         <CardHeader>
-          <CardTitle>Utility Distribution</CardTitle>
+          <CardTitle className="text-lg sm:text-xl">Utility Distribution</CardTitle>
           <CardDescription>Relative spending across utilities</CardDescription>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={chartConfig} className="h-[300px] w-full">
+          <ChartContainer config={chartConfig} className="h-[250px] sm:h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart data={radarData}>
                 <PolarGrid radialLines={false} />
                 <PolarAngleAxis
                   dataKey="utility"
-                  tick={{ fontSize: 11 }}
-                  className="text-xs"
+                  tick={{ fontSize: 9 }}
+                  className="text-[9px] sm:text-xs"
                 />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Radar
@@ -167,23 +167,23 @@ export function UtilityCharts({ expenses }: UtilityChartsProps) {
       {/* Summary Statistics */}
       <Card className="col-span-1 md:col-span-2 lg:col-span-3">
         <CardHeader>
-          <CardTitle>Utility Breakdown</CardTitle>
+          <CardTitle className="text-lg sm:text-xl">Utility Breakdown</CardTitle>
           <CardDescription>Detailed spending by utility type</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-4">
             {utilityData.map((item) => (
               <div
                 key={item.utility}
-                className="flex flex-col items-center p-4 rounded-lg border bg-card"
+                className="flex flex-col items-center p-2 sm:p-4 rounded-lg border bg-card"
               >
                 <div
                   className="h-3 w-3 rounded-full mb-2"
                   style={{ backgroundColor: utilityColors[item.utility] || 'rgb(107 114 128)' }}
                 />
-                <h4 className="font-medium text-sm text-center">{item.utility}</h4>
-                <p className="text-lg font-semibold mt-1">{formatCurrency(item.amount, 'PKR')}</p>
-                <p className="text-xs text-muted-foreground">{item.percentage}%</p>
+                <h4 className="font-medium text-xs sm:text-sm text-center">{item.utility}</h4>
+                <p className="text-sm sm:text-lg font-semibold mt-1">{formatCurrency(item.amount, 'PKR')}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">{item.percentage}%</p>
               </div>
             ))}
           </div>

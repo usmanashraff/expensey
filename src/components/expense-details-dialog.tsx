@@ -254,7 +254,7 @@ export function ExpenseDetailsDialog({
             </div>
           </motion.div>
           
-          <DialogTitle className="text-xl font-bold text-center">Expense Details</DialogTitle>
+          <DialogTitle className="text-lg sm:text-xl font-bold text-center">Expense Details</DialogTitle>
           <DialogDescription className="text-center text-muted-foreground">
             {format(new Date(expense.date), 'EEEE, MMMM d, yyyy')}
           </DialogDescription>
@@ -323,7 +323,7 @@ export function ExpenseDetailsDialog({
             transition={{ delay: 0.2 }}
           >
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-medium flex items-center gap-2">
+              <h3 className="text-sm sm:text-base font-medium flex items-center gap-2">
                 <Paperclip className="h-4 w-4" />
                 Receipts {allReceipts.length > 0 && `(${allReceipts.length})`}
               </h3>

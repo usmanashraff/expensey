@@ -9,7 +9,9 @@ import { UserDropdown } from '@/components/user-dropdown'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Sparkles } from 'lucide-react'
+import { Sparkles, Plus, Settings } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 
 interface DashboardClientProps {
   user: {
@@ -25,6 +27,9 @@ export function DashboardClient({ user }: DashboardClientProps) {
   const [refreshTrigger, setRefreshTrigger] = useState(0)
   const [utilityRefreshTrigger, setUtilityRefreshTrigger] = useState(0)
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+  const [isMobile, setIsMobile] = useState(false)
+  const [showExpenseDialog, setShowExpenseDialog] = useState(false)
+  const [showUtilityDialog, setShowUtilityDialog] = useState(false)
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -33,9 +38,23 @@ export function DashboardClient({ user }: DashboardClientProps) {
     window.addEventListener('mousemove', handleMouseMove)
     return () => window.removeEventListener('mousemove', handleMouseMove)
   }, [])
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024) // lg breakpoint
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   const handleExpenseAdded = () => {
     setRefreshTrigger(prev => prev + 1)
+    if (isMobile) {
+      setShowExpenseDialog(false)
+    }
   }
 
   const handleUtilityTypesChanged = () => {
@@ -58,7 +77,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
         />
       </div>
 
-      <div className="container mx-auto px-4 pb-4 max-w-7xl relative z-10">
+      <div className="container mx-auto px-4 pt-4 sm:pt-0 pb-4 max-w-7xl relative z-10">
         <motion.header
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -67,7 +86,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link href="/" className="hover:opacity-80 transition-opacity">
+              <Link href="/" className="hidden sm:block hover:opacity-80 transition-opacity">
                 <Image 
                   src="/logo.png" 
                   alt="Expensey Logo" 
@@ -107,31 +126,88 @@ export function DashboardClient({ user }: DashboardClientProps) {
         </motion.header>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 -mt-8 gap-8">
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="lg:col-span-1 space-y-6"
-          >
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-purple-400/20 dark:from-blue-600/10 dark:to-purple-600/10 rounded-3xl blur-xl" />
-              <ExpenseForm onExpenseAdded={handleExpenseAdded} utilityRefreshTrigger={utilityRefreshTrigger} />
-            </div>
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-400/20 to-pink-400/20 dark:from-purple-600/10 dark:to-pink-600/10 rounded-3xl blur-xl" />
-              <UtilityTypeManager onUtilityTypesChanged={handleUtilityTypesChanged} />
-            </div>
-          </motion.div>
+          {isMobile ? (
+            <>
+              {/* Mobile: Show Add Expense button */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className="fixed bottom-6 right-6 z-50"
+              >
+                <Button
+                  onClick={() => setShowExpenseDialog(true)}
+                  size="lg"
+                  className="rounded-full h-14 w-14 md:h-auto md:w-auto md:px-6 shadow-lg bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white p-0 md:p-2"
+                >
+                  <Plus className="h-6 w-6 md:mr-2" />
+                  <span className="hidden md:inline">Add Expense</span>
+                </Button>
+              </motion.div>
+              <ExpenseList refreshTrigger={refreshTrigger} onOpenUtilities={() => setShowUtilityDialog(true)} />
+            </>
+          ) : (
+            <>
+              {/* Desktop: Show form sidebar */}
+              <motion.div
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className="lg:col-span-1 space-y-6"
+              >
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-purple-400/20 dark:from-blue-600/10 dark:to-purple-600/10 rounded-3xl blur-xl" />
+                  <ExpenseForm onExpenseAdded={handleExpenseAdded} utilityRefreshTrigger={utilityRefreshTrigger} />
+                </div>
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-400/20 to-pink-400/20 dark:from-purple-600/10 dark:to-pink-600/10 rounded-3xl blur-xl" />
+                  <UtilityTypeManager onUtilityTypesChanged={handleUtilityTypesChanged} />
+                </div>
+              </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="lg:col-span-2"
-          >
-            <ExpenseList refreshTrigger={refreshTrigger} />
-          </motion.div>
+              <motion.div
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+                className="lg:col-span-2"
+              >
+                <ExpenseList refreshTrigger={refreshTrigger} />
+              </motion.div>
+            </>
+          )}
         </div>
+
+        {/* Mobile Expense Dialog */}
+        <Dialog open={showExpenseDialog} onOpenChange={setShowExpenseDialog}>
+          <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto bg-transparent border-0 shadow-none p-0 [&>button]:hidden">
+            <DialogHeader className="sr-only">
+              <DialogTitle>Add New Expense</DialogTitle>
+            </DialogHeader>
+            <ExpenseForm 
+              onExpenseAdded={handleExpenseAdded} 
+              utilityRefreshTrigger={utilityRefreshTrigger}
+              isInDialog={true}
+              onClose={() => setShowExpenseDialog(false)}
+            />
+          </DialogContent>
+        </Dialog>
+
+        {/* Mobile Utility Dialog */}
+        <Dialog open={showUtilityDialog} onOpenChange={setShowUtilityDialog}>
+          <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto bg-transparent border-0 shadow-none p-0 [&>button]:hidden">
+            <DialogHeader className="sr-only">
+              <DialogTitle>Manage Utility Types</DialogTitle>
+            </DialogHeader>
+            <UtilityTypeManager 
+              onUtilityTypesChanged={() => {
+                handleUtilityTypesChanged()
+                setShowUtilityDialog(false)
+              }}
+              isInDialog={true}
+              onClose={() => setShowUtilityDialog(false)}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   )

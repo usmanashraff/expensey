@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
-import { Plus, Trash2, Settings, ChevronLeft, ChevronRight, ChevronDown, Sparkles } from 'lucide-react'
+import { Plus, Trash2, Settings, ChevronLeft, ChevronRight, ChevronDown, Sparkles, Loader2, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 interface UtilityType {
@@ -18,20 +18,24 @@ interface UtilityType {
 
 interface UtilityTypeManagerProps {
   onUtilityTypesChanged?: () => void
+  isInDialog?: boolean
+  onClose?: () => void
 }
 
-export function UtilityTypeManager({ onUtilityTypesChanged }: UtilityTypeManagerProps) {
+export function UtilityTypeManager({ onUtilityTypesChanged, isInDialog = false, onClose }: UtilityTypeManagerProps) {
   const [utilityTypes, setUtilityTypes] = useState<UtilityType[]>([])
   const [newTypeName, setNewTypeName] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isAdding, setIsAdding] = useState(false)
   const [currentPage, setCurrentPage] = useState(0)
-  const [showManager, setShowManager] = useState(false)
+  const [showManager, setShowManager] = useState(isInDialog)
+  const [isFetching, setIsFetching] = useState(true)
   
   const itemsPerPage = 4
   const totalPages = Math.ceil(utilityTypes.length / itemsPerPage)
 
   const fetchUtilityTypes = async () => {
+    setIsFetching(true)
     try {
       const response = await fetch('/api/utility-types')
       if (!response.ok) throw new Error('Failed to fetch utility types')
@@ -40,6 +44,8 @@ export function UtilityTypeManager({ onUtilityTypesChanged }: UtilityTypeManager
     } catch (error) {
       console.error('Failed to fetch utility types:', error)
       toast.error('Failed to load utility types')
+    } finally {
+      setIsFetching(false)
     }
   }
 
@@ -125,7 +131,7 @@ export function UtilityTypeManager({ onUtilityTypesChanged }: UtilityTypeManager
   }, [utilityTypes.length, currentPage, totalPages])
 
   return (
-    <Card className="relative backdrop-blur-xl bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 border-white/20 dark:border-white/10 rounded-3xl overflow-hidden">
+    <Card className="relative backdrop-blur-xl bg-white/80 dark:bg-[oklch(0.2_0.02_250)]/40 border-white/20 dark:border-white/10 rounded-3xl overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 to-indigo-500/5 dark:from-violet-500/10 dark:to-indigo-500/10" />
       
       <CardHeader className="relative z-10">
@@ -140,27 +146,38 @@ export function UtilityTypeManager({ onUtilityTypesChanged }: UtilityTypeManager
               <Settings className="h-5 w-5 text-white" />
             </motion.div>
             <div>
-              <CardTitle className="text-xl">Manage Utility Types</CardTitle>
+              <CardTitle className="text-base sm:text-xl">Manage Utility Types</CardTitle>
               {showManager && (
                 <CardDescription className="mt-1">Create and manage utility categories</CardDescription>
               )}
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowManager(!showManager)}
-            className="flex items-center gap-2"
-          >
-            <motion.div
-              animate={{ rotate: showManager ? 180 : 0 }}
-              transition={{ duration: 0.3 }}
-              className="h-4 w-4"
+          {isInDialog && onClose ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="h-8 w-8 p-0 hover:bg-destructive/10"
             >
-              <ChevronDown className="h-4 w-4" />
-            </motion.div>
-            {showManager ? 'Hide' : 'Show'}
-          </Button>
+              <X className="h-4 w-4" />
+            </Button>
+          ) : !isInDialog ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowManager(!showManager)}
+              className="flex items-center gap-2"
+            >
+              <motion.div
+                animate={{ rotate: showManager ? 180 : 0 }}
+                transition={{ duration: 0.3 }}
+                className="h-4 w-4"
+              >
+                <ChevronDown className="h-4 w-4" />
+              </motion.div>
+              {showManager ? 'Hide' : 'Show'}
+            </Button>
+          ) : null}
         </div>
       </CardHeader>
       <AnimatePresence>
@@ -178,7 +195,7 @@ export function UtilityTypeManager({ onUtilityTypesChanged }: UtilityTypeManager
             <CardContent className="relative z-10">
               <motion.form 
                 onSubmit={handleAddType} 
-                className="flex gap-2 mb-6"
+                className="flex flex-col sm:flex-row gap-2 mb-6"
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
@@ -188,7 +205,7 @@ export function UtilityTypeManager({ onUtilityTypesChanged }: UtilityTypeManager
                   value={newTypeName}
                   onChange={(e) => setNewTypeName(e.target.value)}
                   disabled={isAdding}
-                  className="flex-1 backdrop-blur-sm bg-white/50 dark:bg-white/5"
+                  className="flex-1 backdrop-blur-sm bg-white/50 dark:bg-white/5 text-sm"
                 />
                 <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                   <Button 
@@ -206,7 +223,7 @@ export function UtilityTypeManager({ onUtilityTypesChanged }: UtilityTypeManager
                 <div className="flex items-center justify-between">
                   <Label className="text-sm text-muted-foreground flex items-center gap-2">
                     <Sparkles className="h-4 w-4" />
-                    Current Utility Types {utilityTypes.length > 0 && `(${utilityTypes.length} total)`}
+                    Utility Types {utilityTypes.length > 0 && `(${utilityTypes.length} total)`}
                   </Label>
                   {totalPages > 1 && (
                     <div className="flex items-center gap-1">
@@ -235,7 +252,17 @@ export function UtilityTypeManager({ onUtilityTypesChanged }: UtilityTypeManager
                   )}
                 </div>
                 
-                {utilityTypes.length === 0 ? (
+                {isFetching ? (
+                  <motion.div 
+                    className="flex items-center justify-center py-8"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <Loader2 className="h-6 w-6 animate-spin text-violet-500" />
+                    <span className="ml-2 text-sm text-muted-foreground">Loading utility types...</span>
+                  </motion.div>
+                ) : utilityTypes.length === 0 ? (
                   <motion.p 
                     className="text-center text-muted-foreground py-8"
                     initial={{ opacity: 0 }}
@@ -253,7 +280,7 @@ export function UtilityTypeManager({ onUtilityTypesChanged }: UtilityTypeManager
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -20 }}
                         transition={{ duration: 0.2 }}
-                        className="grid grid-cols-2 gap-3"
+                        className="grid grid-cols-1 sm:grid-cols-2 gap-3"
                       >
                         {getCurrentPageItems().map((type, index) => (
                           <motion.div
@@ -264,9 +291,9 @@ export function UtilityTypeManager({ onUtilityTypesChanged }: UtilityTypeManager
                             exit={{ opacity: 0, scale: 0.9 }}
                             transition={{ duration: 0.2, delay: index * 0.05 }}
                             whileHover={{ scale: 1.02 }}
-                            className="flex items-center justify-between p-4 rounded-2xl border bg-white/30 dark:bg-white/5 backdrop-blur-sm hover:shadow-lg transition-all duration-300"
+                            className="flex items-center justify-between p-3 sm:p-4 rounded-2xl border bg-white/30 dark:bg-white/5 backdrop-blur-sm hover:shadow-lg transition-all duration-300"
                           >
-                            <span className="font-medium text-sm truncate mr-2">
+                            <span className="font-medium text-sm break-all mr-2">
                               {type.name}
                             </span>
                             <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>

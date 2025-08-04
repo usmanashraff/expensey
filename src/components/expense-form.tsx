@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Calendar } from '@/components/ui/calendar'
-import { CalendarIcon, PlusCircle, Wallet, Paperclip, X } from 'lucide-react'
+import { CalendarIcon, PlusCircle, Wallet, Paperclip, X, Loader2 } from 'lucide-react'
 import { format } from 'date-fns'
 import { ExpenseCategory } from '@/generated/prisma'
 import { toast } from 'sonner'
@@ -18,6 +18,8 @@ import { useUserSettings } from '@/hooks/use-user-settings'
 interface ExpenseFormProps {
   onExpenseAdded: () => void
   utilityRefreshTrigger?: number
+  isInDialog?: boolean
+  onClose?: () => void
 }
 
 interface UtilityType {
@@ -25,7 +27,7 @@ interface UtilityType {
   name: string
 }
 
-export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger }: ExpenseFormProps) {
+export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger, isInDialog = false, onClose }: ExpenseFormProps) {
   const [amount, setAmount] = useState('')
   const [description, setDescription] = useState('')
   const [category, setCategory] = useState<ExpenseCategory | ''>('')
@@ -182,21 +184,35 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger }: ExpenseFo
   }
 
   return (
-    <Card className="relative backdrop-blur-xl bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 border-white/20 dark:border-white/10 rounded-3xl overflow-hidden">
+    <Card className="relative backdrop-blur-xl bg-white/80 dark:bg-[oklch(0.2_0.02_250)]/40 border-white/20 dark:border-white/10 rounded-3xl overflow-hidden">
       {/* Decorative gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 dark:from-blue-500/10 dark:to-purple-500/10" />
       
       <CardHeader className="relative z-10">
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ duration: 0.5, type: "spring" }}
-          className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-500 mb-4 shadow-lg"
-        >
-          <Wallet className="h-6 w-6 text-white" />
-        </motion.div>
-        <CardTitle className="text-2xl font-bold">Add New Expense</CardTitle>
-        <CardDescription>Track your daily expenses by category</CardDescription>
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ duration: 0.5, type: "spring" }}
+              className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-500 mb-4 shadow-lg"
+            >
+              <Wallet className="h-6 w-6 text-white" />
+            </motion.div>
+            <CardTitle className={`${isInDialog ? 'text-base sm:text-lg' : 'text-lg sm:text-2xl'} font-bold`}>Add New Expense</CardTitle>
+            <CardDescription className={isInDialog ? 'text-xs sm:text-sm' : ''}>Track your daily expenses by category</CardDescription>
+          </div>
+          {isInDialog && onClose && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="h-8 w-8 p-0 hover:bg-destructive/10 flex-shrink-0"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="relative z-10">
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -206,7 +222,7 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger }: ExpenseFo
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3, delay: 0.1 }}
           >
-            <Label htmlFor="amount">Amount ({currency})</Label>
+            <Label htmlFor="amount" className={isInDialog ? 'text-xs sm:text-sm' : ''}>Amount ({currency})</Label>
             <Input
               id="amount"
               type="number"
@@ -225,7 +241,7 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger }: ExpenseFo
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3, delay: 0.2 }}
           >
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description" className={isInDialog ? 'text-xs sm:text-sm' : ''}>Description</Label>
             <Input
               id="description"
               type="text"
@@ -243,7 +259,7 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger }: ExpenseFo
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3, delay: 0.3 }}
           >
-            <Label htmlFor="category">Category</Label>
+            <Label htmlFor="category" className={isInDialog ? 'text-xs sm:text-sm' : ''}>Category</Label>
             <Select value={category} onValueChange={(value) => {
               setCategory(value as ExpenseCategory)
               // Clear utility type when switching to SAVINGS
@@ -273,7 +289,7 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger }: ExpenseFo
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3, delay: 0.4 }}
           >
-            <Label htmlFor="utilityType">
+            <Label htmlFor="utilityType" className={isInDialog ? 'text-xs sm:text-sm' : ''}>
               Utility Type {category !== 'SAVINGS' && <span className="text-red-500">*</span>}
             </Label>
             <Select 
@@ -283,14 +299,25 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger }: ExpenseFo
               disabled={loadingUtilities || category === 'SAVINGS'}
             >
               <SelectTrigger id="utilityType" className="backdrop-blur-sm bg-white/50 dark:bg-white/5">
-                <SelectValue placeholder={
-                  loadingUtilities ? "Loading..." : 
-                  category === 'SAVINGS' ? "Not applicable for savings" : 
-                  "Select utility type"
-                } />
+                {loadingUtilities ? (
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span className="text-sm">Loading utilities...</span>
+                  </div>
+                ) : (
+                  <SelectValue placeholder={
+                    category === 'SAVINGS' ? "Not applicable for savings" : 
+                    "Select utility type"
+                  } />
+                )}
               </SelectTrigger>
               <SelectContent>
-                {utilityTypes.length === 0 ? (
+                {loadingUtilities ? (
+                  <div className="flex items-center justify-center py-6">
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    <span className="ml-2 text-sm text-muted-foreground">Loading utility types...</span>
+                  </div>
+                ) : utilityTypes.length === 0 ? (
                   <SelectItem value="none" disabled>
                     No utility types available
                   </SelectItem>
@@ -311,7 +338,7 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger }: ExpenseFo
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3, delay: 0.5 }}
           >
-            <Label htmlFor="date">Date</Label>
+            <Label htmlFor="date" className={isInDialog ? 'text-xs sm:text-sm' : ''}>Date</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -323,7 +350,12 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger }: ExpenseFo
                   {date ? format(date, 'PPP') : 'Pick a date'}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
+              <PopoverContent 
+                className="w-auto p-0" 
+                align="start"
+                sideOffset={5}
+                alignOffset={-20}
+              >
                 <Calendar
                   mode="single"
                   selected={date}
@@ -333,7 +365,7 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger }: ExpenseFo
                 />
               </PopoverContent>
             </Popover>
-            <p className="text-xs text-muted-foreground">
+            <p className={`${isInDialog ? 'text-[10px]' : 'text-xs'} text-muted-foreground`}>
               Leave empty to use today's date
             </p>
           </motion.div>
@@ -344,17 +376,17 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger }: ExpenseFo
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3, delay: 0.6 }}
           >
-            <Label htmlFor="receipt">Receipt (Optional)</Label>
+            <Label htmlFor="receipt" className={isInDialog ? 'text-xs sm:text-sm' : ''}>Receipt (Optional)</Label>
             <div className="space-y-2">
               {!receipt && (
                 <div className="flex items-center justify-center w-full">
                   <label htmlFor="receipt-upload" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-white/50 dark:bg-white/5 hover:bg-white/70 dark:hover:bg-white/10 transition-colors">
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
                       <Paperclip className="w-8 h-8 mb-2 text-gray-400" />
-                      <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                      <p className={`mb-2 ${isInDialog ? 'text-xs' : 'text-sm'} text-gray-500 dark:text-gray-400`}>
                         <span className="font-semibold">Click to upload</span> receipt
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">PNG, JPG, WebP or PDF (MAX. 2MB)</p>
+                      <p className={`${isInDialog ? 'text-[10px]' : 'text-xs'} text-gray-500 dark:text-gray-400`}>PNG, JPG, WebP or PDF (MAX. 2MB)</p>
                     </div>
                     <input
                       id="receipt-upload"
@@ -373,8 +405,8 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger }: ExpenseFo
                     <div className="flex items-center space-x-3">
                       <Paperclip className="w-5 h-5 text-gray-400" />
                       <div>
-                        <p className="text-sm font-medium">{receipt.name}</p>
-                        <p className="text-xs text-gray-500">
+                        <p className={`${isInDialog ? 'text-xs' : 'text-sm'} font-medium`}>{receipt.name}</p>
+                        <p className={`${isInDialog ? 'text-[10px]' : 'text-xs'} text-gray-500`}>
                           {(receipt.size / 1024).toFixed(1)} KB
                         </p>
                       </div>

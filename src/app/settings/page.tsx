@@ -177,7 +177,7 @@ export default function SettingsPage() {
                 <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg">
                   <User className="h-5 w-5 text-white" />
                 </div>
-                <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <CardTitle className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                   Profile
                 </CardTitle>
               </div>
@@ -204,7 +204,7 @@ export default function SettingsPage() {
                           alt={`${firstName} ${lastName}`}
                           className="object-cover"
                         />
-                        <AvatarFallback className="text-2xl">{userInitials}</AvatarFallback>
+                        <AvatarFallback className="text-lg sm:text-2xl">{userInitials}</AvatarFallback>
                       </Avatar>
                       <input
                         type="file"
@@ -303,7 +303,7 @@ export default function SettingsPage() {
                 <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg">
                   <Settings className="h-5 w-5 text-white" />
                 </div>
-                <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <CardTitle className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                   Settings
                 </CardTitle>
               </div>

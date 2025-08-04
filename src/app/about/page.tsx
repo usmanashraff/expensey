@@ -25,7 +25,7 @@ export default function AboutDeveloper() {
           transition={{ duration: 0.5 }}
           className="flex justify-between items-center mb-16"
         >
-          <Link href="/" className="hover:opacity-80 transition-opacity">
+          <Link href="/" className="hidden sm:block hover:opacity-80 transition-opacity">
             <Image 
               src="/logo.png" 
               alt="Expensey Logo" 
@@ -65,7 +65,7 @@ export default function AboutDeveloper() {
           >
             <Sparkles className="w-12 h-12 text-yellow-500/40 mx-auto" />
           </motion.div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold mb-4">
             Meet the{' '}
             <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
               Developer
@@ -103,7 +103,7 @@ export default function AboutDeveloper() {
               
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-2xl font-bold mb-2">Full Stack Developer</h2>
+                  <h2 className="text-xl sm:text-2xl font-bold mb-2">Full Stack Developer</h2>
                   <p className="text-muted-foreground leading-relaxed">
                     Specializing in creating modern web applications with cutting-edge technologies. 
                     Passionate about clean code, beautiful UI/UX, and solving complex problems.
@@ -229,10 +229,10 @@ export default function AboutDeveloper() {
                     transition={{ duration: 0.5, delay: stat.delay + 0.2, type: "spring" }}
                     className="mb-2"
                   >
-                    <span className={`text-5xl font-bold bg-gradient-to-r ${stat.gradient} bg-clip-text text-transparent`}>
+                    <span className={`text-3xl sm:text-5xl font-bold bg-gradient-to-r ${stat.gradient} bg-clip-text text-transparent`}>
                       {stat.value}
                     </span>
-                    <span className={`text-3xl font-bold bg-gradient-to-r ${stat.gradient} bg-clip-text text-transparent`}>
+                    <span className={`text-xl sm:text-3xl font-bold bg-gradient-to-r ${stat.gradient} bg-clip-text text-transparent`}>
                       {stat.suffix}
                     </span>
                   </motion.div>
@@ -276,7 +276,7 @@ export default function AboutDeveloper() {
           transition={{ duration: 0.6, delay: 0.8 }}
           className="text-center"
         >
-          <h3 className="text-xl font-semibold mb-4">
+          <h3 className="text-lg sm:text-xl font-semibold mb-4">
             Let's Build Something{' '}
             <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Amazing Together

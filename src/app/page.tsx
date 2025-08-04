@@ -52,7 +52,7 @@ export default function Home() {
           transition={{ duration: 0.5 }}
           className="flex justify-between items-center mb-16"
         >
-          <Link href="/" className="hover:opacity-80 transition-opacity">
+          <Link href="/" className="hidden sm:block hover:opacity-80 transition-opacity">
             <Image 
               src="/logo.png" 
               alt="Expensey Logo" 
@@ -104,7 +104,7 @@ export default function Home() {
           >
             <Sparkles className="w-8 h-8 text-yellow-500/40" />
           </motion.div>
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 relative">
+          <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold mb-6 relative">
             <motion.span
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -128,7 +128,7 @@ export default function Home() {
             </motion.span>
           </h1>
           <motion.p 
-            className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto"
+            className="text-lg sm:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.6 }}
@@ -206,7 +206,7 @@ export default function Home() {
                   <feature.icon className={`h-8 w-8 text-${feature.color}-600 dark:text-${feature.color}-400`} />
                   <div className={`absolute inset-0 rounded-2xl bg-${feature.color}-400/20 blur-lg`} />
                 </motion.div>
-                <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
+                <h3 className="text-base sm:text-lg font-semibold mb-2">{feature.title}</h3>
                 <p className="text-muted-foreground flex-1">
                   {feature.description}
                 </p>
@@ -222,7 +222,7 @@ export default function Home() {
           transition={{ duration: 0.8, delay: 1.6 }}
           className="mt-32 text-center"
         >
-          <h2 className="text-3xl md:text-4xl font-bold mb-16">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-16">
             Why Choose{' '}
             <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Expensey
@@ -243,7 +243,7 @@ export default function Home() {
                 className="relative p-6 rounded-2xl bg-gradient-to-br from-white/40 to-white/20 dark:from-white/5 dark:to-white/10 backdrop-blur-lg border border-white/20 dark:border-white/10"
               >
                 <item.icon className="w-8 h-8 mx-auto mb-3 text-primary" />
-                <h3 className="font-semibold mb-1">{item.title}</h3>
+                <h3 className="text-sm sm:text-base font-semibold mb-1">{item.title}</h3>
                 <p className="text-sm text-muted-foreground">{item.desc}</p>
               </motion.div>
             ))}

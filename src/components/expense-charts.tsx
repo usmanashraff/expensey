@@ -89,15 +89,15 @@ export function ExpenseCharts({ expenses }: ExpenseChartsProps) {
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-2">
+    <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2">
       {/* Pie Chart */}
       <Card>
         <CardHeader>
-          <CardTitle>Expense Distribution</CardTitle>
+          <CardTitle className="text-lg sm:text-xl">Expense Distribution</CardTitle>
           <CardDescription>Percentage breakdown by category</CardDescription>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={chartConfig} className="h-[300px] w-full">
+          <ChartContainer config={chartConfig} className="h-[250px] sm:h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <ChartTooltip content={<ChartTooltipContent />} />
@@ -107,7 +107,8 @@ export function ExpenseCharts({ expenses }: ExpenseChartsProps) {
                   nameKey="category"
                   cx="50%"
                   cy="50%"
-                  outerRadius={100}
+                  outerRadius={80}
+                  innerRadius={0}
                   label={({ percentage }) => `${percentage}%`}
                   labelLine={false}
                 >
@@ -118,14 +119,14 @@ export function ExpenseCharts({ expenses }: ExpenseChartsProps) {
               </PieChart>
             </ResponsiveContainer>
           </ChartContainer>
-          <div className="mt-4 grid grid-cols-2 gap-4">
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
             {chartData.map((item) => (
               <div key={item.category} className="flex items-center gap-2">
                 <div
                   className="h-3 w-3 rounded-full"
                   style={{ backgroundColor: item.fill }}
                 />
-                <span className="text-sm">
+                <span className="text-xs sm:text-sm">
                   {item.category}: {item.percentage}%
                 </span>
               </div>
@@ -137,11 +138,11 @@ export function ExpenseCharts({ expenses }: ExpenseChartsProps) {
       {/* Radial Bar Chart */}
       <Card>
         <CardHeader>
-          <CardTitle>Category Analysis</CardTitle>
+          <CardTitle className="text-lg sm:text-xl">Category Analysis</CardTitle>
           <CardDescription>Amount spent in each category</CardDescription>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={chartConfig} className="h-[300px] w-full">
+          <ChartContainer config={chartConfig} className="h-[250px] sm:h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <RadialBarChart 
                 cx="50%" 
@@ -167,7 +168,7 @@ export function ExpenseCharts({ expenses }: ExpenseChartsProps) {
               </RadialBarChart>
             </ResponsiveContainer>
           </ChartContainer>
-          <div className="mt-4 space-y-2">
+          <div className="mt-4 space-y-2 max-h-[200px] overflow-y-auto">
             {chartData.map((item) => (
               <div key={item.category} className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
@@ -175,9 +176,9 @@ export function ExpenseCharts({ expenses }: ExpenseChartsProps) {
                     className="h-3 w-3 rounded-full"
                     style={{ backgroundColor: item.fill }}
                   />
-                  <span className="text-sm font-medium">{item.category}</span>
+                  <span className="text-xs sm:text-sm font-medium">{item.category}</span>
                 </div>
-                <span className="text-sm text-muted-foreground">
+                <span className="text-xs sm:text-sm text-muted-foreground">
                   {formatCurrency(item.value, 'PKR')}
                 </span>
               </div>

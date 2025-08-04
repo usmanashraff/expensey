@@ -207,7 +207,7 @@ export function BudgetDialog({ selectedMonth, selectedYear, onBudgetUpdated }: B
       <DialogContent className="sm:max-w-[500px] backdrop-blur-xl bg-white/80 dark:bg-[oklch(0.2_0.02_250)]/80 border-white/20 dark:border-white/10 shadow-2xl">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 dark:from-blue-500/20 dark:to-purple-500/20 rounded-lg" />
         <DialogHeader className="relative z-10">
-          <DialogTitle className="text-gray-900 dark:text-gray-100 text-xl font-semibold">Set Monthly Budget</DialogTitle>
+          <DialogTitle className="text-gray-900 dark:text-gray-100 text-lg sm:text-xl font-semibold">Set Monthly Budget</DialogTitle>
           <DialogDescription className="text-gray-600 dark:text-gray-400">
             Configure your budget for {monthName}
           </DialogDescription>

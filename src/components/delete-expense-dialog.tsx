@@ -75,7 +75,7 @@ export function DeleteExpenseDialog({
             </div>
           </motion.div>
           
-          <DialogTitle className="text-xl font-bold text-center text-gray-900 dark:text-gray-100">
+          <DialogTitle className="text-lg sm:text-xl font-bold text-center text-gray-900 dark:text-gray-100">
             Delete Expense
           </DialogTitle>
           <DialogDescription className="text-center text-muted-foreground">

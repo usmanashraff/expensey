@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { CalendarIcon } from 'lucide-react'
 import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
@@ -17,7 +18,7 @@ import { toast } from 'sonner'
 import { ExpenseCharts } from './expense-charts'
 import { SavingsChart } from './savings-chart'
 import { UtilityCharts } from './utility-charts'
-import { ChevronDown, ChevronUp, BarChart3, ChevronLeft, ChevronRight, Calendar, Receipt, Zap, Eye, EyeOff, TrendingUp, PiggyBank, Wallet, Trash2, X, Target, Download, Loader2 } from 'lucide-react'
+import { ChevronDown, ChevronUp, BarChart3, ChevronLeft, ChevronRight, Calendar, Receipt, Zap, Eye, EyeOff, TrendingUp, PiggyBank, Wallet, Trash2, X, Target, Download, Loader2, Menu, Settings } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { BudgetDialog } from './budget-dialog'
 import { Progress } from '@/components/ui/progress'
@@ -27,11 +28,13 @@ import { ExpenseDetailsDialog } from './expense-details-dialog'
 
 interface ExpenseListProps {
   refreshTrigger: number
+  onOpenUtilities?: () => void
 }
 
-export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
+export function ExpenseList({ refreshTrigger, onOpenUtilities }: ExpenseListProps) {
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [loading, setLoading] = useState(true)
+  const [monthLoading, setMonthLoading] = useState(false)
   const [monthlySavings, setMonthlySavings] = useState<number>(0)
   const [totalSavings, setTotalSavings] = useState<number>(0)
   const [showCharts, setShowCharts] = useState(false)
@@ -49,7 +52,7 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 10
+  const itemsPerPage = 5
   
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1)
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
@@ -66,6 +69,8 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
   const [deletingExpenseId, setDeletingExpenseId] = useState<string | null>(null)
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false)
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null)
+  const [isMobile, setIsMobile] = useState(false)
+  const [activeView, setActiveView] = useState<'expenses' | 'budget' | 'visualization'>('expenses')
   
   const currentMonth = new Date().getMonth() + 1
   const currentYear = new Date().getFullYear()
@@ -210,9 +215,25 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
   
 
   useEffect(() => {
-    fetchExpenses()
-    fetchSavings()
-    fetchBudget()
+    const fetchMonthData = async () => {
+      // Only show month loading if it's a month/year change, not initial load or refresh
+      if (!loading) {
+        setMonthLoading(true)
+      }
+      
+      try {
+        await Promise.all([
+          fetchExpenses(),
+          fetchSavings(),
+          fetchBudget()
+        ])
+      } finally {
+        setMonthLoading(false)
+      }
+    }
+    
+    fetchMonthData()
+    
     // Update selectedDate to the first day of the new month
     setSelectedDate(new Date(selectedYear, selectedMonth - 1, 1))
     // Reset to week 1 when month changes
@@ -222,6 +243,17 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
   useEffect(() => {
     fetchAvailableMonths()
   }, [refreshTrigger])
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640) // sm breakpoint
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   const handleDeleteClick = (expense: Expense) => {
     setExpenseToDelete(expense)
@@ -438,6 +470,781 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
     setCurrentPage(1)
   }, [selectedMonth, selectedYear, dateFilter, selectedDate])
 
+  // Render function for Recent Expenses content
+  const renderExpensesContent = () => (
+    <motion.div
+      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -20, scale: 0.95 }}
+      transition={{ 
+        duration: 0.4,
+        ease: "easeOut",
+        scale: { duration: 0.3 }
+      }}
+    >
+      {/* Recent Expenses Card */}
+      <Card className="relative backdrop-blur-xl bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 border-white/20 dark:border-white/10 rounded-3xl overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-blue-500/5 dark:from-green-500/10 dark:to-blue-500/10" />
+      
+      <CardHeader className="relative z-10">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <motion.div
+              initial={{ rotate: -10 }}
+              animate={{ rotate: 10 }}
+              transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }}
+              className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-blue-500 shadow-lg"
+            >
+              <Receipt className="h-5 w-5 text-white" />
+            </motion.div>
+            <CardTitle className="text-base sm:text-xl">Recent Expenses</CardTitle>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowExpenses(!showExpenses)}
+            className="flex items-center gap-2"
+          >
+            <motion.div
+              animate={{ rotate: showExpenses ? 180 : 0 }}
+              transition={{ duration: 0.3 }}
+              className="h-4 w-4"
+            >
+              <ChevronDown className="h-4 w-4" />
+            </motion.div>
+            {showExpenses ? 'Hide Expenses' : 'Show Expenses'}
+          </Button>
+        </div>
+        {showExpenses && (
+          <>
+            <CardDescription>Your expense history for {monthName}</CardDescription>
+            
+            {/* Date Filter Controls */}
+            <div className="space-y-3 mt-4">
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <Label className="text-sm font-medium">View:</Label>
+                  <Select
+                    value={dateFilter}
+                    onValueChange={(value: 'day' | 'week' | 'month') => {
+                      setDateFilter(value)
+                      setCurrentPage(1) // Reset pagination
+                    }}
+                  >
+                    <SelectTrigger className="w-[120px] h-9">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="day">Day</SelectItem>
+                      <SelectItem value="week">Week</SelectItem>
+                      <SelectItem value="month">Month</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                {dateFilter === 'day' && (
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="flex items-center gap-2"
+                  >
+                    <Label className="text-sm font-medium">Date:</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-[200px]",
+                            "h-9 justify-start text-left font-normal",
+                            !selectedDate && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
+                          <span className="truncate">
+                            {selectedDate ? format(selectedDate, "PPP") : "Pick a date"}
+                          </span>
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent 
+                        className="w-auto p-0" 
+                        align="start"
+                        sideOffset={5}
+                        alignOffset={-20}
+                      >
+                        <CalendarComponent
+                          mode="single"
+                          selected={selectedDate}
+                          onSelect={(date) => {
+                            if (date) {
+                              setSelectedDate(date)
+                              setCurrentPage(1) // Reset pagination
+                            }
+                          }}
+                          defaultMonth={new Date(selectedYear, selectedMonth - 1)}
+                          initialFocus
+                          disabled={(date) => {
+                            // Disable future dates and dates outside the selected month
+                            const today = new Date()
+                            today.setHours(23, 59, 59, 999)
+                            return date > today || 
+                                   date.getMonth() + 1 !== selectedMonth || 
+                                   date.getFullYear() !== selectedYear
+                          }}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </motion.div>
+                )}
+                
+                {dateFilter === 'week' && (
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="flex items-center gap-2"
+                  >
+                    <Label className="text-sm font-medium">Week:</Label>
+                    <Select
+                      value={selectedWeek.toString()}
+                      onValueChange={(value) => {
+                        setSelectedWeek(parseInt(value))
+                        setCurrentPage(1) // Reset pagination
+                      }}
+                    >
+                      <SelectTrigger className="w-[200px] h-9">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[1, 2, 3, 4].map(week => {
+                          const { start, end } = getWeekBoundaries(week, selectedMonth, selectedYear)
+                          const isDisabled = isWeekInFuture(week, selectedMonth, selectedYear)
+                          return (
+                            <SelectItem 
+                              key={week} 
+                              value={week.toString()}
+                              disabled={isDisabled}
+                            >
+                              Week {week} ({format(start, "MMM d")} - {format(end, "MMM d")})
+                              {isDisabled && " (Future)"}
+                            </SelectItem>
+                          )
+                        })}
+                      </SelectContent>
+                    </Select>
+                  </motion.div>
+                )}
+              </div>
+              
+              {/* Filter Summary - on separate line */}
+              {dateFilter !== 'month' && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-sm text-muted-foreground"
+                >
+                  Showing {filteredExpenses.length} expense{filteredExpenses.length !== 1 ? 's' : ''}
+                  {dateFilter === 'week' && (
+                    <span className="ml-1">
+                      for Week {selectedWeek} of {format(new Date(selectedYear, selectedMonth - 1), "MMMM yyyy")}
+                    </span>
+                  )}
+                  {dateFilter === 'day' && (
+                    <span className="ml-1">
+                      for {format(selectedDate, "MMMM d, yyyy")}
+                    </span>
+                  )}
+                </motion.div>
+              )}
+            </div>
+          </>
+        )}
+      </CardHeader>
+      <AnimatePresence>
+        {showExpenses && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{
+              height: { duration: 0.4, ease: "easeInOut" },
+              opacity: { duration: 0.3, ease: "easeInOut" }
+            }}
+            className="overflow-hidden"
+          >
+            <CardContent className="relative z-10" id="expenses-content">
+              {monthLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-green-500" />
+                  <span className="ml-2 text-sm text-muted-foreground">Loading expenses...</span>
+                </div>
+              ) : filteredExpenses.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">
+                  {dateFilter === 'day' 
+                    ? `No expenses for ${format(selectedDate, "PPP")}`
+                    : dateFilter === 'week'
+                    ? `No expenses for Week ${selectedWeek} of ${format(new Date(selectedYear, selectedMonth - 1), "MMMM yyyy")}`
+                    : "No expenses yet. Add your first expense above!"
+                  }
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {paginatedExpenses.map((expense, index) => (
+                <motion.div
+                  key={expense.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, x: -100 }}
+                  transition={{ duration: 0.3, delay: index * 0.05 }}
+                  whileHover={{ scale: 1.01 }}
+                  className="flex items-center justify-between p-4 rounded-2xl border bg-white/30 dark:bg-white/5 backdrop-blur-sm hover:shadow-lg transition-all duration-300 cursor-pointer"
+                  onClick={() => handleExpenseClick(expense)}
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <h4 className="text-sm sm:text-base font-medium">{expense.description}</h4>
+                      <span className={`text-xs px-3 py-1 rounded-full ${categoryConfig[expense.category].bgColor} ${categoryConfig[expense.category].textColor} font-medium`}>
+                        {categoryConfig[expense.category].label}
+                      </span>
+                      {expense.subcategory && (
+                        <span className="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300">
+                          {expense.subcategory}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {formatDate(expense.date)} at {formatTime(expense.date)}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <p className={`text-base sm:text-lg font-semibold bg-gradient-to-r ${categoryConfig[expense.category].color} bg-clip-text text-transparent`}>
+                      {formatAmount(expense.amount, expense.currency || 'PKR')}
+                    </p>
+                    {expense.receipt && (
+                      <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleDownloadReceipt(expense)
+                          }}
+                          className="text-blue-600 hover:text-blue-700 hover:bg-blue-100 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/20"
+                          title="Download receipt"
+                        >
+                          <Download className="h-4 w-4" />
+                        </Button>
+                      </motion.div>
+                    )}
+                    <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleDeleteClick(expense)
+                        }}
+                        disabled={deletingExpenseId === expense.id}
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10 disabled:opacity-50"
+                      >
+                        {deletingExpenseId === expense.id ? (
+                          <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                          >
+                            <Loader2 className="h-4 w-4" />
+                          </motion.div>
+                        ) : (
+                          <Trash2 className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </motion.div>
+                  </div>
+                </motion.div>
+              ))}
+                </div>
+              )}
+              
+              {/* Pagination Controls */}
+              {filteredExpenses.length > itemsPerPage && (
+                <div className="flex items-center justify-between mt-6 pt-4 border-t">
+                  <p className="text-sm text-muted-foreground">
+                    Showing {startIndex + 1}-{Math.min(endIndex, filteredExpenses.length)} of {filteredExpenses.length} expenses
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(page => Math.max(1, page - 1))}
+                      disabled={currentPage === 1}
+                      className="h-8 w-8 p-0"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => {
+                        // Show only a few page numbers around current page
+                        if (
+                          page === 1 ||
+                          page === totalPages ||
+                          (page >= currentPage - 1 && page <= currentPage + 1)
+                        ) {
+                          return (
+                            <Button
+                              key={page}
+                              variant={currentPage === page ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => setCurrentPage(page)}
+                              className="h-8 w-8 p-0"
+                            >
+                              {page}
+                            </Button>
+                          )
+                        } else if (
+                          page === currentPage - 2 ||
+                          page === currentPage + 2
+                        ) {
+                          return <span key={page} className="px-1">...</span>
+                        }
+                        return null
+                      })}
+                    </div>
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(page => Math.min(totalPages, page + 1))}
+                      disabled={currentPage === totalPages}
+                      className="h-8 w-8 p-0"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+              
+              {/* Hide button at the bottom */}
+              <div className="flex justify-center mt-6 pt-4 border-t">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    const element = document.getElementById('expenses-content');
+                    if (element) {
+                      element.style.transition = 'all 0.4s ease-in-out';
+                      element.style.opacity = '0';
+                      element.style.transform = 'translateY(-10px)';
+                    }
+                    setTimeout(() => setShowExpenses(false), 300);
+                  }}
+                  className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+                >
+                  <ChevronUp className="h-4 w-4" />
+                  Hide Recent Expenses
+                </Button>
+              </div>
+            </CardContent>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </Card>
+    </motion.div>
+  )
+
+  // Render function for Visualization content
+  const renderVisualizationContent = () => (
+    <motion.div
+      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -20, scale: 0.95 }}
+      transition={{ 
+        duration: 0.4,
+        ease: "easeOut",
+        scale: { duration: 0.3 }
+      }}
+    >
+      <div className="space-y-6">
+        {/* Analytics & Insights Chart */}
+      <Card className="relative backdrop-blur-xl bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 border-white/20 dark:border-white/10 rounded-3xl overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-blue-500/5 dark:from-purple-500/10 dark:to-blue-500/10" />
+        
+        <CardHeader className="relative z-10">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <motion.div
+                whileHover={{ rotate: 360 }}
+                transition={{ duration: 0.5 }}
+                className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 shadow-lg"
+              >
+                <BarChart3 className="h-5 w-5 text-white" />
+              </motion.div>
+              <CardTitle className="text-base sm:text-xl">Category Analytics</CardTitle>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowCharts(!showCharts)}
+              className="flex items-center gap-2"
+            >
+              <motion.div
+                animate={{ rotate: showCharts ? 180 : 0 }}
+                transition={{ duration: 0.3 }}
+                className="h-4 w-4"
+              >
+                <ChevronDown className="h-4 w-4" />
+              </motion.div>
+              {showCharts ? 'Hide Charts' : 'Show Charts'}
+            </Button>
+          </div>
+          {showCharts && (
+            <CardDescription>Visual representation of your financial data</CardDescription>
+          )}
+        </CardHeader>
+        <AnimatePresence>
+          {showCharts && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{
+                height: { duration: 0.4, ease: "easeInOut" },
+                opacity: { duration: 0.3, ease: "easeInOut" }
+              }}
+              className="overflow-hidden"
+            >
+              <CardContent className="space-y-6 relative z-10" id="analytics-content">
+                {monthLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
+                    <span className="ml-2 text-sm text-muted-foreground">Loading analytics...</span>
+                  </div>
+                ) : (
+                  <>
+                    <ExpenseCharts expenses={expenses} />
+                    <SavingsChart />
+                  </>
+                )}
+                
+                {/* Hide button at the bottom */}
+                <div className="flex justify-center pt-4 border-t">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      const element = document.getElementById('analytics-content');
+                      if (element) {
+                        element.style.transition = 'all 0.4s ease-in-out';
+                        element.style.opacity = '0';
+                        element.style.transform = 'translateY(-10px)';
+                      }
+                      setTimeout(() => setShowCharts(false), 300);
+                    }}
+                    className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+                  >
+                    <ChevronUp className="h-4 w-4" />
+                    Hide Analytics
+                  </Button>
+                </div>
+              </CardContent>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </Card>
+
+      {/* Utility Analytics Chart */}
+      <Card className="relative backdrop-blur-xl bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 border-white/20 dark:border-white/10 rounded-3xl overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-yellow-500/5 dark:from-orange-500/10 dark:to-yellow-500/10" />
+        
+        <CardHeader className="relative z-10">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <motion.div
+                whileHover={{ scale: 1.1 }}
+                transition={{ duration: 0.3 }}
+                className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-yellow-500 shadow-lg"
+              >
+                <Zap className="h-5 w-5 text-white" />
+              </motion.div>
+              <CardTitle className="text-base sm:text-xl">Utility Analytics</CardTitle>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowUtilityCharts(!showUtilityCharts)}
+              className="flex items-center gap-2"
+            >
+              <motion.div
+                animate={{ rotate: showUtilityCharts ? 180 : 0 }}
+                transition={{ duration: 0.3 }}
+                className="h-4 w-4"
+              >
+                <ChevronDown className="h-4 w-4" />
+              </motion.div>
+              {showUtilityCharts ? 'Hide Charts' : 'Show Charts'}
+            </Button>
+          </div>
+          {showUtilityCharts && (
+            <CardDescription>Breakdown of your spending by utility type</CardDescription>
+          )}
+        </CardHeader>
+        <AnimatePresence>
+          {showUtilityCharts && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{
+                height: { duration: 0.4, ease: "easeInOut" },
+                opacity: { duration: 0.3, ease: "easeInOut" }
+              }}
+              className="overflow-hidden"
+            >
+              <CardContent className="relative z-10" id="utility-content">
+                {monthLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="h-6 w-6 animate-spin text-orange-500" />
+                    <span className="ml-2 text-sm text-muted-foreground">Loading utility analytics...</span>
+                  </div>
+                ) : (
+                  <UtilityCharts expenses={expenses} />
+                )}
+                
+                {/* Hide button at the bottom */}
+                <div className="flex justify-center mt-6 pt-4 border-t">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      const element = document.getElementById('utility-content');
+                      if (element) {
+                        element.style.transition = 'all 0.4s ease-in-out';
+                        element.style.opacity = '0';
+                        element.style.transform = 'translateY(-10px)';
+                      }
+                      setTimeout(() => setShowUtilityCharts(false), 300);
+                    }}
+                    className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+                  >
+                    <ChevronUp className="h-4 w-4" />
+                    Hide Utility Analytics
+                  </Button>
+                </div>
+              </CardContent>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </Card>
+    </div>
+    </motion.div>
+  )
+
+  // Render function for Budget content
+  const renderBudgetContent = () => (
+    <motion.div
+      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -20, scale: 0.95 }}
+      transition={{ 
+        duration: 0.4,
+        ease: "easeOut",
+        scale: { duration: 0.3 }
+      }}
+    >
+      <Card className="relative backdrop-blur-xl bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 border-white/20 dark:border-white/10 rounded-3xl overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 dark:from-indigo-500/10 dark:to-purple-500/10" />
+      
+      <CardHeader className="relative z-10">
+        <div className="flex items-center gap-3">
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.5, type: "spring" }}
+            className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 shadow-lg"
+          >
+            <Target className="h-5 w-5 text-white" />
+          </motion.div>
+          <CardTitle className="text-lg sm:text-xl">Budget Overview</CardTitle>
+        </div>
+        <CardDescription>
+          Track your spending against your monthly budget
+        </CardDescription>
+      </CardHeader>
+      
+      <CardContent className="relative z-10 space-y-6">
+        {monthLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-6 w-6 animate-spin text-purple-500" />
+            <span className="ml-2 text-sm text-muted-foreground">Loading budget data...</span>
+          </div>
+        ) : !budget ? (
+          <div className="text-center py-12">
+            <Target className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <p className="text-muted-foreground mb-4">No budget set for {monthName}</p>
+            <BudgetDialog 
+              selectedMonth={selectedMonth} 
+              selectedYear={selectedYear}
+              onBudgetUpdated={() => {
+                fetchBudget()
+                fetchExpenses()
+              }}
+            />
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {/* Budget Progress Indicators */}
+            {Object.entries(categoryConfig).map(([key, config], index) => {
+              const budgetKey = key === 'NEED' ? 'needBudget' : 
+                               key === 'WANT' ? 'wantBudget' : 
+                               key === 'SELF_DEVELOPMENT' ? 'selfDevelopmentBudget' : 
+                               'savingsBudget'
+              const budgetAmount = budget[budgetKey as keyof typeof budget] || 0
+              const spentAmount = expensesByCategory[key] || 0
+              const percentage = budgetAmount > 0 ? (spentAmount / budgetAmount) * 100 : 0
+              const isOverBudget = percentage > 100
+              const isSavings = key === 'SAVINGS'
+              
+              // For savings, we want to show progress towards the minimum goal
+              const savingsPercentage = isSavings && budgetAmount > 0 ? 
+                Math.min((spentAmount / budgetAmount) * 100, 100) : percentage
+
+              return (
+                <motion.div
+                  key={key}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="space-y-3"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-r ${config.color} shadow-sm`}>
+                        <Wallet className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm sm:text-base font-medium">{config.label}</h4>
+                        <p className="text-sm text-muted-foreground">
+                          {formatAmount(spentAmount, 'PKR')} / {formatAmount(budgetAmount, 'PKR')}
+                          {isSavings && spentAmount >= budgetAmount && (
+                            <span className="text-green-600 dark:text-green-400 ml-2">✓ Goal met!</span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className={`text-base sm:text-lg font-semibold ${
+                        isOverBudget && !isSavings ? 'text-red-600 dark:text-red-400' : 
+                        isSavings && spentAmount >= budgetAmount ? 'text-green-600 dark:text-green-400' :
+                        'text-muted-foreground'
+                      }`}>
+                        {isSavings ? savingsPercentage.toFixed(0) : percentage.toFixed(0)}%
+                      </p>
+                      {isOverBudget && !isSavings && (
+                        <div className="space-y-1">
+                          <p className="text-xs text-red-600 dark:text-red-400">Over budget</p>
+                          <p className="text-xs font-medium text-red-600 dark:text-red-400">
+                            +{formatAmount(spentAmount - budgetAmount, 'PKR')}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="relative">
+                    <Progress 
+                      value={isSavings ? savingsPercentage : Math.min(percentage, 100)} 
+                      className={`h-3 ${
+                        isOverBudget && !isSavings ? 'bg-red-100 dark:bg-red-900/20' : 
+                        'bg-gray-100 dark:bg-gray-800'
+                      }`}
+                    />
+                    {isOverBudget && !isSavings && (
+                      <>
+                        <div 
+                          className="absolute top-0 right-0 h-3 bg-red-600 dark:bg-red-400 rounded-r animate-pulse"
+                          style={{ width: `${Math.min((percentage - 100) * 0.5, 50)}%` }}
+                        />
+                        <div className="absolute -right-2 top-1/2 -translate-y-1/2 bg-red-600 dark:bg-red-400 text-white text-xs px-2 py-1 rounded-full shadow-lg">
+                          <span className="font-medium">+{((percentage - 100).toFixed(0))}%</span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  
+                  {isSavings && (
+                    <p className="text-xs text-muted-foreground">
+                      {spentAmount >= budgetAmount ? 
+                        `You've saved ${formatAmount(spentAmount - budgetAmount, 'PKR')} more than your minimum goal!` :
+                        `${formatAmount(budgetAmount - spentAmount, 'PKR')} more to reach your minimum savings goal`
+                      }
+                    </p>
+                  )}
+                </motion.div>
+              )
+            })}
+            
+            {/* Total Budget Summary */}
+            <div className="border-t pt-6">
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="text-base sm:text-lg font-semibold">Total Budget Summary</h4>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowAmounts(!showAmounts)}
+                  className="h-8 w-8 p-0"
+                >
+                  {showAmounts ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </Button>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <motion.div 
+                  className="text-center p-4 rounded-2xl bg-gradient-to-br from-blue-100/50 to-indigo-100/50 dark:from-blue-900/20 dark:to-indigo-900/20"
+                  whileHover={{ scale: 1.02 }}
+                >
+                  <p className="text-sm text-muted-foreground">Total Budget</p>
+                  <p className="text-base sm:text-xl font-semibold text-blue-600 dark:text-blue-400">
+                    {formatAmount(
+                      (budget.needBudget || 0) + 
+                      (budget.wantBudget || 0) + 
+                      (budget.selfDevelopmentBudget || 0),
+                      'PKR'
+                    )}
+                  </p>
+                </motion.div>
+                
+                <motion.div 
+                  className="text-center p-4 rounded-2xl bg-gradient-to-br from-green-100/50 to-emerald-100/50 dark:from-green-900/20 dark:to-emerald-900/20"
+                  whileHover={{ scale: 1.02 }}
+                >
+                  <p className="text-sm text-muted-foreground">Total Spent</p>
+                  <p className="text-base sm:text-xl font-semibold text-green-600 dark:text-green-400">
+                    {formatAmount(totalExpenses, 'PKR')}
+                  </p>
+                </motion.div>
+                
+                <motion.div 
+                  className="text-center p-4 rounded-2xl bg-gradient-to-br from-purple-100/50 to-pink-100/50 dark:from-purple-900/20 dark:to-pink-900/20"
+                  whileHover={{ scale: 1.02 }}
+                >
+                  <p className="text-sm text-muted-foreground">Remaining</p>
+                  <p className={`text-base sm:text-xl font-semibold ${
+                    totalExpenses > ((budget.needBudget || 0) + (budget.wantBudget || 0) + (budget.selfDevelopmentBudget || 0)) ?
+                    'text-red-600 dark:text-red-400' : 'text-purple-600 dark:text-purple-400'
+                  }`}>
+                    {formatAmount(
+                      ((budget.needBudget || 0) + (budget.wantBudget || 0) + (budget.selfDevelopmentBudget || 0)) - totalExpenses,
+                      'PKR'
+                    )}
+                  </p>
+                </motion.div>
+              </div>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+    </motion.div>
+  )
+
   if (loading) {
     return (
       <Card className="w-full backdrop-blur-xl bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 border-white/20 dark:border-white/10">
@@ -456,17 +1263,17 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
         <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 dark:from-blue-500/10 dark:to-purple-500/10" />
         
         <CardHeader className="relative z-10">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-2">
+            <div className="flex items-center gap-2 sm:gap-3">
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ duration: 0.5, type: "spring" }}
-                className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 shadow-lg"
+                className="inline-flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 shadow-lg"
               >
-                <TrendingUp className="h-5 w-5 text-white" />
+                <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
               </motion.div>
-              <CardTitle className="text-2xl">Monthly Summary</CardTitle>
+              <CardTitle className="text-lg sm:text-2xl">Monthly Summary</CardTitle>
               <Button
                 variant="ghost"
                 size="sm"
@@ -477,7 +1284,7 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
                 {showAmounts ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </Button>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 justify-center sm:justify-end">
               <Button
                 variant="ghost"
                 size="sm"
@@ -486,87 +1293,88 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <Popover open={showMonthPicker} onOpenChange={setShowMonthPicker}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="flex items-center gap-2 min-w-[180px] justify-center hover:bg-accent"
-                  >
-                    <Calendar className="h-4 w-4" />
-                    <span className="text-sm font-medium">{monthName}</span>
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-4" align="center">
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium">Month</Label>
-                      <Select
-                        value={selectedMonth.toString()}
-                        onValueChange={(value) => {
-                          setSelectedMonth(parseInt(value))
-                          setShowMonthPicker(false)
-                        }}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {months.map((month) => {
-                            const isAvailable = hasDataForMonth(month.value, selectedYear)
-                            return (
-                              <SelectItem 
-                                key={month.value} 
-                                value={month.value.toString()}
-                                disabled={!isAvailable}
-                              >
-                                {month.label} {!isAvailable && '(No data)'}
-                              </SelectItem>
-                            )
-                          })}
-                        </SelectContent>
-                      </Select>
+              {/* Month Selector Button */}
+              <Button
+                variant="ghost"
+                className="flex items-center gap-1 sm:gap-2 min-w-[100px] sm:min-w-[180px] justify-center hover:bg-accent px-1 sm:px-4"
+                onClick={() => setShowMonthPicker(true)}
+              >
+                <Calendar className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                <span className="text-xs sm:text-sm font-medium truncate">{monthName}</span>
+              </Button>
+              
+              {/* Month Picker - Dialog for mobile, Popover for desktop */}
+              {isMobile ? (
+                <Dialog open={showMonthPicker} onOpenChange={setShowMonthPicker}>
+                  <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                      <DialogTitle className="text-lg sm:text-xl">Select Month & Year</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium">Month</Label>
+                        <Select
+                          value={selectedMonth.toString()}
+                          onValueChange={(value) => {
+                            setSelectedMonth(parseInt(value))
+                          }}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {months.map((month) => {
+                              const isAvailable = hasDataForMonth(month.value, selectedYear)
+                              return (
+                                <SelectItem 
+                                  key={month.value} 
+                                  value={month.value.toString()}
+                                  disabled={!isAvailable}
+                                >
+                                  {month.label} {!isAvailable && '(No data)'}
+                                </SelectItem>
+                              )
+                            })}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium">Year</Label>
+                        <Select
+                          value={selectedYear.toString()}
+                          onValueChange={(value) => {
+                            setSelectedYear(parseInt(value))
+                          }}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {years.map((year) => {
+                              const hasAnyData = year === currentYear || availableMonths.some(am => am.year === year)
+                              return (
+                                <SelectItem 
+                                  key={year} 
+                                  value={year.toString()}
+                                  disabled={!hasAnyData}
+                                >
+                                  {year} {!hasAnyData && '(No data)'}
+                                </SelectItem>
+                              )
+                            })}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium">Year</Label>
-                      <Select
-                        value={selectedYear.toString()}
-                        onValueChange={(value) => {
-                          setSelectedYear(parseInt(value))
-                          setShowMonthPicker(false)
-                        }}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {years.map((year) => {
-                            const hasAnyData = year === currentYear || availableMonths.some(am => am.year === year)
-                            return (
-                              <SelectItem 
-                                key={year} 
-                                value={year.toString()}
-                                disabled={!hasAnyData}
-                              >
-                                {year} {!hasAnyData && '(No data)'}
-                              </SelectItem>
-                            )
-                          })}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="flex gap-2 pt-2">
+                    <DialogFooter>
                       <Button
                         variant="outline"
-                        size="sm"
-                        className="flex-1"
                         onClick={() => setShowMonthPicker(false)}
                       >
                         Cancel
                       </Button>
                       <Button
                         variant="default"
-                        size="sm"
-                        className="flex-1"
                         onClick={() => {
                           setSelectedMonth(currentMonth)
                           setSelectedYear(currentYear)
@@ -575,10 +1383,113 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
                       >
                         Current Month
                       </Button>
+                      <Button
+                        onClick={() => setShowMonthPicker(false)}
+                      >
+                        Apply
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              ) : (
+                <Popover open={showMonthPicker} onOpenChange={setShowMonthPicker}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="sr-only"
+                    >
+                      Open
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent 
+                    className="w-[320px] p-4" 
+                    align="center"
+                    side="bottom"
+                    sideOffset={5}
+                  >
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium">Month</Label>
+                        <Select
+                          value={selectedMonth.toString()}
+                          onValueChange={(value) => {
+                            setSelectedMonth(parseInt(value))
+                            setShowMonthPicker(false)
+                          }}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {months.map((month) => {
+                              const isAvailable = hasDataForMonth(month.value, selectedYear)
+                              return (
+                                <SelectItem 
+                                  key={month.value} 
+                                  value={month.value.toString()}
+                                  disabled={!isAvailable}
+                                >
+                                  {month.label} {!isAvailable && '(No data)'}
+                                </SelectItem>
+                              )
+                            })}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium">Year</Label>
+                        <Select
+                          value={selectedYear.toString()}
+                          onValueChange={(value) => {
+                            setSelectedYear(parseInt(value))
+                            setShowMonthPicker(false)
+                          }}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {years.map((year) => {
+                              const hasAnyData = year === currentYear || availableMonths.some(am => am.year === year)
+                              return (
+                                <SelectItem 
+                                  key={year} 
+                                  value={year.toString()}
+                                  disabled={!hasAnyData}
+                                >
+                                  {year} {!hasAnyData && '(No data)'}
+                                </SelectItem>
+                              )
+                            })}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex gap-2 pt-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1"
+                          onClick={() => setShowMonthPicker(false)}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          variant="default"
+                          size="sm"
+                          className="flex-1"
+                          onClick={() => {
+                            setSelectedMonth(currentMonth)
+                            setSelectedYear(currentYear)
+                            setShowMonthPicker(false)
+                          }}
+                        >
+                          Current Month
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                </PopoverContent>
-              </Popover>
+                  </PopoverContent>
+                </Popover>
+              )}
               <Button
                 variant="ghost"
                 size="sm"
@@ -596,15 +1507,15 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
                     setSelectedMonth(currentMonth)
                     setSelectedYear(currentYear)
                   }}
-                  className="ml-2"
+                  className="ml-1 sm:ml-2 text-xs sm:text-sm px-2 sm:px-3"
                 >
                   Today
                 </Button>
               )}
             </div>
           </div>
-          <div className="flex items-center justify-between">
-            <CardDescription>Your spending breakdown for {monthName}</CardDescription>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <CardDescription className="text-xs sm:text-sm">Your spending breakdown for {monthName}</CardDescription>
             <BudgetDialog 
               selectedMonth={selectedMonth} 
               selectedYear={selectedYear}
@@ -616,6 +1527,14 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
           </div>
         </CardHeader>
         <CardContent className="relative z-10">
+          {monthLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center space-y-4">
+                <Loader2 className="h-8 w-8 animate-spin mx-auto text-blue-500" />
+                <p className="text-sm text-muted-foreground">Loading {monthName} data...</p>
+              </div>
+            </div>
+          ) : (
           <div className="space-y-6">
             {/* Main expense breakdown */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -626,7 +1545,7 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
                 transition={{ duration: 0.3 }}
               >
                 <p className="text-sm text-muted-foreground mb-1">Total Expenses</p>
-                <p className="text-2xl font-bold bg-gradient-to-r from-gray-600 to-gray-800 dark:from-gray-300 dark:to-gray-100 bg-clip-text text-transparent">
+                <p className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-gray-600 to-gray-800 dark:from-gray-300 dark:to-gray-100 bg-clip-text text-transparent">
                   {formatAmount(totalExpenses, 'PKR')}
                 </p>
               </motion.div>
@@ -639,7 +1558,7 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
                   transition={{ duration: 0.3, delay: index * 0.1 }}
                 >
                   <p className="text-sm text-muted-foreground mb-1">{config.label}</p>
-                  <p className={`text-xl font-bold bg-gradient-to-r ${config.color} bg-clip-text text-transparent`}>
+                  <p className={`text-base sm:text-xl font-bold bg-gradient-to-r ${config.color} bg-clip-text text-transparent`}>
                     {formatAmount(expensesByCategory[key] || 0, 'PKR')}
                   </p>
                 </motion.div>
@@ -662,7 +1581,7 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
                   <p className="text-sm text-muted-foreground">
                     {new Date(selectedYear, selectedMonth - 1).toLocaleDateString('en-US', { month: 'short' })} Savings
                   </p>
-                  <p className="text-xl font-semibold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                  <p className="text-base sm:text-xl font-semibold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
                     {formatAmount(monthlySavings, 'PKR')}
                   </p>
                 </motion.div>
@@ -673,13 +1592,14 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
                   transition={{ duration: 0.3, delay: 0.1 }}
                 >
                   <p className="text-sm text-muted-foreground">Lifetime Savings</p>
-                  <p className="text-xl font-semibold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                  <p className="text-base sm:text-xl font-semibold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
                     {formatAmount(totalSavings, 'PKR')}
                   </p>
                 </motion.div>
               </div>
             </div>
           </div>
+          )}
         </CardContent>
         
         {/* Decorative element */}
@@ -697,764 +1617,116 @@ export function ExpenseList({ refreshTrigger }: ExpenseListProps) {
         />
       </Card>
 
-      {/* Tabs for Recent Expenses and Visualization & Insights */}
-      <Tabs defaultValue="expenses" className="space-y-6">
-        <TabsList className="w-full bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 backdrop-blur-xl border border-white/20 dark:border-white/10">
-          <TabsTrigger value="expenses" className="flex-1 data-[state=active]:bg-white/60 dark:data-[state=active]:bg-[oklch(0.25_0.02_250)]/50">
-            <Receipt className="w-4 h-4 mr-2" />
-            Recent Expenses
-          </TabsTrigger>
-          <TabsTrigger value="budget" className="flex-1 data-[state=active]:bg-white/60 dark:data-[state=active]:bg-[oklch(0.25_0.02_250)]/50">
-            <Target className="w-4 h-4 mr-2" />
-            Budget Overview
-          </TabsTrigger>
-          <TabsTrigger value="visualization" className="flex-1 data-[state=active]:bg-white/60 dark:data-[state=active]:bg-[oklch(0.25_0.02_250)]/50">
-            <BarChart3 className="w-4 h-4 mr-2" />
-            Visualization
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="expenses">
-          <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.95 }}
-            transition={{ 
-              duration: 0.4,
-              ease: "easeOut",
-              scale: { duration: 0.3 }
-            }}
+      {/* Mobile Navigation Buttons */}
+      {isMobile && activeView !== 'expenses' && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="fixed top-4 left-4 z-50"
+        >
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setActiveView('expenses')}
+            className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm shadow-lg"
           >
-            {/* Recent Expenses Card */}
-            <Card className="relative backdrop-blur-xl bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 border-white/20 dark:border-white/10 rounded-3xl overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-blue-500/5 dark:from-green-500/10 dark:to-blue-500/10" />
-            
-            <CardHeader className="relative z-10">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <motion.div
-                    initial={{ rotate: -10 }}
-                    animate={{ rotate: 10 }}
-                    transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }}
-                    className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-blue-500 shadow-lg"
-                  >
-                    <Receipt className="h-5 w-5 text-white" />
-                  </motion.div>
-                  <CardTitle className="text-xl">Recent Expenses</CardTitle>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowExpenses(!showExpenses)}
-                  className="flex items-center gap-2"
-                >
-                  <motion.div
-                    animate={{ rotate: showExpenses ? 180 : 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="h-4 w-4"
-                  >
-                    <ChevronDown className="h-4 w-4" />
-                  </motion.div>
-                  {showExpenses ? 'Hide Expenses' : 'Show Expenses'}
-                </Button>
-              </div>
-              {showExpenses && (
-                <>
-                  <CardDescription>Your expense history for {monthName}</CardDescription>
-                  
-                  {/* Date Filter Controls */}
-                  <div className="space-y-3 mt-4">
-                    <div className="flex flex-wrap items-center gap-4">
-                      <div className="flex items-center gap-2">
-                        <Label className="text-sm font-medium">View:</Label>
-                        <Select
-                          value={dateFilter}
-                          onValueChange={(value: 'day' | 'week' | 'month') => {
-                            setDateFilter(value)
-                            setCurrentPage(1) // Reset pagination
-                          }}
-                        >
-                          <SelectTrigger className="w-[120px] h-9">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="day">Day</SelectItem>
-                            <SelectItem value="week">Week</SelectItem>
-                            <SelectItem value="month">Month</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      
-                      {dateFilter === 'day' && (
-                        <motion.div
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          className="flex items-center gap-2"
-                        >
-                          <Label className="text-sm font-medium">Date:</Label>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button
-                                variant="outline"
-                                className={cn(
-                                  "w-[200px]",
-                                  "h-9 justify-start text-left font-normal",
-                                  !selectedDate && "text-muted-foreground"
-                                )}
-                              >
-                                <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
-                                <span className="truncate">
-                                  {selectedDate ? format(selectedDate, "PPP") : "Pick a date"}
-                                </span>
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <CalendarComponent
-                                mode="single"
-                                selected={selectedDate}
-                                onSelect={(date) => {
-                                  if (date) {
-                                    setSelectedDate(date)
-                                    setCurrentPage(1) // Reset pagination
-                                  }
-                                }}
-                                defaultMonth={new Date(selectedYear, selectedMonth - 1)}
-                                initialFocus
-                                disabled={(date) => {
-                                  // Disable future dates and dates outside the selected month
-                                  const today = new Date()
-                                  today.setHours(23, 59, 59, 999)
-                                  return date > today || 
-                                         date.getMonth() + 1 !== selectedMonth || 
-                                         date.getFullYear() !== selectedYear
-                                }}
-                              />
-                            </PopoverContent>
-                          </Popover>
-                        </motion.div>
-                      )}
-                      
-                      {dateFilter === 'week' && (
-                        <motion.div
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          className="flex items-center gap-2"
-                        >
-                          <Label className="text-sm font-medium">Week:</Label>
-                          <Select
-                            value={selectedWeek.toString()}
-                            onValueChange={(value) => {
-                              setSelectedWeek(parseInt(value))
-                              setCurrentPage(1) // Reset pagination
-                            }}
-                          >
-                            <SelectTrigger className="w-[200px] h-9">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {[1, 2, 3, 4].map(week => {
-                                const { start, end } = getWeekBoundaries(week, selectedMonth, selectedYear)
-                                const isDisabled = isWeekInFuture(week, selectedMonth, selectedYear)
-                                return (
-                                  <SelectItem 
-                                    key={week} 
-                                    value={week.toString()}
-                                    disabled={isDisabled}
-                                  >
-                                    Week {week} ({format(start, "MMM d")} - {format(end, "MMM d")})
-                                    {isDisabled && " (Future)"}
-                                  </SelectItem>
-                                )
-                              })}
-                            </SelectContent>
-                          </Select>
-                        </motion.div>
-                      )}
-                    </div>
-                    
-                    {/* Filter Summary - on separate line */}
-                    {dateFilter !== 'month' && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-sm text-muted-foreground"
-                      >
-                        Showing {filteredExpenses.length} expense{filteredExpenses.length !== 1 ? 's' : ''}
-                        {dateFilter === 'week' && (
-                          <span className="ml-1">
-                            for Week {selectedWeek} of {format(new Date(selectedYear, selectedMonth - 1), "MMMM yyyy")}
-                          </span>
-                        )}
-                        {dateFilter === 'day' && (
-                          <span className="ml-1">
-                            for {format(selectedDate, "MMMM d, yyyy")}
-                          </span>
-                        )}
-                      </motion.div>
-                    )}
-                  </div>
-                </>
-              )}
-            </CardHeader>
-            <AnimatePresence>
-              {showExpenses && (
+            <ChevronLeft className="h-4 w-4 mr-1" />
+            Back
+          </Button>
+        </motion.div>
+      )}
+
+      {/* Render appropriate content */}
+      {isMobile ? (
+        // Mobile View - Show one section at a time
+        <div className="space-y-6">
+          {/* Mobile Quick Access Buttons - Only show on expenses view */}
+          {activeView === 'expenses' && (
+            <>
+              <div className="grid grid-cols-2 gap-3">
                 <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{
-                    height: { duration: 0.4, ease: "easeInOut" },
-                    opacity: { duration: 0.3, ease: "easeInOut" }
-                  }}
-                  className="overflow-hidden"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 >
-                  <CardContent className="relative z-10" id="expenses-content">
-                    {filteredExpenses.length === 0 ? (
-                      <p className="text-center text-muted-foreground py-8">
-                        {dateFilter === 'day' 
-                          ? `No expenses for ${format(selectedDate, "PPP")}`
-                          : dateFilter === 'week'
-                          ? `No expenses for Week ${selectedWeek} of ${format(new Date(selectedYear, selectedMonth - 1), "MMMM yyyy")}`
-                          : "No expenses yet. Add your first expense above!"
-                        }
-                      </p>
-                    ) : (
-                      <div className="space-y-3">
-                        {paginatedExpenses.map((expense, index) => (
-                      <motion.div
-                        key={expense.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, x: -100 }}
-                        transition={{ duration: 0.3, delay: index * 0.05 }}
-                        whileHover={{ scale: 1.01 }}
-                        className="flex items-center justify-between p-4 rounded-2xl border bg-white/30 dark:bg-white/5 backdrop-blur-sm hover:shadow-lg transition-all duration-300 cursor-pointer"
-                        onClick={() => handleExpenseClick(expense)}
-                      >
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 flex-wrap">
-                            <h4 className="font-medium">{expense.description}</h4>
-                            <span className={`text-xs px-3 py-1 rounded-full ${categoryConfig[expense.category].bgColor} ${categoryConfig[expense.category].textColor} font-medium`}>
-                              {categoryConfig[expense.category].label}
-                            </span>
-                            {expense.subcategory && (
-                              <span className="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300">
-                                {expense.subcategory}
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {formatDate(expense.date)} at {formatTime(expense.date)}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <p className={`text-lg font-semibold bg-gradient-to-r ${categoryConfig[expense.category].color} bg-clip-text text-transparent`}>
-                            {formatAmount(expense.amount, expense.currency || 'PKR')}
-                          </p>
-                          {expense.receipt && (
-                            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  handleDownloadReceipt(expense)
-                                }}
-                                className="text-blue-600 hover:text-blue-700 hover:bg-blue-100 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/20"
-                                title="Download receipt"
-                              >
-                                <Download className="h-4 w-4" />
-                              </Button>
-                            </motion.div>
-                          )}
-                          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleDeleteClick(expense)
-                              }}
-                              disabled={deletingExpenseId === expense.id}
-                              className="text-destructive hover:text-destructive hover:bg-destructive/10 disabled:opacity-50"
-                            >
-                              {deletingExpenseId === expense.id ? (
-                                <motion.div
-                                  animate={{ rotate: 360 }}
-                                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                                >
-                                  <Loader2 className="h-4 w-4" />
-                                </motion.div>
-                              ) : (
-                                <Trash2 className="h-4 w-4" />
-                              )}
-                            </Button>
-                          </motion.div>
-                        </div>
-                      </motion.div>
-                    ))}
-                      </div>
-                    )}
-                    
-                    {/* Pagination Controls */}
-                    {filteredExpenses.length > itemsPerPage && (
-                      <div className="flex items-center justify-between mt-6 pt-4 border-t">
-                        <p className="text-sm text-muted-foreground">
-                          Showing {startIndex + 1}-{Math.min(endIndex, filteredExpenses.length)} of {filteredExpenses.length} expenses
-                        </p>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setCurrentPage(page => Math.max(1, page - 1))}
-                            disabled={currentPage === 1}
-                            className="h-8 w-8 p-0"
-                          >
-                            <ChevronLeft className="h-4 w-4" />
-                          </Button>
-                          
-                          <div className="flex items-center gap-1">
-                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => {
-                              // Show only a few page numbers around current page
-                              if (
-                                page === 1 ||
-                                page === totalPages ||
-                                (page >= currentPage - 1 && page <= currentPage + 1)
-                              ) {
-                                return (
-                                  <Button
-                                    key={page}
-                                    variant={currentPage === page ? "default" : "outline"}
-                                    size="sm"
-                                    onClick={() => setCurrentPage(page)}
-                                    className="h-8 w-8 p-0"
-                                  >
-                                    {page}
-                                  </Button>
-                                )
-                              } else if (
-                                page === currentPage - 2 ||
-                                page === currentPage + 2
-                              ) {
-                                return <span key={page} className="px-1">...</span>
-                              }
-                              return null
-                            })}
-                          </div>
-                          
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setCurrentPage(page => Math.min(totalPages, page + 1))}
-                            disabled={currentPage === totalPages}
-                            className="h-8 w-8 p-0"
-                          >
-                            <ChevronRight className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                    
-                    {/* Hide button at the bottom */}
-                    <div className="flex justify-center mt-6 pt-4 border-t">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          const element = document.getElementById('expenses-content');
-                          if (element) {
-                            element.style.transition = 'all 0.4s ease-in-out';
-                            element.style.opacity = '0';
-                            element.style.transform = 'translateY(-10px)';
-                          }
-                          setTimeout(() => setShowExpenses(false), 300);
-                        }}
-                        className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
-                      >
-                        <ChevronUp className="h-4 w-4" />
-                        Hide Recent Expenses
-                      </Button>
-                    </div>
-                  </CardContent>
+                  <Button
+                    variant="outline"
+                    onClick={() => setActiveView('budget')}
+                    className="h-24 w-full flex flex-col items-center justify-center gap-2 bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 backdrop-blur-xl border-white/20 dark:border-white/10 hover:bg-white/60 dark:hover:bg-[oklch(0.25_0.02_250)]/50 transition-colors"
+                  >
+                    <Target className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                    <span className="text-xs font-medium">Budget Overview</span>
+                  </Button>
+                </motion.div>
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Button
+                    variant="outline"
+                    onClick={() => setActiveView('visualization')}
+                    className="h-24 w-full flex flex-col items-center justify-center gap-2 bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 backdrop-blur-xl border-white/20 dark:border-white/10 hover:bg-white/60 dark:hover:bg-[oklch(0.25_0.02_250)]/50 transition-colors"
+                  >
+                    <BarChart3 className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                    <span className="text-xs font-medium">Visualization</span>
+                  </Button>
+                </motion.div>
+              </div>
+              
+              {/* Utilities button */}
+              {onOpenUtilities && (
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Button
+                    variant="outline"
+                    onClick={onOpenUtilities}
+                    className="h-24 w-full flex flex-col items-center justify-center gap-2 bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 backdrop-blur-xl border-white/20 dark:border-white/10 hover:bg-white/60 dark:hover:bg-[oklch(0.25_0.02_250)]/50 transition-colors"
+                  >
+                    <Settings className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                    <span className="text-xs font-medium">Manage Utilities</span>
+                  </Button>
                 </motion.div>
               )}
-            </AnimatePresence>
-          </Card>
-          </motion.div>
-        </TabsContent>
+            </>
+          )}
+          
+          {/* Mobile Content - Conditional rendering based on activeView */}
+          {activeView === 'expenses' && renderExpensesContent()}
+          {activeView === 'budget' && renderBudgetContent()}
+          {activeView === 'visualization' && renderVisualizationContent()}
+        </div>
+      ) : (
+        // Desktop View - Keep existing tabs structure
+        <Tabs defaultValue="expenses" className="space-y-6">
+          <TabsList className="w-full bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 backdrop-blur-xl border border-white/20 dark:border-white/10">
+            <TabsTrigger value="expenses" className="flex-1 data-[state=active]:bg-white/60 dark:data-[state=active]:bg-[oklch(0.25_0.02_250)]/50">
+              <Receipt className="w-4 h-4 mr-2" />
+              Recent Expenses
+            </TabsTrigger>
+            <TabsTrigger value="budget" className="flex-1 data-[state=active]:bg-white/60 dark:data-[state=active]:bg-[oklch(0.25_0.02_250)]/50">
+              <Target className="w-4 h-4 mr-2" />
+              Budget Overview
+            </TabsTrigger>
+            <TabsTrigger value="visualization" className="flex-1 data-[state=active]:bg-white/60 dark:data-[state=active]:bg-[oklch(0.25_0.02_250)]/50">
+              <BarChart3 className="w-4 h-4 mr-2" />
+              Visualization
+            </TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="visualization">
-          <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.95 }}
-            transition={{ 
-              duration: 0.4,
-              ease: "easeOut",
-              scale: { duration: 0.3 }
-            }}
-          >
-            <div className="space-y-6">
-              {/* Analytics & Insights Chart */}
-            <Card className="relative backdrop-blur-xl bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 border-white/20 dark:border-white/10 rounded-3xl overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-blue-500/5 dark:from-purple-500/10 dark:to-blue-500/10" />
-              
-              <CardHeader className="relative z-10">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <motion.div
-                      whileHover={{ rotate: 360 }}
-                      transition={{ duration: 0.5 }}
-                      className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 shadow-lg"
-                    >
-                      <BarChart3 className="h-5 w-5 text-white" />
-                    </motion.div>
-                    <CardTitle className="text-xl">Category Analytics</CardTitle>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowCharts(!showCharts)}
-                    className="flex items-center gap-2"
-                  >
-                    <motion.div
-                      animate={{ rotate: showCharts ? 180 : 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="h-4 w-4"
-                    >
-                      <ChevronDown className="h-4 w-4" />
-                    </motion.div>
-                    {showCharts ? 'Hide Charts' : 'Show Charts'}
-                  </Button>
-                </div>
-                {showCharts && (
-                  <CardDescription>Visual representation of your financial data</CardDescription>
-                )}
-              </CardHeader>
-              <AnimatePresence>
-                {showCharts && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{
-                      height: { duration: 0.4, ease: "easeInOut" },
-                      opacity: { duration: 0.3, ease: "easeInOut" }
-                    }}
-                    className="overflow-hidden"
-                  >
-                    <CardContent className="space-y-6 relative z-10" id="analytics-content">
-                      <ExpenseCharts expenses={expenses} />
-                      <SavingsChart />
-                      
-                      {/* Hide button at the bottom */}
-                      <div className="flex justify-center pt-4 border-t">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            const element = document.getElementById('analytics-content');
-                            if (element) {
-                              element.style.transition = 'all 0.4s ease-in-out';
-                              element.style.opacity = '0';
-                              element.style.transform = 'translateY(-10px)';
-                            }
-                            setTimeout(() => setShowCharts(false), 300);
-                          }}
-                          className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
-                        >
-                          <ChevronUp className="h-4 w-4" />
-                          Hide Analytics
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </Card>
+          <TabsContent value="expenses">
+            {renderExpensesContent()}
+          </TabsContent>
 
-            {/* Utility Analytics Chart */}
-            <Card className="relative backdrop-blur-xl bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 border-white/20 dark:border-white/10 rounded-3xl overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-yellow-500/5 dark:from-orange-500/10 dark:to-yellow-500/10" />
-              
-              <CardHeader className="relative z-10">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <motion.div
-                      whileHover={{ scale: 1.1 }}
-                      transition={{ duration: 0.3 }}
-                      className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-yellow-500 shadow-lg"
-                    >
-                      <Zap className="h-5 w-5 text-white" />
-                    </motion.div>
-                    <CardTitle className="text-xl">Utility Analytics</CardTitle>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowUtilityCharts(!showUtilityCharts)}
-                    className="flex items-center gap-2"
-                  >
-                    <motion.div
-                      animate={{ rotate: showUtilityCharts ? 180 : 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="h-4 w-4"
-                    >
-                      <ChevronDown className="h-4 w-4" />
-                    </motion.div>
-                    {showUtilityCharts ? 'Hide Charts' : 'Show Charts'}
-                  </Button>
-                </div>
-                {showUtilityCharts && (
-                  <CardDescription>Breakdown of your spending by utility type</CardDescription>
-                )}
-              </CardHeader>
-              <AnimatePresence>
-                {showUtilityCharts && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{
-                      height: { duration: 0.4, ease: "easeInOut" },
-                      opacity: { duration: 0.3, ease: "easeInOut" }
-                    }}
-                    className="overflow-hidden"
-                  >
-                    <CardContent className="relative z-10" id="utility-content">
-                      <UtilityCharts expenses={expenses} />
-                      
-                      {/* Hide button at the bottom */}
-                      <div className="flex justify-center mt-6 pt-4 border-t">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            const element = document.getElementById('utility-content');
-                            if (element) {
-                              element.style.transition = 'all 0.4s ease-in-out';
-                              element.style.opacity = '0';
-                              element.style.transform = 'translateY(-10px)';
-                            }
-                            setTimeout(() => setShowUtilityCharts(false), 300);
-                          }}
-                          className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
-                        >
-                          <ChevronUp className="h-4 w-4" />
-                          Hide Utility Analytics
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </Card>
-          </div>
-          </motion.div>
-        </TabsContent>
+          <TabsContent value="visualization">
+            {renderVisualizationContent()}
+          </TabsContent>
 
-        <TabsContent value="budget">
-          <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.95 }}
-            transition={{ 
-              duration: 0.4,
-              ease: "easeOut",
-              scale: { duration: 0.3 }
-            }}
-          >
-            <Card className="relative backdrop-blur-xl bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 border-white/20 dark:border-white/10 rounded-3xl overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 dark:from-indigo-500/10 dark:to-purple-500/10" />
-            
-            <CardHeader className="relative z-10">
-              <div className="flex items-center gap-3">
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ duration: 0.5, type: "spring" }}
-                  className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 shadow-lg"
-                >
-                  <Target className="h-5 w-5 text-white" />
-                </motion.div>
-                <CardTitle className="text-xl">Budget Overview</CardTitle>
-              </div>
-              <CardDescription>
-                Track your spending against your monthly budget
-              </CardDescription>
-            </CardHeader>
-            
-            <CardContent className="relative z-10 space-y-6">
-              {!budget ? (
-                <div className="text-center py-12">
-                  <Target className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground mb-4">No budget set for {monthName}</p>
-                  <BudgetDialog 
-                    selectedMonth={selectedMonth} 
-                    selectedYear={selectedYear}
-                    onBudgetUpdated={() => {
-                      fetchBudget()
-                      fetchExpenses()
-                    }}
-                  />
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {/* Budget Progress Indicators */}
-                  {Object.entries(categoryConfig).map(([key, config], index) => {
-                    const budgetKey = key === 'NEED' ? 'needBudget' : 
-                                     key === 'WANT' ? 'wantBudget' : 
-                                     key === 'SELF_DEVELOPMENT' ? 'selfDevelopmentBudget' : 
-                                     'savingsBudget'
-                    const budgetAmount = budget[budgetKey as keyof typeof budget] || 0
-                    const spentAmount = expensesByCategory[key] || 0
-                    const percentage = budgetAmount > 0 ? (spentAmount / budgetAmount) * 100 : 0
-                    const isOverBudget = percentage > 100
-                    const isSavings = key === 'SAVINGS'
-                    
-                    // For savings, we want to show progress towards the minimum goal
-                    const savingsPercentage = isSavings && budgetAmount > 0 ? 
-                      Math.min((spentAmount / budgetAmount) * 100, 100) : percentage
-
-                    return (
-                      <motion.div
-                        key={key}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                        className="space-y-3"
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className={`inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-r ${config.color} shadow-sm`}>
-                              <Wallet className="h-5 w-5 text-white" />
-                            </div>
-                            <div>
-                              <h4 className="font-medium">{config.label}</h4>
-                              <p className="text-sm text-muted-foreground">
-                                {formatAmount(spentAmount, 'PKR')} / {formatAmount(budgetAmount, 'PKR')}
-                                {isSavings && spentAmount >= budgetAmount && (
-                                  <span className="text-green-600 dark:text-green-400 ml-2">✓ Goal met!</span>
-                                )}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <p className={`text-lg font-semibold ${
-                              isOverBudget && !isSavings ? 'text-red-600 dark:text-red-400' : 
-                              isSavings && spentAmount >= budgetAmount ? 'text-green-600 dark:text-green-400' :
-                              'text-muted-foreground'
-                            }`}>
-                              {isSavings ? savingsPercentage.toFixed(0) : percentage.toFixed(0)}%
-                            </p>
-                            {isOverBudget && !isSavings && (
-                              <div className="space-y-1">
-                                <p className="text-xs text-red-600 dark:text-red-400">Over budget</p>
-                                <p className="text-xs font-medium text-red-600 dark:text-red-400">
-                                  +{formatAmount(spentAmount - budgetAmount, 'PKR')}
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        
-                        <div className="relative">
-                          <Progress 
-                            value={isSavings ? savingsPercentage : Math.min(percentage, 100)} 
-                            className={`h-3 ${
-                              isOverBudget && !isSavings ? 'bg-red-100 dark:bg-red-900/20' : 
-                              'bg-gray-100 dark:bg-gray-800'
-                            }`}
-                          />
-                          {isOverBudget && !isSavings && (
-                            <>
-                              <div 
-                                className="absolute top-0 right-0 h-3 bg-red-600 dark:bg-red-400 rounded-r animate-pulse"
-                                style={{ width: `${Math.min((percentage - 100) * 0.5, 50)}%` }}
-                              />
-                              <div className="absolute -right-2 top-1/2 -translate-y-1/2 bg-red-600 dark:bg-red-400 text-white text-xs px-2 py-1 rounded-full shadow-lg">
-                                <span className="font-medium">+{((percentage - 100).toFixed(0))}%</span>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                        
-                        {isSavings && (
-                          <p className="text-xs text-muted-foreground">
-                            {spentAmount >= budgetAmount ? 
-                              `You've saved ${formatAmount(spentAmount - budgetAmount, 'PKR')} more than your minimum goal!` :
-                              `${formatAmount(budgetAmount - spentAmount, 'PKR')} more to reach your minimum savings goal`
-                            }
-                          </p>
-                        )}
-                      </motion.div>
-                    )
-                  })}
-                  
-                  {/* Total Budget Summary */}
-                  <div className="border-t pt-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h4 className="text-lg font-semibold">Total Budget Summary</h4>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setShowAmounts(!showAmounts)}
-                        className="h-8 w-8 p-0"
-                      >
-                        {showAmounts ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </Button>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <motion.div 
-                        className="text-center p-4 rounded-2xl bg-gradient-to-br from-blue-100/50 to-indigo-100/50 dark:from-blue-900/20 dark:to-indigo-900/20"
-                        whileHover={{ scale: 1.02 }}
-                      >
-                        <p className="text-sm text-muted-foreground">Total Budget</p>
-                        <p className="text-xl font-semibold text-blue-600 dark:text-blue-400">
-                          {formatAmount(
-                            (budget.needBudget || 0) + 
-                            (budget.wantBudget || 0) + 
-                            (budget.selfDevelopmentBudget || 0),
-                            'PKR'
-                          )}
-                        </p>
-                      </motion.div>
-                      
-                      <motion.div 
-                        className="text-center p-4 rounded-2xl bg-gradient-to-br from-green-100/50 to-emerald-100/50 dark:from-green-900/20 dark:to-emerald-900/20"
-                        whileHover={{ scale: 1.02 }}
-                      >
-                        <p className="text-sm text-muted-foreground">Total Spent</p>
-                        <p className="text-xl font-semibold text-green-600 dark:text-green-400">
-                          {formatAmount(totalExpenses, 'PKR')}
-                        </p>
-                      </motion.div>
-                      
-                      <motion.div 
-                        className="text-center p-4 rounded-2xl bg-gradient-to-br from-purple-100/50 to-pink-100/50 dark:from-purple-900/20 dark:to-pink-900/20"
-                        whileHover={{ scale: 1.02 }}
-                      >
-                        <p className="text-sm text-muted-foreground">Remaining</p>
-                        <p className={`text-xl font-semibold ${
-                          totalExpenses > ((budget.needBudget || 0) + (budget.wantBudget || 0) + (budget.selfDevelopmentBudget || 0)) ?
-                          'text-red-600 dark:text-red-400' : 'text-purple-600 dark:text-purple-400'
-                        }`}>
-                          {formatAmount(
-                            ((budget.needBudget || 0) + (budget.wantBudget || 0) + (budget.selfDevelopmentBudget || 0)) - totalExpenses,
-                            'PKR'
-                          )}
-                        </p>
-                      </motion.div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-          </motion.div>
-        </TabsContent>
-      </Tabs>
+          <TabsContent value="budget">
+            {renderBudgetContent()}
+          </TabsContent>
+        </Tabs>
+      )}
 
       {/* Delete Confirmation Dialog */}
       <DeleteExpenseDialog

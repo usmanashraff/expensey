@@ -67,7 +67,7 @@ export function SavingsChart() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Savings Over Time</CardTitle>
+        <CardTitle className="text-lg sm:text-xl">Savings Over Time</CardTitle>
         <CardDescription>
           Your savings journey - Total saved: {formatCurrency(totalSaved, 'PKR')}
         </CardDescription>
