@@ -205,7 +205,7 @@ export function UtilityTypeManager({ onUtilityTypesChanged, isInDialog = false, 
                   value={newTypeName}
                   onChange={(e) => setNewTypeName(e.target.value)}
                   disabled={isAdding}
-                  className="flex-1 backdrop-blur-sm bg-white/50 dark:bg-white/5 text-sm"
+                  className="flex-1 backdrop-blur-sm bg-white/50 dark:bg-white/5 text-sm min-h-[48px] py-3"
                 />
                 <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                   <Button 
