@@ -30,6 +30,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
   const [isMobile, setIsMobile] = useState(false)
   const [showExpenseDialog, setShowExpenseDialog] = useState(false)
   const [showUtilityDialog, setShowUtilityDialog] = useState(false)
+  const [optimisticExpense, setOptimisticExpense] = useState<any>(null)
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -50,11 +51,25 @@ export function DashboardClient({ user }: DashboardClientProps) {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  const handleExpenseAdded = () => {
-    setRefreshTrigger(prev => prev + 1)
+  const handleExpenseAdded = (newExpense?: any) => {
+    if (newExpense) {
+      // Set optimistic expense before triggering refresh
+      setOptimisticExpense(newExpense)
+      // Small delay to ensure optimistic state is set before refresh
+      setTimeout(() => {
+        setRefreshTrigger(prev => prev + 1)
+      }, 0)
+    } else {
+      setRefreshTrigger(prev => prev + 1)
+    }
+    
     if (isMobile) {
       setShowExpenseDialog(false)
     }
+  }
+
+  const handleOptimisticExpenseConfirmed = () => {
+    setOptimisticExpense(null)
   }
 
   const handleUtilityTypesChanged = () => {
@@ -144,7 +159,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
                   <span className="hidden md:inline">Add Expense</span>
                 </Button>
               </motion.div>
-              <ExpenseList refreshTrigger={refreshTrigger} onOpenUtilities={() => setShowUtilityDialog(true)} />
+              <ExpenseList refreshTrigger={refreshTrigger} onOpenUtilities={() => setShowUtilityDialog(true)} optimisticExpense={optimisticExpense} onOptimisticExpenseConfirmed={handleOptimisticExpenseConfirmed} />
             </>
           ) : (
             <>
@@ -171,7 +186,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
                 transition={{ duration: 0.5, delay: 0.4 }}
                 className="lg:col-span-2"
               >
-                <ExpenseList refreshTrigger={refreshTrigger} />
+                <ExpenseList refreshTrigger={refreshTrigger} optimisticExpense={optimisticExpense} onOptimisticExpenseConfirmed={handleOptimisticExpenseConfirmed} />
               </motion.div>
             </>
           )}

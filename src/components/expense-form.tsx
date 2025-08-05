@@ -16,7 +16,7 @@ import { motion } from 'framer-motion'
 import { useUserSettings } from '@/hooks/use-user-settings'
 
 interface ExpenseFormProps {
-  onExpenseAdded: () => void
+  onExpenseAdded: (newExpense?: any) => void
   utilityRefreshTrigger?: number
   isInDialog?: boolean
   onClose?: () => void
@@ -137,6 +137,8 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger, isInDialog 
         throw new Error(errorData.error || 'Failed to add expense')
       }
 
+      const newExpense = await response.json()
+
       setAmount('')
       setDescription('')
       setCategory('')
@@ -145,7 +147,7 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger, isInDialog 
       setReceipt(null)
       setReceiptPreview(null)
       toast.success('Expense added successfully!')
-      onExpenseAdded()
+      onExpenseAdded(newExpense)
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to add expense. Please try again.'
       toast.error(errorMessage)

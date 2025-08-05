@@ -91,7 +91,7 @@ export function ExpenseCharts({ expenses }: ExpenseChartsProps) {
   return (
     <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2">
       {/* Pie Chart */}
-      <Card>
+      <Card id="expense-pie-chart">
         <CardHeader>
           <CardTitle className="text-lg sm:text-xl">Expense Distribution</CardTitle>
           <CardDescription>Percentage breakdown by category</CardDescription>
@@ -136,7 +136,7 @@ export function ExpenseCharts({ expenses }: ExpenseChartsProps) {
       </Card>
 
       {/* Radial Bar Chart */}
-      <Card>
+      <Card id="expense-radial-chart">
         <CardHeader>
           <CardTitle className="text-lg sm:text-xl">Category Analysis</CardTitle>
           <CardDescription>Amount spent in each category</CardDescription>

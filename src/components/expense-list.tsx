@@ -35,14 +35,18 @@ import { ExpenseDetailsDialog } from './expense-details-dialog'
 interface ExpenseListProps {
   refreshTrigger: number
   onOpenUtilities?: () => void
+  optimisticExpense?: Expense | null
+  onOptimisticExpenseConfirmed?: () => void
 }
 
-export function ExpenseList({ refreshTrigger, onOpenUtilities }: ExpenseListProps) {
+export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense, onOptimisticExpenseConfirmed }: ExpenseListProps) {
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [loading, setLoading] = useState(true)
   const [monthLoading, setMonthLoading] = useState(false)
   const [monthlySavings, setMonthlySavings] = useState<number>(0)
   const [totalSavings, setTotalSavings] = useState<number>(0)
+  const [optimisticUpdateActive, setOptimisticUpdateActive] = useState(false)
+  const [previousOptimisticExpense, setPreviousOptimisticExpense] = useState<Expense | null>(null)
   const [showCharts, setShowCharts] = useState(false)
   const [showUtilityCharts, setShowUtilityCharts] = useState(false)
   const [showExpenses, setShowExpenses] = useState(false)
@@ -144,20 +148,41 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities }: ExpenseListProp
       })
       
       setExpenses(filteredExpenses)
+      
+      // If we have an optimistic expense and it's now in the real data, 
+      // we can safely clear the optimistic state
+      if (optimisticExpense && onOptimisticExpenseConfirmed) {
+        const expenseInData = filteredExpenses.some((exp: Expense) => 
+          exp.amount === optimisticExpense.amount && 
+          exp.description === optimisticExpense.description &&
+          exp.category === optimisticExpense.category
+        )
+        
+        if (expenseInData) {
+          // Notify parent to clear optimistic expense
+          setTimeout(() => {
+            onOptimisticExpenseConfirmed()
+          }, 100) // Small delay to ensure smooth transition
+        }
+      }
     } catch (error) {
       console.error('Failed to fetch expenses:', error)
     } finally {
-      setLoading(false)
+      if (!optimisticUpdateActive) {
+        setLoading(false)
+      }
     }
   }
   
   // Filter expenses based on date filter selection
   const getFilteredExpenses = () => {
+    const baseExpenses = displayExpenses
+    
     if (dateFilter === 'month') {
-      return expenses
+      return baseExpenses
     }
     
-    return expenses.filter(expense => {
+    return baseExpenses.filter(expense => {
       const expenseDate = new Date(expense.date)
       
       if (dateFilter === 'day') {
@@ -181,6 +206,7 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities }: ExpenseListProp
       const monthlyResponse = await fetch(`/api/savings?month=${selectedMonth}&year=${selectedYear}`)
       if (monthlyResponse.ok) {
         const monthlyData = await monthlyResponse.json()
+        
         setMonthlySavings(monthlyData.savings)
       }
       
@@ -223,7 +249,8 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities }: ExpenseListProp
   useEffect(() => {
     const fetchMonthData = async () => {
       // Only show month loading if it's a month/year change, not initial load or refresh
-      if (!loading) {
+      // Don't show loading if we have an optimistic update
+      if (!loading && !optimisticUpdateActive) {
         setMonthLoading(true)
       }
       
@@ -235,6 +262,7 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities }: ExpenseListProp
         ])
       } finally {
         setMonthLoading(false)
+        // Don't clear optimistic update here - let it be handled by the parent component
       }
     }
     
@@ -249,6 +277,22 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities }: ExpenseListProp
   useEffect(() => {
     fetchAvailableMonths()
   }, [refreshTrigger])
+
+  // Handle optimistic updates
+  useEffect(() => {
+    if (optimisticExpense) {
+      setOptimisticUpdateActive(true)
+      setPreviousOptimisticExpense(optimisticExpense)
+    } else if (previousOptimisticExpense) {
+      // Keep active for a bit to prevent flicker during transition
+      setTimeout(() => {
+        setOptimisticUpdateActive(false)
+        setPreviousOptimisticExpense(null)
+      }, 200)
+    } else {
+      setOptimisticUpdateActive(false)
+    }
+  }, [optimisticExpense, previousOptimisticExpense])
   
   useEffect(() => {
     const checkMobile = () => {
@@ -397,13 +441,73 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities }: ExpenseListProp
     return formatCurrencyWithMask(showAmounts, amount, currency)
   }
 
-  const totalExpenses = expenses
+  // Combine actual expenses with optimistic expense for display
+  const displayExpenses = (() => {
+    const expenseToUse = optimisticExpense || previousOptimisticExpense
+    
+    if (!optimisticUpdateActive || !expenseToUse) {
+      return expenses
+    }
+    
+    // Check if optimistic expense belongs to current selected month/year
+    const optimisticDate = new Date(expenseToUse.date)
+    const belongsToSelectedPeriod = 
+      optimisticDate.getMonth() + 1 === selectedMonth && 
+      optimisticDate.getFullYear() === selectedYear
+    
+    if (belongsToSelectedPeriod) {
+      // Check if expense is already in the list
+      const alreadyExists = expenses.some((exp: Expense) => 
+        exp.amount === expenseToUse.amount && 
+        exp.description === expenseToUse.description &&
+        exp.category === expenseToUse.category
+      )
+      
+      if (!alreadyExists) {
+        return [...expenses, expenseToUse]
+      }
+    }
+    
+    return expenses
+  })()
+
+  const totalExpenses = displayExpenses
     .filter(expense => expense.category !== 'SAVINGS')
     .reduce((sum, expense) => sum + expense.amount, 0)
-  const expensesByCategory = expenses.reduce((acc, expense) => {
+  const expensesByCategory = displayExpenses.reduce((acc, expense) => {
     acc[expense.category] = (acc[expense.category] || 0) + expense.amount
     return acc
   }, {} as Record<string, number>)
+  
+  // Calculate optimistic monthly savings
+  const optimisticMonthlySavings = (() => {
+    const expenseToUse = optimisticExpense || previousOptimisticExpense
+    
+    if (!optimisticUpdateActive || !expenseToUse || expenseToUse.category !== 'SAVINGS') {
+      return monthlySavings
+    }
+    
+    // Check if optimistic expense belongs to current selected month/year
+    const optimisticDate = new Date(expenseToUse.date)
+    const belongsToSelectedPeriod = 
+      optimisticDate.getMonth() + 1 === selectedMonth && 
+      optimisticDate.getFullYear() === selectedYear
+    
+    if (belongsToSelectedPeriod) {
+      // Check if savings is already included in monthlySavings
+      const expectedNewTotal = monthlySavings
+      const optimisticTotal = monthlySavings + expenseToUse.amount
+      
+      // If monthlySavings already includes this expense, don't add it again
+      if (Math.abs(monthlySavings - optimisticTotal) < 0.01) {
+        return monthlySavings
+      }
+      
+      return optimisticTotal
+    }
+    
+    return monthlySavings
+  })()
 
   const navigateMonth = (direction: 'prev' | 'next') => {
     let newMonth = selectedMonth
@@ -461,7 +565,7 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities }: ExpenseListProp
 
   const exportToPDF = async () => {
     // Validate that there's data to export
-    if (filteredExpenses.length === 0 && monthlySavings === 0) {
+    if (filteredExpenses.length === 0 && optimisticMonthlySavings === 0) {
       toast.error('No data available to export for this month')
       return
     }
@@ -473,6 +577,9 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities }: ExpenseListProp
       
       // Import autoTable plugin - this extends jsPDF prototype
       await import('jspdf-autotable')
+      
+      // Import html2canvas for chart capture
+      const html2canvas = (await import('html2canvas')).default
       
       const pdf = new jsPDF()
       
@@ -545,7 +652,7 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities }: ExpenseListProp
       const summaryData = [
         [`Total Expenses:`, `${filteredExpenses.length} transactions`],
         [`Total Amount Spent:`, `PKR ${totalAmount.toLocaleString()}`],
-        [`Monthly Savings:`, `PKR ${monthlySavings.toLocaleString()}`],
+        [`Monthly Savings:`, `PKR ${optimisticMonthlySavings.toLocaleString()}`],
         [`Period:`, monthName]
       ]
       
@@ -615,11 +722,11 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities }: ExpenseListProp
       
       // Enhanced savings metrics with overall savings
       const savingsData = [
-        ['Monthly Savings:', `PKR ${monthlySavings.toLocaleString()}`],
+        ['Monthly Savings:', `PKR ${optimisticMonthlySavings.toLocaleString()}`],
         ['Lifetime Savings:', `PKR ${totalSavings.toLocaleString()}`],
         ['Total Spent:', `PKR ${totalAmount.toLocaleString()}`],
-        ['Savings Rate:', `${totalAmount > 0 ? ((monthlySavings / (totalAmount + monthlySavings)) * 100).toFixed(1) : 0}%`],
-        ['Net Cash Flow:', `PKR ${(monthlySavings - totalAmount).toLocaleString()}`]
+        ['Savings Rate:', `${totalAmount > 0 ? ((optimisticMonthlySavings / (totalAmount + optimisticMonthlySavings)) * 100).toFixed(1) : 0}%`],
+        ['Net Cash Flow:', `PKR ${(optimisticMonthlySavings - totalAmount).toLocaleString()}`]
       ]
       
       pdf.setFontSize(11)
@@ -636,6 +743,122 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities }: ExpenseListProp
       })
       
       yPosition += 65 // Increased to account for larger container with 5 items
+      
+      // ==== CHARTS SECTION (if visible) ====
+      if (showCharts) {
+        pdf.addPage()
+        yPosition = 30
+        
+        pdf.setFontSize(16)
+        pdf.setFont('helvetica', 'bold')
+        pdf.setTextColor(...colors.accent)
+        pdf.text('Visual Analytics', 25, yPosition)
+        yPosition += 20
+        
+        try {
+          // Capture pie chart
+          const pieChartElement = document.getElementById('expense-pie-chart')
+          if (pieChartElement) {
+            const pieCanvas = await html2canvas(pieChartElement, {
+              backgroundColor: '#ffffff',
+              scale: 2, // Higher quality
+              logging: false,
+              width: 400, // Wider chart for PDF
+              windowWidth: 800 // Simulate wider viewport
+            })
+            
+            // Add pie chart to PDF (wider)
+            const pieImgData = pieCanvas.toDataURL('image/png')
+            pdf.addImage(pieImgData, 'PNG', 15, yPosition, 180, 90) // Increased width from default
+            yPosition += 100
+          }
+          
+          // Check if we need a new page for radial chart
+          if (yPosition + 100 > 280) {
+            pdf.addPage()
+            yPosition = 30
+          }
+          
+          // Capture radial chart
+          const radialChartElement = document.getElementById('expense-radial-chart')
+          if (radialChartElement) {
+            const radialCanvas = await html2canvas(radialChartElement, {
+              backgroundColor: '#ffffff',
+              scale: 2,
+              logging: false,
+              width: 400, // Wider chart for PDF
+              windowWidth: 800 // Simulate wider viewport
+            })
+            
+            // Add radial chart to PDF (wider)
+            const radialImgData = radialCanvas.toDataURL('image/png')
+            pdf.addImage(radialImgData, 'PNG', 15, yPosition, 180, 90) // Increased width
+            yPosition += 100
+          }
+        } catch (chartError) {
+          console.error('Error capturing charts:', chartError)
+          // Continue with PDF generation even if charts fail
+        }
+      }
+      
+      // ==== UTILITY CHARTS SECTION (if visible) ====
+      if (showUtilityCharts) {
+        // Check if we need a new page
+        if (yPosition + 120 > 280 || !showCharts) {
+          pdf.addPage()
+          yPosition = 30
+        }
+        
+        if (!showCharts) {
+          pdf.setFontSize(16)
+          pdf.setFont('helvetica', 'bold')
+          pdf.setTextColor(...colors.accent)
+          pdf.text('Utility Analysis', 25, yPosition)
+          yPosition += 20
+        }
+        
+        try {
+          // Capture utility area chart
+          const utilityAreaElement = document.getElementById('utility-area-chart')
+          if (utilityAreaElement) {
+            const utilityCanvas = await html2canvas(utilityAreaElement, {
+              backgroundColor: '#ffffff',
+              scale: 2,
+              logging: false,
+              width: 600, // Even wider for area chart
+              windowWidth: 1000
+            })
+            
+            const utilityImgData = utilityCanvas.toDataURL('image/png')
+            pdf.addImage(utilityImgData, 'PNG', 15, yPosition, 180, 90)
+            yPosition += 100
+          }
+          
+          // Check if we need a new page for radar chart
+          if (yPosition + 100 > 280) {
+            pdf.addPage()
+            yPosition = 30
+          }
+          
+          // Capture utility radar chart
+          const utilityRadarElement = document.getElementById('utility-radar-chart')
+          if (utilityRadarElement) {
+            const radarCanvas = await html2canvas(utilityRadarElement, {
+              backgroundColor: '#ffffff',
+              scale: 2,
+              logging: false,
+              width: 400,
+              windowWidth: 800
+            })
+            
+            const radarImgData = radarCanvas.toDataURL('image/png')
+            pdf.addImage(radarImgData, 'PNG', 15, yPosition, 180, 90)
+            yPosition += 100
+          }
+        } catch (utilityError) {
+          console.error('Error capturing utility charts:', utilityError)
+        }
+      }
       
       // ==== NEW PAGE FOR EXPENSE TABLE ====
       pdf.addPage()
@@ -1030,7 +1253,7 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities }: ExpenseListProp
             className="overflow-hidden"
           >
             <CardContent className="relative z-10" id="expenses-content">
-              {monthLoading ? (
+              {monthLoading && !optimisticUpdateActive ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="h-6 w-6 animate-spin text-green-500" />
                   <span className="ml-2 text-sm text-muted-foreground">Loading expenses...</span>
@@ -1604,7 +1827,7 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities }: ExpenseListProp
     </motion.div>
   )
 
-  if (loading) {
+  if (loading && !optimisticUpdateActive) {
     return (
       <Card className="w-full backdrop-blur-xl bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 border-white/20 dark:border-white/10">
         <CardContent className="p-6">
@@ -1880,9 +2103,9 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities }: ExpenseListProp
                   variant="outline"
                   size="sm"
                   onClick={exportToPDF}
-                  disabled={filteredExpenses.length === 0 && monthlySavings === 0}
+                  disabled={filteredExpenses.length === 0 && optimisticMonthlySavings === 0}
                   className="relative flex items-center gap-2 ml-1 sm:ml-2 text-xs sm:text-sm px-2 sm:px-3 bg-gradient-to-r from-green-500/10 to-emerald-500/10 hover:from-green-500/20 hover:to-emerald-500/20 border-green-300/50 dark:border-green-700/50 hover:border-green-400 dark:hover:border-green-600 transition-all duration-300 shadow-sm hover:shadow-lg hover:shadow-green-500/20 dark:hover:shadow-green-400/20 group overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                  title={filteredExpenses.length === 0 && monthlySavings === 0 ? "No data available for export" : "Export monthly summary as PDF"}
+                  title={filteredExpenses.length === 0 && optimisticMonthlySavings === 0 ? "No data available for export" : "Export monthly summary as PDF"}
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-500 opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
                   <motion.div
@@ -1930,7 +2153,7 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities }: ExpenseListProp
           </div>
         </CardHeader>
         <CardContent className="relative z-10">
-          {monthLoading ? (
+          {monthLoading && !optimisticUpdateActive ? (
             <div className="flex items-center justify-center py-12">
               <div className="text-center space-y-4">
                 <Loader2 className="h-8 w-8 animate-spin mx-auto text-blue-500" />
@@ -1985,7 +2208,7 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities }: ExpenseListProp
                     {new Date(selectedYear, selectedMonth - 1).toLocaleDateString('en-US', { month: 'short' })} Savings
                   </p>
                   <p className="text-base sm:text-xl font-semibold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                    {formatAmount(monthlySavings, 'PKR')}
+                    {formatAmount(optimisticMonthlySavings, 'PKR')}
                   </p>
                 </motion.div>
                 <motion.div 

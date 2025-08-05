@@ -68,7 +68,7 @@ export function UtilityCharts({ expenses }: UtilityChartsProps) {
   return (
     <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
       {/* Interactive Area Chart */}
-      <Card className="col-span-1 md:col-span-2">
+      <Card id="utility-area-chart" className="col-span-1 md:col-span-2">
         <CardHeader>
           <CardTitle className="text-lg sm:text-xl">Utility Analytics</CardTitle>
           <CardDescription>Interactive spending overview by utility type</CardDescription>
@@ -134,7 +134,7 @@ export function UtilityCharts({ expenses }: UtilityChartsProps) {
       </Card>
 
       {/* Radar Chart */}
-      <Card className="col-span-1 md:col-span-2 lg:col-span-1">
+      <Card id="utility-radar-chart" className="col-span-1 md:col-span-2 lg:col-span-1">
         <CardHeader>
           <CardTitle className="text-lg sm:text-xl">Utility Distribution</CardTitle>
           <CardDescription>Relative spending across utilities</CardDescription>
