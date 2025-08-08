@@ -4,17 +4,18 @@ import { getUserId } from "@/lib/auth";
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const userId = await getUserId();
+    const { id } = await params;
 
     const body = await request.json();
     const { source, amount, date, currency, description, isRecurring } = body;
 
     const income = await prisma.income.update({
       where: {
-        id: params.id,
+        id: id,
         userId: userId,
       },
       data: {
@@ -39,14 +40,15 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const userId = await getUserId();
+    const { id } = await params;
 
     await prisma.income.delete({
       where: {
-        id: params.id,
+        id: id,
         userId: userId,
       },
     });
