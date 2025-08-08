@@ -24,7 +24,9 @@ import { toast } from 'sonner'
 import { ExpenseCharts } from './expense-charts'
 import { SavingsChart } from './savings-chart'
 import { UtilityCharts } from './utility-charts'
-import { ChevronDown, ChevronUp, BarChart3, ChevronLeft, ChevronRight, Calendar, Receipt, Zap, Eye, EyeOff, TrendingUp, PiggyBank, Wallet, Trash2, X, Target, Download, Loader2, Menu, Settings, FileDown } from 'lucide-react'
+import { IncomeList } from './income-list'
+import { IncomeCharts } from './income-charts'
+import { ChevronDown, ChevronUp, BarChart3, ChevronLeft, ChevronRight, Calendar, Receipt, Zap, Eye, EyeOff, TrendingUp, PiggyBank, Wallet, Trash2, X, Target, Download, Loader2, Menu, Settings, FileDown, DollarSign } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { BudgetDialog } from './budget-dialog'
 import { Progress } from '@/components/ui/progress'
@@ -80,7 +82,8 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false)
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null)
   const [isMobile, setIsMobile] = useState(false)
-  const [activeView, setActiveView] = useState<'expenses' | 'budget' | 'visualization'>('expenses')
+  const [activeView, setActiveView] = useState<'expenses' | 'budget' | 'visualization' | 'income'>('expenses')
+  const [optimisticIncome, setOptimisticIncome] = useState<any>(null)
   
   const currentMonth = new Date().getMonth() + 1
   const currentYear = new Date().getFullYear()
@@ -2276,11 +2279,24 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense
                 >
                   <Button
                     variant="outline"
+                    onClick={() => setActiveView('income')}
+                    className="h-24 w-full flex flex-col items-center justify-center gap-2 bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 backdrop-blur-xl border-white/20 dark:border-white/10 hover:bg-white/60 dark:hover:bg-[oklch(0.25_0.02_250)]/50 transition-colors"
+                  >
+                    <DollarSign className="h-6 w-6 text-green-600 dark:text-green-400" />
+                    <span className="text-xs font-medium">Income</span>
+                  </Button>
+                </motion.div>
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Button
+                    variant="outline"
                     onClick={() => setActiveView('budget')}
                     className="h-24 w-full flex flex-col items-center justify-center gap-2 bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 backdrop-blur-xl border-white/20 dark:border-white/10 hover:bg-white/60 dark:hover:bg-[oklch(0.25_0.02_250)]/50 transition-colors"
                   >
                     <Target className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-                    <span className="text-xs font-medium">Budget Overview</span>
+                    <span className="text-xs font-medium">Budget</span>
                   </Button>
                 </motion.div>
                 <motion.div
@@ -2293,7 +2309,7 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense
                     className="h-24 w-full flex flex-col items-center justify-center gap-2 bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 backdrop-blur-xl border-white/20 dark:border-white/10 hover:bg-white/60 dark:hover:bg-[oklch(0.25_0.02_250)]/50 transition-colors"
                   >
                     <BarChart3 className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                    <span className="text-xs font-medium">Visualization</span>
+                    <span className="text-xs font-medium">Charts</span>
                   </Button>
                 </motion.div>
               </div>
@@ -2319,6 +2335,21 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense
           
           {/* Mobile Content - Conditional rendering based on activeView */}
           {activeView === 'expenses' && renderExpensesContent()}
+          {activeView === 'income' && (
+            <div className="space-y-6">
+              <IncomeList 
+                optimisticIncome={optimisticIncome}
+                onOptimisticIncomeConfirmed={() => setOptimisticIncome(null)}
+                onIncomeAdded={(income) => setOptimisticIncome(income)}
+                selectedMonth={selectedMonth}
+                selectedYear={selectedYear}
+              />
+              <IncomeCharts 
+                year={selectedYear} 
+                optimisticIncome={optimisticIncome}
+              />
+            </div>
+          )}
           {activeView === 'budget' && renderBudgetContent()}
           {activeView === 'visualization' && renderVisualizationContent()}
         </div>
@@ -2328,20 +2359,40 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense
           <TabsList className="w-full bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 backdrop-blur-xl border border-white/20 dark:border-white/10">
             <TabsTrigger value="expenses" className="flex-1 data-[state=active]:bg-white/60 dark:data-[state=active]:bg-[oklch(0.25_0.02_250)]/50">
               <Receipt className="w-4 h-4 mr-2" />
-              Recent Expenses
+              Expenses
+            </TabsTrigger>
+            <TabsTrigger value="income" className="flex-1 data-[state=active]:bg-white/60 dark:data-[state=active]:bg-[oklch(0.25_0.02_250)]/50">
+              <DollarSign className="w-4 h-4 mr-2" />
+              Income
             </TabsTrigger>
             <TabsTrigger value="budget" className="flex-1 data-[state=active]:bg-white/60 dark:data-[state=active]:bg-[oklch(0.25_0.02_250)]/50">
               <Target className="w-4 h-4 mr-2" />
-              Budget Overview
+              Budget
             </TabsTrigger>
             <TabsTrigger value="visualization" className="flex-1 data-[state=active]:bg-white/60 dark:data-[state=active]:bg-[oklch(0.25_0.02_250)]/50">
               <BarChart3 className="w-4 h-4 mr-2" />
-              Visualization
+              Charts
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="expenses">
             {renderExpensesContent()}
+          </TabsContent>
+
+          <TabsContent value="income">
+            <div className="space-y-6">
+              <IncomeList 
+                optimisticIncome={optimisticIncome}
+                onOptimisticIncomeConfirmed={() => setOptimisticIncome(null)}
+                onIncomeAdded={(income) => setOptimisticIncome(income)}
+                selectedMonth={selectedMonth}
+                selectedYear={selectedYear}
+              />
+              <IncomeCharts 
+                year={selectedYear} 
+                optimisticIncome={optimisticIncome}
+              />
+            </div>
           </TabsContent>
 
           <TabsContent value="visualization">

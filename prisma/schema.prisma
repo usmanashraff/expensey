@@ -104,3 +104,19 @@ model UserSettings {
   
   @@index([userId])
 }
+
+model Income {
+  id          String   @id @default(cuid())
+  source      String
+  amount      Float
+  date        DateTime
+  userId      String
+  currency    String   @default("PKR")
+  description String?
+  isRecurring Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([userId, date])
+}
