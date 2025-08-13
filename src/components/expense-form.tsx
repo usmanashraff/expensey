@@ -110,12 +110,16 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger, isInDialog 
         })
       }
 
+      // Set the time to noon to avoid timezone offset issues
+      const expenseDate = date ? new Date(date) : new Date()
+      expenseDate.setHours(12, 0, 0, 0)
+      
       const payload = {
         amount: parseFloat(amount),
         description,
         category,
         subcategory: category === 'SAVINGS' ? null : utilityType || null,
-        date: date?.toISOString(),
+        date: expenseDate.toISOString(),
         currency: currency,
         receipt: receiptData,
         receipts: receiptData ? [receiptData] : [],

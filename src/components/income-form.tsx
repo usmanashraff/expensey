@@ -52,7 +52,7 @@ export function IncomeForm({ onIncomeAdded, isInDialog = false, onClose }: Incom
           amount: parseFloat(amount),
           source,
           description,
-          date: new Date(date).toISOString(),
+          date: new Date(date + 'T12:00:00').toISOString(),
           currency,
           isRecurring,
         }),

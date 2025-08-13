@@ -13,8 +13,8 @@ export async function GET(request: NextRequest) {
     let whereClause: any = { userId: userId };
 
     if (month && year) {
-      const startDate = new Date(parseInt(year), parseInt(month) - 1, 1);
-      const endDate = new Date(parseInt(year), parseInt(month), 0, 23, 59, 59, 999);
+      const startDate = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, 1, 0, 0, 0, 0));
+      const endDate = new Date(Date.UTC(parseInt(year), parseInt(month), 0, 23, 59, 59, 999));
       
       whereClause.date = {
         gte: startDate,
