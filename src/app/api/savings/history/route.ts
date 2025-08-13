@@ -1,20 +1,27 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { getUserId } from '@/lib/auth'
 
 export async function GET() {
   try {
-    // Get all savings records ordered by year and month
+    const userId = await getUserId()
+    
+    // Get all savings records for the current user ordered by year and month
     const savingsHistory = await prisma.savings.findMany({
+      where: {
+        userId: userId
+      },
       orderBy: [
         { year: 'asc' },
         { month: 'asc' }
       ],
     })
 
-    // Get all SAVINGS category expenses grouped by month/year
+    // Get all SAVINGS category expenses for the current user grouped by month/year
     const savingsExpenses = await prisma.expense.findMany({
       where: {
-        category: 'SAVINGS'
+        category: 'SAVINGS',
+        userId: userId
       },
       orderBy: {
         date: 'asc'
