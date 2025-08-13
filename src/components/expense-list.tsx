@@ -965,7 +965,7 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense
           pdf.setFont('helvetica', 'normal')
           pdf.setFontSize(10)
           
-          filteredExpenses.slice(0, 25).forEach((expense, index) => {
+          filteredExpenses.forEach((expense, index) => {
             // Alternate row colors
             if (index % 2 === 0) {
               pdf.setFillColor(248, 250, 252)
@@ -1001,14 +1001,19 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense
             if (yPosition > 270) {
               pdf.addPage()
               yPosition = 30
+              // Re-add headers on new page
+              pdf.setFont('helvetica', 'bold')
+              pdf.setFontSize(10)
+              pdf.text('Date', 18, yPosition)
+              pdf.text('Description', 45, yPosition)
+              pdf.text('Category', 100, yPosition)
+              pdf.text('Utility', 135, yPosition)
+              pdf.text('Amount', 175, yPosition)
+              yPosition += 10
+              pdf.setFont('helvetica', 'normal')
             }
           })
           
-          if (filteredExpenses.length > 25) {
-            yPosition += 10
-            pdf.setFont('helvetica', 'italic')
-            pdf.text(`... and ${filteredExpenses.length - 25} more expenses`, 20, yPosition)
-          }
         }
       } else {
         pdf.setFont('helvetica', 'italic')
