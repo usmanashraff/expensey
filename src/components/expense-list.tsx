@@ -567,22 +567,42 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense
   }
 
   const exportToPDF = async () => {
+    // Use displayExpenses which includes properly formatted data
+    const monthlyExpenses = displayExpenses || []
+    
+    // Debug info - can be removed later
+    console.log('PDF Export: Processing', monthlyExpenses.length, 'expenses for', monthName)
+    
     // Validate that there's data to export
-    if (filteredExpenses.length === 0 && optimisticMonthlySavings === 0) {
+    if (monthlyExpenses.length === 0 && optimisticMonthlySavings === 0) {
       toast.error('No data available to export for this month')
       return
     }
 
     try {
+      // Fetch monthly income data
+      let monthlyIncome = 0
+      try {
+        const incomeResponse = await fetch(`/api/income?month=${selectedMonth}&year=${selectedYear}`)
+        if (incomeResponse.ok) {
+          const incomeData = await incomeResponse.json()
+          monthlyIncome = incomeData.reduce((sum: number, income: any) => sum + income.amount, 0)
+          console.log('Monthly income:', monthlyIncome)
+        }
+      } catch (error) {
+        console.error('Error fetching income:', error)
+      }
       // Dynamic import to handle client-side loading
       const jsPDFModule = await import('jspdf')
       const jsPDF = jsPDFModule.default
       
       // Import autoTable plugin - this extends jsPDF prototype
-      await import('jspdf-autotable')
-      
-      // Import html2canvas for chart capture
-      const html2canvas = (await import('html2canvas')).default
+      try {
+        await import('jspdf-autotable')
+        console.log('AutoTable plugin loaded successfully')
+      } catch (error) {
+        console.warn('AutoTable plugin failed to load:', error)
+      }
       
       const pdf = new jsPDF()
       
@@ -591,21 +611,25 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense
         return text.replace(/[^\x20-\x7E]/g, '').replace(/[^\w\s\-\(\)\/\.,]/g, '').trim()
       }
       
-      // Define colors matching the actual chart components
+      // Define colors using financial best practices
       const colors = {
-        primary: [59, 130, 246] as [number, number, number], // Blue
-        need: [251, 191, 36] as [number, number, number], // amber-400 - vibrant yellow (from ExpenseCharts)
-        want: [251, 113, 133] as [number, number, number], // rose-400 - vibrant pink-red (from ExpenseCharts) 
-        selfDev: [52, 211, 153] as [number, number, number], // emerald-400 - vibrant green (from ExpenseCharts)
-        savings: [167, 139, 250] as [number, number, number], // violet-400 - vibrant purple (from ExpenseCharts)
+        primary: [59, 130, 246] as [number, number, number], // Professional blue
+        need: [239, 68, 68] as [number, number, number], // Red - essential expenses
+        want: [245, 158, 11] as [number, number, number], // Orange - discretionary
+        selfDev: [34, 197, 94] as [number, number, number], // Green - investment
+        savings: [147, 51, 234] as [number, number, number], // Purple - savings
         background: [248, 250, 252] as [number, number, number], // Light gray
         text: [15, 23, 42] as [number, number, number], // Dark slate
-        accent: [147, 51, 234] as [number, number, number] // Purple
+        accent: [59, 130, 246] as [number, number, number], // Blue
+        lightGray: [230, 230, 230] as [number, number, number], // Light gray
+        success: [34, 197, 94] as [number, number, number], // Green
+        warning: [245, 158, 11] as [number, number, number], // Yellow
+        danger: [239, 68, 68] as [number, number, number] // Red
       }
       
       const categoryLabels = {
-        NEED: 'Need',
-        WANT: 'Want', 
+        NEED: 'Needs',
+        WANT: 'Wants', 
         SELF_DEVELOPMENT: 'Self Development',
         SAVINGS: 'Savings'
       }
@@ -617,296 +641,353 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense
         SAVINGS: colors.savings
       }
       
-      // Header with gradient-like background
+      // Budget goals mapping
+      const budgetGoals = {
+        NEED: budget?.needBudget || 0,
+        WANT: budget?.wantBudget || 0,
+        SELF_DEVELOPMENT: budget?.selfDevelopmentBudget || 0,
+        SAVINGS: budget?.savingsBudget || 0
+      }
+
+      // Calculate category totals from monthly expenses
+      const categoryTotals: Record<string, number> = {}
+      monthlyExpenses.forEach(expense => {
+        categoryTotals[expense.category] = (categoryTotals[expense.category] || 0) + expense.amount
+      })
+      
+      // Category breakdown calculated
+
+      // Get date range for the month
+      const firstDay = new Date(selectedYear, selectedMonth - 1, 1)
+      const lastDay = new Date(selectedYear, selectedMonth, 0)
+      const dateRange = `${firstDay.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${lastDay.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+      
+      // Header with professional design
       pdf.setFillColor(...colors.primary)
-      pdf.rect(0, 0, 210, 50, 'F')
+      pdf.rect(0, 0, 210, 35, 'F')
       
-      // Title
+      // Logo/Brand
       pdf.setTextColor(255, 255, 255)
-      pdf.setFontSize(24)
+      pdf.setFontSize(28)
       pdf.setFont('helvetica', 'bold')
-      pdf.text('EXPENSEY - Monthly Expense Summary', 20, 25)
+      pdf.text('EXPENSEY', 20, 20)
       
-      // Subtitle
-      pdf.setFontSize(16)
+      // Subtitle with date range
+      pdf.setFontSize(11)
       pdf.setFont('helvetica', 'normal')
-      pdf.text(monthName, 20, 40)
+      pdf.text(`Monthly Financial Report: ${monthName}`, 20, 28)
+      pdf.text(dateRange, 150, 28)
       
       // Reset text color
       pdf.setTextColor(...colors.text)
-      let yPosition = 70
+      let yPosition = 45
       
-      // ==== SECTION 1: OVERALL MONTHLY SUMMARY ====
-      pdf.setFillColor(...colors.background)
-      pdf.rect(15, yPosition - 5, 180, 85, 'F')
-      pdf.setDrawColor(200, 200, 200)
-      pdf.rect(15, yPosition - 5, 180, 85, 'S')
+      // Calculate totals and utilities breakdown
+      const totalAmount = monthlyExpenses.reduce((sum, expense) => sum + expense.amount, 0)
+      const totalBudget = Object.values(budgetGoals).reduce((sum, budget) => sum + budget, 0)
       
-      pdf.setFontSize(16)
-      pdf.setFont('helvetica', 'bold')
-      pdf.setTextColor(...colors.accent)
-      pdf.text('Overall Monthly Summary', 25, yPosition + 10)
-      
-      pdf.setTextColor(...colors.text)
-      pdf.setFontSize(12)
-      pdf.setFont('helvetica', 'normal')
-      
-      const totalAmount = filteredExpenses.reduce((sum, expense) => sum + expense.amount, 0)
-      const summaryData = [
-        [`Total Expenses:`, `${filteredExpenses.length} transactions`],
-        [`Total Amount Spent:`, `PKR ${totalAmount.toLocaleString()}`],
-        [`Monthly Savings:`, `PKR ${optimisticMonthlySavings.toLocaleString()}`],
-        [`Period:`, monthName]
-      ]
-      
-      yPosition += 25
-      summaryData.forEach(([label, value]) => {
-        pdf.setFont('helvetica', 'bold')
-        pdf.text(label, 25, yPosition)
-        pdf.setFont('helvetica', 'normal')
-        pdf.text(value, 120, yPosition)
-        yPosition += 12
+      const utilityBreakdown: Record<string, number> = {}
+      monthlyExpenses.forEach(expense => {
+        if (expense.subcategory) {
+          utilityBreakdown[expense.subcategory] = (utilityBreakdown[expense.subcategory] || 0) + expense.amount
+        }
       })
       
-      yPosition += 20
-      
-      // ==== SECTION 2: CATEGORY BREAKDOWN WITH VISUAL BARS ====
-      pdf.setFillColor(...colors.background)
-      pdf.rect(15, yPosition - 5, 180, 100, 'F')
-      pdf.rect(15, yPosition - 5, 180, 100, 'S')
-      
+      // ==== SECTION 1: KEY METRICS ====
       pdf.setFontSize(16)
       pdf.setFont('helvetica', 'bold')
       pdf.setTextColor(...colors.accent)
-      pdf.text('Category Breakdown', 25, yPosition + 10)
+      pdf.text('Financial Overview', 15, yPosition)
       
-      yPosition += 25
+      yPosition += 15
       
-      // Calculate percentages and create visual bars
-      Object.entries(expensesByCategory).forEach(([category, amount]) => {
+      // Better aligned layout
+      pdf.setFontSize(10)
+      
+      // Row 1
+      pdf.setFont('helvetica', 'normal')
+      pdf.setTextColor(...colors.text)
+      pdf.text('Total Transactions:', 15, yPosition)
+      pdf.setFont('helvetica', 'bold')
+      pdf.text(`${monthlyExpenses.length}`, 80, yPosition)
+      
+      pdf.setFont('helvetica', 'normal')
+      pdf.text('Monthly Savings:', 115, yPosition)
+      pdf.setFont('helvetica', 'bold')
+      pdf.text(`PKR ${optimisticMonthlySavings.toLocaleString()}`, 160, yPosition)
+      
+      yPosition += 12
+      
+      // Row 2
+      pdf.setFont('helvetica', 'normal')
+      pdf.text('Total Spent:', 15, yPosition)
+      pdf.setFont('helvetica', 'bold')
+      pdf.text(`PKR ${totalAmount.toLocaleString()}`, 80, yPosition)
+      
+      pdf.setFont('helvetica', 'normal')
+      pdf.text('Lifetime Savings:', 115, yPosition)
+      pdf.setFont('helvetica', 'bold')
+      pdf.text(`PKR ${totalSavings.toLocaleString()}`, 160, yPosition)
+      
+      yPosition += 12
+      
+      // Row 3
+      pdf.setFont('helvetica', 'normal')
+      pdf.text('Avg per Transaction:', 15, yPosition)
+      pdf.setFont('helvetica', 'bold')
+      pdf.text(`PKR ${monthlyExpenses.length > 0 ? Math.round(totalAmount / monthlyExpenses.length).toLocaleString() : '0'}`, 80, yPosition)
+      
+      pdf.setFont('helvetica', 'normal')
+      pdf.text('Savings Rate:', 115, yPosition)
+      pdf.setFont('helvetica', 'bold')
+      pdf.text(`${totalAmount > 0 ? ((optimisticMonthlySavings / (totalAmount + optimisticMonthlySavings)) * 100).toFixed(1) : 0}%`, 160, yPosition)
+      
+      yPosition += 15
+      
+      // Divider line
+      pdf.setDrawColor(...colors.lightGray)
+      pdf.setLineWidth(0.5)
+      pdf.line(15, yPosition, 195, yPosition)
+      yPosition += 10
+      
+      // ==== SECTION 2: SPENDING BY CATEGORY ====
+      pdf.setFontSize(16)
+      pdf.setFont('helvetica', 'bold')
+      pdf.setTextColor(...colors.accent)
+      pdf.text('Spending Breakdown', 15, yPosition)
+      
+      yPosition += 15
+      
+      // Category spending with better spacing
+      pdf.setFontSize(10)
+      Object.entries(categoryTotals).forEach(([category, amount], index) => {
         const percentage = totalAmount > 0 ? (amount / totalAmount) * 100 : 0
         const label = categoryLabels[category as keyof typeof categoryLabels] || category
         const color = categoryColors[category as keyof typeof categoryColors] || colors.primary
         
-        // Category name and amount
-        pdf.setTextColor(...colors.text)
+        const y = yPosition + index * 12
+        
+        // Category label with color
+        pdf.setTextColor(...color)
         pdf.setFont('helvetica', 'bold')
-        pdf.text(label, 25, yPosition)
+        pdf.text(label, 15, y)
+        
+        // Amount moved further right to avoid overlap
+        pdf.setTextColor(...colors.text)
         pdf.setFont('helvetica', 'normal')
-        pdf.text(`PKR ${amount.toLocaleString()} (${percentage.toFixed(1)}%)`, 120, yPosition)
+        pdf.text(`PKR ${amount.toLocaleString()}`, 90, y)
         
-        // Visual bar
-        const barWidth = (percentage / 100) * 120
-        pdf.setFillColor(...color)
-        pdf.rect(25, yPosition + 3, barWidth, 6, 'F')
-        pdf.setDrawColor(...color)
-        pdf.rect(25, yPosition + 3, 120, 6, 'S')
-        
-        yPosition += 18
+        // Percentage even further right
+        pdf.text(`(${percentage.toFixed(1)}%)`, 145, y)
       })
       
+      yPosition += Object.keys(categoryTotals).length * 12 + 15
       
-      // ==== SAVINGS SUMMARY ====
-      if (yPosition + 90 > 280) { // Check if we need a new page (increased space check)
-        pdf.addPage()
-        yPosition = 30
-      }
-      
-      pdf.setFillColor(...colors.background)
-      pdf.rect(15, yPosition - 5, 180, 85, 'F') // Increased container height for 5 items
-      pdf.rect(15, yPosition - 5, 180, 85, 'S')
-      
+      // ==== SECTION 3: BUDGET GOALS COMPARISON ====
       pdf.setFontSize(16)
       pdf.setFont('helvetica', 'bold')
       pdf.setTextColor(...colors.accent)
-      pdf.text('Savings Summary', 25, yPosition + 10)
+      pdf.text('Budget vs Actual Spending', 15, yPosition)
       
-      yPosition += 25
+      yPosition += 15
       
-      // Enhanced savings metrics with overall savings
-      const savingsData = [
-        ['Monthly Savings:', `PKR ${optimisticMonthlySavings.toLocaleString()}`],
-        ['Lifetime Savings:', `PKR ${totalSavings.toLocaleString()}`],
-        ['Total Spent:', `PKR ${totalAmount.toLocaleString()}`],
-        ['Savings Rate:', `${totalAmount > 0 ? ((optimisticMonthlySavings / (totalAmount + optimisticMonthlySavings)) * 100).toFixed(1) : 0}%`],
-        ['Net Cash Flow:', `PKR ${(optimisticMonthlySavings - totalAmount).toLocaleString()}`]
-      ]
-      
-      pdf.setFontSize(11)
-      savingsData.forEach(([label, value], index) => {
-        const y = yPosition + index * 12 // Increased spacing between lines
+      // Budget comparison with table-like layout
+      pdf.setFontSize(10)
+      Object.entries(categoryTotals).forEach(([category, spent], index) => {
+        const budgetAmount = budgetGoals[category as keyof typeof budgetGoals] || 0
+        const remaining = budgetAmount - spent
+        const label = categoryLabels[category as keyof typeof categoryLabels] || category
+        const color = categoryColors[category as keyof typeof categoryColors] || colors.primary
         
+        const y = yPosition + index * 18  // Adjusted spacing
+        
+        // Category name
+        pdf.setTextColor(...color)
         pdf.setFont('helvetica', 'bold')
-        pdf.setTextColor(...colors.text)
-        pdf.text(label, 25, y)
+        pdf.text(label, 15, y)
         
+        // Budget, Spent, and Status on the second line
+        pdf.setTextColor(...colors.text)
         pdf.setFont('helvetica', 'normal')
-        pdf.setTextColor(...colors.primary)
-        pdf.text(value, 120, y)
+        pdf.setFontSize(9)
+        pdf.text(`Budget: PKR ${budgetAmount.toLocaleString()}`, 15, y + 7)
+        pdf.text(`Spent: PKR ${spent.toLocaleString()}`, 85, y + 7)
+        
+        // Status aligned to the right
+        if (budgetAmount > 0) {
+          const statusColor = remaining >= 0 ? colors.success : colors.danger
+          const statusText = remaining >= 0 ? `Under by PKR ${remaining.toLocaleString()}` : `Over by PKR ${Math.abs(remaining).toLocaleString()}`
+          pdf.setTextColor(...statusColor)
+          pdf.setFont('helvetica', 'bold')
+          pdf.setFontSize(9)
+          pdf.text(statusText, 145, y + 7)
+        } else {
+          pdf.setTextColor(...colors.text)
+          pdf.setFont('helvetica', 'italic')
+          pdf.setFontSize(9)
+          pdf.text('No budget set', 145, y + 7)
+        }
       })
       
-      yPosition += 65 // Increased to account for larger container with 5 items
+      yPosition += Object.keys(categoryTotals).length * 18 + 10
       
-      // ==== CHARTS SECTION (if visible) ====
-      if (showCharts) {
-        pdf.addPage()
-        yPosition = 30
-        
+      // Divider line
+      pdf.setDrawColor(...colors.lightGray)
+      pdf.line(15, yPosition, 195, yPosition)
+      yPosition += 10
+      
+      // Move to new page for utilities breakdown
+      pdf.addPage()
+      yPosition = 20
+      
+      // ==== SECTION 4: UTILITIES BREAKDOWN ====
+      if (Object.keys(utilityBreakdown).length > 0) {
         pdf.setFontSize(16)
         pdf.setFont('helvetica', 'bold')
         pdf.setTextColor(...colors.accent)
-        pdf.text('Visual Analytics', 25, yPosition)
-        yPosition += 20
+        pdf.text('Utilities Breakdown', 15, yPosition)
         
-        try {
-          // Capture pie chart
-          const pieChartElement = document.getElementById('expense-pie-chart')
-          if (pieChartElement) {
-            const pieCanvas = await html2canvas(pieChartElement, {
-              backgroundColor: '#ffffff',
-              scale: 2, // Higher quality
-              logging: false,
-              width: 400, // Wider chart for PDF
-              windowWidth: 800 // Simulate wider viewport
-            })
-            
-            // Add pie chart to PDF (wider)
-            const pieImgData = pieCanvas.toDataURL('image/png')
-            pdf.addImage(pieImgData, 'PNG', 15, yPosition, 180, 90) // Increased width from default
-            yPosition += 100
-          }
-          
-          // Check if we need a new page for radial chart
-          if (yPosition + 100 > 280) {
-            pdf.addPage()
-            yPosition = 30
-          }
-          
-          // Capture radial chart
-          const radialChartElement = document.getElementById('expense-radial-chart')
-          if (radialChartElement) {
-            const radialCanvas = await html2canvas(radialChartElement, {
-              backgroundColor: '#ffffff',
-              scale: 2,
-              logging: false,
-              width: 400, // Wider chart for PDF
-              windowWidth: 800 // Simulate wider viewport
-            })
-            
-            // Add radial chart to PDF (wider)
-            const radialImgData = radialCanvas.toDataURL('image/png')
-            pdf.addImage(radialImgData, 'PNG', 15, yPosition, 180, 90) // Increased width
-            yPosition += 100
-          }
-        } catch (chartError) {
-          console.error('Error capturing charts:', chartError)
-          // Continue with PDF generation even if charts fail
-        }
-      }
-      
-      // ==== UTILITY CHARTS SECTION (if visible) ====
-      if (showUtilityCharts) {
-        // Check if we need a new page
-        if (yPosition + 120 > 280 || !showCharts) {
-          pdf.addPage()
-          yPosition = 30
-        }
+        yPosition += 15
         
-        if (!showCharts) {
-          pdf.setFontSize(16)
+        // Sort utilities by amount
+        const sortedUtilities = Object.entries(utilityBreakdown)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 10) // Show top 10 utilities
+        
+        // Two-column layout with proper spacing
+        pdf.setFontSize(10)
+        const midPoint = Math.ceil(sortedUtilities.length / 2)
+        const leftUtils = sortedUtilities.slice(0, midPoint)
+        const rightUtils = sortedUtilities.slice(midPoint)
+        
+        leftUtils.forEach(([utility, amount], index) => {
+          const y = yPosition + index * 12
+          
+          pdf.setFont('helvetica', 'normal')
+          pdf.setTextColor(...colors.text)
+          const utilityName = cleanText(utility.substring(0, 20))
+          pdf.text(utilityName, 15, y)
+          
           pdf.setFont('helvetica', 'bold')
-          pdf.setTextColor(...colors.accent)
-          pdf.text('Utility Analysis', 25, yPosition)
-          yPosition += 20
-        }
+          pdf.text(`PKR ${amount.toLocaleString()}`, 70, y)
+        })
         
-        try {
-          // Capture utility area chart
-          const utilityAreaElement = document.getElementById('utility-area-chart')
-          if (utilityAreaElement) {
-            const utilityCanvas = await html2canvas(utilityAreaElement, {
-              backgroundColor: '#ffffff',
-              scale: 2,
-              logging: false,
-              width: 600, // Even wider for area chart
-              windowWidth: 1000
-            })
-            
-            const utilityImgData = utilityCanvas.toDataURL('image/png')
-            pdf.addImage(utilityImgData, 'PNG', 15, yPosition, 180, 90)
-            yPosition += 100
-          }
+        rightUtils.forEach(([utility, amount], index) => {
+          const y = yPosition + index * 12
           
-          // Check if we need a new page for radar chart
-          if (yPosition + 100 > 280) {
-            pdf.addPage()
-            yPosition = 30
-          }
+          pdf.setFont('helvetica', 'normal')
+          pdf.setTextColor(...colors.text)
+          const utilityName = cleanText(utility.substring(0, 20))
+          pdf.text(utilityName, 110, y)
           
-          // Capture utility radar chart
-          const utilityRadarElement = document.getElementById('utility-radar-chart')
-          if (utilityRadarElement) {
-            const radarCanvas = await html2canvas(utilityRadarElement, {
-              backgroundColor: '#ffffff',
-              scale: 2,
-              logging: false,
-              width: 400,
-              windowWidth: 800
-            })
-            
-            const radarImgData = radarCanvas.toDataURL('image/png')
-            pdf.addImage(radarImgData, 'PNG', 15, yPosition, 180, 90)
-            yPosition += 100
-          }
-        } catch (utilityError) {
-          console.error('Error capturing utility charts:', utilityError)
-        }
+          pdf.setFont('helvetica', 'bold')
+          pdf.text(`PKR ${amount.toLocaleString()}`, 165, y)
+        })
+        
+        yPosition += Math.max(leftUtils.length, rightUtils.length) * 12 + 20
       }
       
-      // ==== NEW PAGE FOR EXPENSE TABLE ====
-      pdf.addPage()
-      yPosition = 30
-      
-      pdf.setFillColor(...colors.background)
-      pdf.rect(15, yPosition - 5, 180, 25, 'F')
-      pdf.rect(15, yPosition - 5, 180, 25, 'S')
+      // ==== SECTION 5: EXPENSE LIST (Chronological, Recent at End) ====
+      // Add divider if utilities were shown
+      if (Object.keys(utilityBreakdown).length > 0) {
+        pdf.setDrawColor(...colors.lightGray)
+        pdf.line(15, yPosition, 195, yPosition)
+        yPosition += 15
+      }
       
       pdf.setFontSize(16)
       pdf.setFont('helvetica', 'bold')
       pdf.setTextColor(...colors.accent)
-      pdf.text('Detailed Expense List', 25, yPosition + 10)
+      pdf.text('Monthly Expenses', 15, yPosition)
+      pdf.setFontSize(11)
+      pdf.setFont('helvetica', 'normal')
+      pdf.setTextColor(...colors.text)
+      pdf.text('(Listed chronologically - most recent at the end)', 95, yPosition)
       
-      yPosition += 35
+      yPosition += 12
       
-      if (filteredExpenses.length > 0) {
-        // Check if autoTable is available
-        if (typeof (pdf as any).autoTable === 'function') {
-          // Helper function to clean text and prevent special characters
-          const cleanText = (text: string) => {
-            return text.replace(/[^\x20-\x7E]/g, '').trim()
+      if (monthlyExpenses.length > 0) {
+        // Group expenses by day
+        const expensesByDay: Record<string, { expenses: any[], total: number }> = {}
+        
+        monthlyExpenses.forEach(expense => {
+          const dateKey = new Date(expense.date).toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: 'numeric',
+            year: 'numeric'
+          })
+          
+          if (!expensesByDay[dateKey]) {
+            expensesByDay[dateKey] = { expenses: [], total: 0 }
           }
           
-          const tableData = filteredExpenses.map(expense => {
-            const categoryLabel = categoryLabels[expense.category as keyof typeof categoryLabels] || expense.category
-            return [
-              new Date(expense.date).toLocaleDateString(),
-              cleanText(expense.description),
-              cleanText(categoryLabel),
-              cleanText(expense.subcategory || 'N/A'),
-              `PKR ${expense.amount.toLocaleString()}`
-            ]
+          expensesByDay[dateKey].expenses.push(expense)
+          expensesByDay[dateKey].total += expense.amount
+        })
+        
+        // Sort days chronologically
+        const sortedDays = Object.keys(expensesByDay).sort((a, b) => 
+          new Date(a).getTime() - new Date(b).getTime()
+        )
+        
+        // Check if autoTable is available
+        
+        if (typeof (pdf as any).autoTable === 'function') {
+          const tableData: any[] = []
+          
+          // Create table data with daily groupings
+          sortedDays.forEach(day => {
+            const dayData = expensesByDay[day]
+            
+            // Group expenses by category for better summary
+            const categoryBreakdown: Record<string, number> = {}
+            dayData.expenses.forEach(exp => {
+              const categoryLabel = categoryLabels[exp.category as keyof typeof categoryLabels] || exp.category
+              categoryBreakdown[categoryLabel] = (categoryBreakdown[categoryLabel] || 0) + 1
+            })
+            
+            // Create a summary of expenses
+            const expenseSummary = Object.entries(categoryBreakdown)
+              .map(([cat, count]) => `${cat}: ${count}`)
+              .join(', ')
+            
+            // Get all expense descriptions
+            const expenseDetails = dayData.expenses
+              .map(exp => {
+                const categoryLabel = categoryLabels[exp.category as keyof typeof categoryLabels] || exp.category
+                return `${cleanText(exp.description)} (${categoryLabel})`
+              })
+              .join(', ')
+            
+            tableData.push([
+              day,
+              expenseDetails,
+              dayData.expenses.length.toString(),
+              `PKR ${dayData.total.toLocaleString()}`
+            ])
           })
+          
+          // Add total row at the end
+          tableData.push([
+            'TOTAL',
+            '',
+            monthlyExpenses.length,
+            `PKR ${totalAmount.toLocaleString()}`
+          ])
+          
+          // Table data prepared
           
           // Use autoTable for the expenses table
           ;(pdf as any).autoTable({
-            head: [['Date', 'Description', 'Category', 'Utility Type', 'Amount']],
+            head: [['Date', 'Expenses', 'Count', 'Daily Total']],
             body: tableData,
             startY: yPosition,
             styles: { 
-              fontSize: 10,
-              cellPadding: 6,
-              lineColor: [200, 200, 200],
-              lineWidth: 0.5
+              fontSize: 11,
+              cellPadding: 5,
+              lineColor: [230, 230, 230],
+              lineWidth: 0.3,
+              overflow: 'linebreak' // Enable text wrapping
             },
             headStyles: { 
               fillColor: colors.primary,
@@ -915,125 +996,424 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense
               fontSize: 11
             },
             alternateRowStyles: {
-              fillColor: [248, 250, 252]
+              fillColor: [252, 252, 252]
             },
             columnStyles: {
-              0: { cellWidth: 22 }, // Date
-              1: { cellWidth: 50 }, // Description
-              2: { cellWidth: 30 }, // Category
-              3: { cellWidth: 45 }, // Utility Type (increased)
-              4: { cellWidth: 30, halign: 'right' } // Amount
+              0: { cellWidth: 30 }, // Date
+              1: { cellWidth: 100, cellPadding: 3 }, // Expenses with wrapping
+              2: { cellWidth: 15, halign: 'center' }, // Count
+              3: { cellWidth: 35, halign: 'right' } // Daily Total
             },
+            rowPageBreak: 'avoid',
             margin: { left: 15, right: 15 },
             didParseCell: function(data: any) {
-              // Color code rows based on category
-              if (data.section === 'body') {
-                const category = data.row.raw[2]
-                let color = colors.primary
-                
-                if (category === 'Need') color = colors.need
-                else if (category === 'Want') color = colors.want
-                else if (category === 'Self Development') color = colors.selfDev
-                else if (category === 'Savings') color = colors.savings
-                
-                // Add subtle color to category column
-                if (data.column.index === 2) {
-                  data.cell.styles.fillColor = [...color, 0.1] // Very light background
-                  data.cell.styles.textColor = color
-                  data.cell.styles.fontStyle = 'bold'
-                }
+              // Style the total row
+              if (data.row.index === tableData.length - 1) {
+                data.cell.styles.fontStyle = 'bold'
+                data.cell.styles.fillColor = colors.background
               }
             }
           })
         } else {
-          // Fallback method with better formatting
-          pdf.setFontSize(11)
+          // Manual table creation fallback (autoTable not available)
+          
+          pdf.setFontSize(10)
           pdf.setFont('helvetica', 'bold')
           
           // Table headers with colored background
           pdf.setFillColor(...colors.primary)
-          pdf.rect(15, yPosition - 2, 180, 12, 'F')
+          pdf.rect(15, yPosition - 2, 180, 10, 'F')
           pdf.setTextColor(255, 255, 255)
-          pdf.text('Date', 18, yPosition + 6)
-          pdf.text('Description', 45, yPosition + 6)
-          pdf.text('Category', 100, yPosition + 6)
-          pdf.text('Utility Type', 135, yPosition + 6)
-          pdf.text('Amount', 175, yPosition + 6)
+          pdf.text('Date', 18, yPosition + 5)
+          pdf.text('Expenses', 50, yPosition + 5)
+          pdf.text('Count', 140, yPosition + 5)
+          pdf.text('Daily Total', 165, yPosition + 5)
           
-          yPosition += 20
+          yPosition += 18
           pdf.setTextColor(...colors.text)
           pdf.setFont('helvetica', 'normal')
           pdf.setFontSize(10)
           
-          filteredExpenses.forEach((expense, index) => {
-            // Alternate row colors
-            if (index % 2 === 0) {
-              pdf.setFillColor(248, 250, 252)
-              pdf.rect(15, yPosition - 4, 180, 12, 'F')
-            }
+          sortedDays.forEach((day, index) => {
+            const dayData = expensesByDay[day]
             
-            const date = new Date(expense.date).toLocaleDateString()
-            const category = categoryLabels[expense.category as keyof typeof categoryLabels] || expense.category
-            const amount = `PKR ${expense.amount.toLocaleString()}`
+            // Get all expense descriptions  
+            const expenseDetails = dayData.expenses
+              .map(exp => {
+                const categoryLabel = categoryLabels[exp.category as keyof typeof categoryLabels] || exp.category
+                return `${cleanText(exp.description)} (${categoryLabel})`
+              })
+              .join(', ')
             
-            // Clean text to prevent special characters
-            const cleanText = (text: string) => text.replace(/[^\x20-\x7E]/g, '').trim()
-            const description = cleanText(expense.description.substring(0, 18))
-            const utility = cleanText((expense.subcategory || 'N/A').substring(0, 25))
+            // Split text to fit in width of 85 units (from x=50 to x=135)
+            const lines = pdf.splitTextToSize(expenseDetails, 85)
+            const rowHeight = Math.max(12, lines.length * 5 + 7)
             
-            pdf.text(date, 18, yPosition + 2)
-            pdf.text(description, 45, yPosition + 2)
-            
-            // Category with color
-            const categoryColor = categoryColors[expense.category as keyof typeof categoryColors] || colors.primary
-            pdf.setTextColor(...categoryColor)
-            pdf.setFont('helvetica', 'bold')
-            pdf.text(category, 100, yPosition + 2)
-            
-            pdf.setTextColor(...colors.text)
-            pdf.setFont('helvetica', 'normal')
-            pdf.text(utility, 135, yPosition + 2)
-            pdf.text(amount, 175, yPosition + 2)
-            
-            yPosition += 12
-            
-            // Add new page if needed
-            if (yPosition > 270) {
+            // Check if we need a new page
+            if (yPosition + rowHeight > 270) {
               pdf.addPage()
               yPosition = 30
               // Re-add headers on new page
-              pdf.setFont('helvetica', 'bold')
               pdf.setFontSize(10)
-              pdf.text('Date', 18, yPosition)
-              pdf.text('Description', 45, yPosition)
-              pdf.text('Category', 100, yPosition)
-              pdf.text('Utility', 135, yPosition)
-              pdf.text('Amount', 175, yPosition)
-              yPosition += 10
+              pdf.setFont('helvetica', 'bold')
+              pdf.setFillColor(...colors.primary)
+              pdf.rect(15, yPosition - 2, 180, 10, 'F')
+              pdf.setTextColor(255, 255, 255)
+              pdf.text('Date', 18, yPosition + 5)
+              pdf.text('Expenses', 50, yPosition + 5)
+              pdf.text('Count', 140, yPosition + 5)
+              pdf.text('Daily Total', 165, yPosition + 5)
+              yPosition += 15
+              pdf.setTextColor(...colors.text)
               pdf.setFont('helvetica', 'normal')
+              pdf.setFontSize(9)
             }
+            
+            // Alternate row colors with dynamic height
+            if (index % 2 === 0) {
+              pdf.setFillColor(252, 252, 252)
+              pdf.rect(15, yPosition - 3, 180, rowHeight, 'F')
+            }
+            
+            pdf.setFontSize(9)
+            pdf.setFont('helvetica', 'normal')
+            pdf.text(day, 18, yPosition + 2)
+            
+            // Show wrapped expense details
+            let textY = yPosition + 2
+            lines.forEach((line: string, lineIndex: number) => {
+              pdf.text(line, 50, textY + (lineIndex * 5))
+            })
+            
+            pdf.text(dayData.expenses.length.toString(), 145, yPosition + 2)
+            
+            pdf.setFont('helvetica', 'bold')
+            pdf.text(`PKR ${dayData.total.toLocaleString()}`, 165, yPosition + 2)
+            pdf.setFont('helvetica', 'normal')
+            
+            yPosition += rowHeight
           })
           
+          // Add total row
+          if (yPosition > 260) {
+            pdf.addPage()
+            yPosition = 30
+          }
+          
+          pdf.setFillColor(...colors.background)
+          pdf.rect(15, yPosition - 2, 180, 12, 'F')
+          pdf.setFont('helvetica', 'bold')
+          pdf.setTextColor(...colors.text)
+          pdf.text('TOTAL', 18, yPosition + 5)
+          pdf.text('', 50, yPosition + 5)
+          pdf.text(monthlyExpenses.length.toString(), 145, yPosition + 5)
+          pdf.text(`PKR ${totalAmount.toLocaleString()}`, 165, yPosition + 5)
         }
       } else {
         pdf.setFont('helvetica', 'italic')
         pdf.setTextColor(128, 128, 128)
-        pdf.text('No expenses found for this month.', 25, yPosition + 20)
+        pdf.text('No expenses found for this month.', 15, yPosition + 10)
       }
       
-      // Footer on last page
+      // ==== FINANCIAL ANALYSIS & RECOMMENDATIONS ====
+      pdf.addPage()
+      yPosition = 20
+      
+      pdf.setFontSize(16)
+      pdf.setFont('helvetica', 'bold')
+      pdf.setTextColor(...colors.accent)
+      pdf.text('Financial Analysis & Recommendations', 15, yPosition)
+      
+      yPosition += 15
+      
+      // Calculate financial ratios and insights
+      const needsSpent = categoryTotals['NEED'] || 0
+      const wantsSpent = categoryTotals['WANT'] || 0
+      const selfDevSpent = categoryTotals['SELF_DEVELOPMENT'] || 0
+      const savingsActual = optimisticMonthlySavings || 0
+      
+      // Use actual monthly income for 50/30/20 rule
+      const hasIncome = monthlyIncome > 0
+      
+      // Calculate percentages based on income (50/30/20 rule)
+      const needsPercent = hasIncome ? (needsSpent / monthlyIncome) * 100 : 0
+      const wantsPercent = hasIncome ? (wantsSpent / monthlyIncome) * 100 : 0
+      const selfDevPercent = hasIncome ? (selfDevSpent / monthlyIncome) * 100 : 0
+      const savingsRate = hasIncome ? (savingsActual / monthlyIncome) * 100 : 0
+      
+      // Calculate ideal amounts based on 50/30/20 rule
+      const idealNeeds = hasIncome ? monthlyIncome * 0.50 : 0
+      const idealWants = hasIncome ? monthlyIncome * 0.30 : 0
+      const idealSavings = hasIncome ? monthlyIncome * 0.20 : 0
+      
+      // Financial Health Assessment
+      pdf.setFontSize(14)
+      pdf.setFont('helvetica', 'bold')
+      pdf.setTextColor(...colors.accent)
+      pdf.text('Financial Health Assessment', 15, yPosition)
+      yPosition += 12
+      
+      // Show monthly income
+      if (hasIncome) {
+        pdf.setFontSize(11)
+        pdf.setFont('helvetica', 'bold')
+        pdf.setTextColor(...colors.primary)
+        pdf.text(`Monthly Income: PKR ${monthlyIncome.toLocaleString()}`, 15, yPosition)
+        yPosition += 10
+      } else {
+        pdf.setFontSize(11)
+        pdf.setFont('helvetica', 'italic')
+        pdf.setTextColor(...colors.danger)
+        pdf.text('No income recorded for this month. Please add income to get accurate analysis.', 15, yPosition)
+        yPosition += 10
+      }
+      
+      pdf.setFontSize(11)
+      pdf.setFont('helvetica', 'normal')
+      pdf.setTextColor(...colors.text)
+      
+      // 50/30/20 Rule Analysis based on actual income
+      pdf.text('• 50/30/20 Rule Analysis (Based on Your Income):', 15, yPosition)
+      yPosition += 10
+      
+      const analysis = hasIncome ? [
+        [`Needs (50% = PKR ${idealNeeds.toLocaleString()}):`, `Spent: PKR ${needsSpent.toLocaleString()} (${needsPercent.toFixed(1)}%)`, needsPercent <= 50 ? 'Excellent' : needsPercent <= 60 ? 'Good' : 'Over Budget'],
+        [`Wants (30% = PKR ${idealWants.toLocaleString()}):`, `Spent: PKR ${wantsSpent.toLocaleString()} (${wantsPercent.toFixed(1)}%)`, wantsPercent <= 30 ? 'Excellent' : wantsPercent <= 40 ? 'Good' : 'Over Budget'],
+        [`Savings (20% = PKR ${idealSavings.toLocaleString()}):`, `Saved: PKR ${savingsActual.toLocaleString()} (${savingsRate.toFixed(1)}%)`, savingsRate >= 20 ? 'Excellent' : savingsRate >= 10 ? 'Good' : 'Needs Improvement']
+      ] : [
+        [`Needs:`, `Spent: PKR ${needsSpent.toLocaleString()}`, 'No income to compare'],
+        [`Wants:`, `Spent: PKR ${wantsSpent.toLocaleString()}`, 'No income to compare'],
+        [`Savings:`, `Saved: PKR ${savingsActual.toLocaleString()}`, 'No income to compare']
+      ]
+      
+      analysis.forEach(([metric, actual, status]) => {
+        // Metric and ideal amount
+        pdf.setFont('helvetica', 'normal')
+        pdf.setFontSize(10)
+        pdf.text(metric, 25, yPosition)
+        yPosition += 6
+        
+        // Actual spending on same line, indented
+        pdf.setFontSize(9)
+        pdf.text(actual, 35, yPosition)
+        
+        // Status aligned to the right
+        const statusColor = status === 'Excellent' ? colors.success : 
+                           status === 'Good' ? colors.warning : 
+                           status === 'Over Budget' || status === 'Needs Improvement' ? colors.danger : colors.text
+        pdf.setTextColor(...statusColor)
+        pdf.setFont('helvetica', 'bold')
+        
+        // Get text width to right-align status
+        const statusWidth = pdf.getTextWidth(status)
+        pdf.text(status, 195 - statusWidth, yPosition)
+        pdf.setTextColor(...colors.text)
+        pdf.setFont('helvetica', 'normal')
+        yPosition += 10
+      })
+      
+      yPosition += 5
+      
+      // Add visual summary box if income exists
+      if (hasIncome) {
+        pdf.setDrawColor(...colors.primary)
+        pdf.setLineWidth(0.5)
+        pdf.rect(15, yPosition, 180, 32, 'S')
+        
+        pdf.setFontSize(10)
+        pdf.setFont('helvetica', 'bold')
+        pdf.text('Quick Summary:', 20, yPosition + 8)
+        
+        pdf.setFont('helvetica', 'normal')
+        pdf.setFontSize(9)
+        
+        // Left column
+        pdf.text(`• Total Income: PKR ${monthlyIncome.toLocaleString()}`, 20, yPosition + 16)
+        pdf.text(`• Net Balance: PKR ${(monthlyIncome - totalAmount).toLocaleString()}`, 20, yPosition + 24)
+        
+        // Right column
+        pdf.text(`• Total Spent: PKR ${totalAmount.toLocaleString()}`, 105, yPosition + 16)
+        pdf.text(`• Actual Savings: PKR ${savingsActual.toLocaleString()}`, 105, yPosition + 24)
+        
+        yPosition += 37
+      }
+      
+      yPosition += 10
+      
+      // Recommendations
+      pdf.setFontSize(14)
+      pdf.setFont('helvetica', 'bold')
+      pdf.setTextColor(...colors.accent)
+      pdf.text('Personalized Recommendations', 15, yPosition)
+      yPosition += 10
+      
+      pdf.setFontSize(10)
+      pdf.setFont('helvetica', 'normal')
+      pdf.setTextColor(...colors.text)
+      
+      const recommendations: string[] = []
+      
+      if (hasIncome) {
+        // Income-based recommendations using 50/30/20 rule
+        const needsDiff = needsSpent - idealNeeds
+        const wantsDiff = wantsSpent - idealWants
+        const savingsDiff = savingsActual - idealSavings
+        
+        // Needs recommendations (50% rule)
+        if (needsPercent > 50) {
+          recommendations.push(`🔴 NEEDS OVERSPENDING: You're spending ${needsPercent.toFixed(1)}% on needs (target: 50%). Cut PKR ${needsDiff.toLocaleString()} to meet the target.`)
+          if (needsPercent > 60) {
+            recommendations.push('⚠️ Review essential expenses: Consider cheaper alternatives for utilities, groceries, or transportation.')
+          }
+        } else if (needsPercent < 40) {
+          recommendations.push(`✅ Great job on needs! You're under budget by PKR ${Math.abs(needsDiff).toLocaleString()}.`)
+        }
+        
+        // Wants recommendations (30% rule)
+        if (wantsPercent > 30) {
+          recommendations.push(`🟡 WANTS OVERSPENDING: You're spending ${wantsPercent.toFixed(1)}% on wants (target: 30%). Reduce by PKR ${wantsDiff.toLocaleString()}.`)
+          recommendations.push('💡 TIP: Delay non-essential purchases, use the 24-hour rule before buying wants.')
+        } else if (wantsPercent < 20) {
+          recommendations.push(`✅ Excellent control on wants! You saved PKR ${Math.abs(wantsDiff).toLocaleString()} from discretionary spending.`)
+        }
+        
+        // Savings recommendations (20% rule)
+        if (savingsRate < 20) {
+          recommendations.push(`🔴 CRITICAL - LOW SAVINGS: You saved only ${savingsRate.toFixed(1)}% (target: 20%). Increase savings by PKR ${Math.abs(savingsDiff).toLocaleString()}.`)
+          if (savingsRate < 10) {
+            recommendations.push('⚠️ URGENT: Your savings are critically low. Set up automatic transfers to save at least 20% of income.')
+          }
+        } else if (savingsRate >= 20) {
+          recommendations.push(`✅ Excellent savings rate of ${savingsRate.toFixed(1)}%! You're securing your financial future.`)
+        }
+        
+        // Self-development recommendations
+        if (selfDevPercent < 5 && monthlyIncome > 50000) {
+          recommendations.push(`💡 Consider investing ${(monthlyIncome * 0.05).toLocaleString()} (5%) in self-development for long-term growth.`)
+        }
+      } else {
+        recommendations.push('📊 Please record your monthly income to get personalized 50/30/20 rule recommendations.')
+        recommendations.push('💡 The 50/30/20 rule suggests: 50% for needs, 30% for wants, 20% for savings.')
+      }
+      
+      // Budget overrun recommendations
+      Object.entries(categoryTotals).forEach(([category, spent]) => {
+        const budget = budgetGoals[category as keyof typeof budgetGoals] || 0
+        if (budget > 0 && spent > budget) {
+          const overage = spent - budget
+          const categoryName = categoryLabels[category as keyof typeof categoryLabels] || category
+          recommendations.push(`⚠️ You exceeded your ${categoryName} budget by PKR ${overage.toLocaleString()}. Review and adjust spending in this category.`)
+        }
+      })
+      
+      // Top utility recommendations
+      const sortedUtilities = Object.entries(utilityBreakdown)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+      
+      if (sortedUtilities.length > 0) {
+        const topUtility = sortedUtilities[0]
+        recommendations.push(`💰 Your highest utility expense is "${topUtility[0]}" at PKR ${topUtility[1].toLocaleString()}. Consider if this can be optimized.`)
+      }
+      
+      // Positive reinforcement
+      if (savingsRate >= 20) {
+        recommendations.push('✅ Excellent! Your savings rate of ' + savingsRate.toFixed(1) + '% exceeds the recommended 20%. Keep it up!')
+      }
+      
+      if (needsPercent <= 50 && wantsPercent <= 30) {
+        recommendations.push('✅ Great job! You are following the 50/30/20 rule well. Your spending discipline is commendable.')
+      }
+      
+      // Display recommendations with better formatting
+      recommendations.forEach((rec, index) => {
+        // Check if we need a new page before starting a recommendation
+        if (yPosition > 260) {
+          pdf.addPage()
+          yPosition = 20
+        }
+        
+        // Remove emojis and clean the text for better PDF rendering
+        const cleanRec = rec
+          .replace(/[🔴🟡✅💡⚠️💰📊]/g, '') // Remove emojis
+          .replace(/\s+/g, ' ') // Normalize spaces
+          .trim()
+        
+        // Determine the type of recommendation for color coding
+        let textColor = colors.text
+        if (rec.includes('🔴') || rec.includes('CRITICAL') || rec.includes('OVERSPENDING')) {
+          textColor = colors.danger
+        } else if (rec.includes('✅') || rec.includes('Excellent') || rec.includes('Great')) {
+          textColor = colors.success
+        } else if (rec.includes('🟡') || rec.includes('⚠️')) {
+          textColor = colors.warning
+        } else if (rec.includes('💡')) {
+          textColor = colors.primary
+        }
+        
+        pdf.setTextColor(...textColor)
+        
+        // Split text to fit width
+        const lines = pdf.splitTextToSize(cleanRec, 170)
+        
+        lines.forEach((line: string, lineIndex: number) => {
+          if (yPosition > 270) {
+            pdf.addPage()
+            yPosition = 20
+          }
+          
+          if (lineIndex === 0) {
+            // Add bullet point for first line
+            pdf.setFont('helvetica', 'bold')
+            pdf.text('•', 15, yPosition)
+            pdf.setFont('helvetica', 'normal')
+            pdf.text(line, 20, yPosition)
+          } else {
+            // Indent continuation lines
+            pdf.text(line, 20, yPosition)
+          }
+          yPosition += 6
+        })
+        
+        pdf.setTextColor(...colors.text) // Reset color
+        yPosition += 3 // Gap between recommendations
+      })
+      
+      // Footer on all pages with disclaimer
       const pageCount = pdf.getNumberOfPages()
       for (let i = 1; i <= pageCount; i++) {
         pdf.setPage(i)
+        
+        // Footer line
+        pdf.setDrawColor(...colors.lightGray)
+        pdf.setLineWidth(0.3)
+        pdf.line(15, 278, 195, 278)
+        
+        // Disclaimer text
+        pdf.setFontSize(7)
+        pdf.setFont('helvetica', 'italic')
+        pdf.setTextColor(150, 150, 150)
+        const disclaimer = 'This PDF is system-generated and may contain errors. Please verify all calculations.'
+        const disclaimerWidth = pdf.getTextWidth(disclaimer)
+        pdf.text(disclaimer, (210 - disclaimerWidth) / 2, 283) // Center the disclaimer
+        
+        // Footer info
         pdf.setFontSize(8)
         pdf.setFont('helvetica', 'normal')
         pdf.setTextColor(128, 128, 128)
-        pdf.text(`Generated on ${new Date().toLocaleDateString()} - Page ${i} of ${pageCount}`, 15, 285)
-        pdf.text('Expensey - Your Personal Finance Tracker', 150, 285)
+        pdf.text(`Generated: ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`, 15, 289)
+        
+        // Page number centered
+        const pageText = `Page ${i} of ${pageCount}`
+        const pageTextWidth = pdf.getTextWidth(pageText)
+        pdf.text(pageText, (210 - pageTextWidth) / 2, 289)
+        
+        // Expensey copyright right-aligned
+        pdf.text('Expensey © 2024', 155, 289)
       }
       
       // Save the PDF
-      const fileName = `expense-summary-${monthName.replace(/\s+/g, '-').toLowerCase()}.pdf`
+      const fileName = `expensey-${monthName.replace(/\s+/g, '-').toLowerCase()}.pdf`
       pdf.save(fileName)
       toast.success('PDF exported successfully!')
       
