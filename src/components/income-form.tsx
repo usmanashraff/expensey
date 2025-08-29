@@ -13,7 +13,7 @@ import { useUserSettings } from '@/hooks/use-user-settings'
 import { Checkbox } from '@/components/ui/checkbox'
 
 interface IncomeFormProps {
-  onIncomeAdded: (newIncome?: any) => void
+  onIncomeAdded: (newIncome?: any, optimisticId?: string) => void
   isInDialog?: boolean
   onClose?: () => void
 }
@@ -42,6 +42,36 @@ export function IncomeForm({ onIncomeAdded, isInDialog = false, onClose }: Incom
 
     setIsSubmitting(true)
 
+    // Create optimistic income object
+    const optimisticIncome = {
+      id: `temp-${Date.now()}-${Math.random()}`,
+      amount: parseFloat(amount),
+      source,
+      description,
+      date: new Date(date + 'T12:00:00').toISOString(),
+      currency,
+      isRecurring,
+      userId: 'current-user', // This will be replaced by the real user ID on the server
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }
+
+    // Immediately call onIncomeAdded with optimistic data
+    onIncomeAdded(optimisticIncome)
+    
+    // Reset form immediately for better UX
+    setAmount('')
+    setSource('')
+    setDescription('')
+    setDate(new Date().toISOString().split('T')[0])
+    setIsRecurring(false)
+    
+    toast.success('Income added successfully!')
+    
+    if (onClose) {
+      onClose()
+    }
+
     try {
       const response = await fetch('/api/income', {
         method: 'POST',
@@ -49,12 +79,12 @@ export function IncomeForm({ onIncomeAdded, isInDialog = false, onClose }: Incom
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          amount: parseFloat(amount),
-          source,
-          description,
-          date: new Date(date + 'T12:00:00').toISOString(),
-          currency,
-          isRecurring,
+          amount: parseFloat(optimisticIncome.amount.toString()),
+          source: optimisticIncome.source,
+          description: optimisticIncome.description,
+          date: optimisticIncome.date,
+          currency: optimisticIncome.currency,
+          isRecurring: optimisticIncome.isRecurring,
         }),
       })
 
@@ -62,24 +92,15 @@ export function IncomeForm({ onIncomeAdded, isInDialog = false, onClose }: Incom
         throw new Error('Failed to add income')
       }
 
-      const newIncome = await response.json()
+      const realIncome = await response.json()
       
-      toast.success('Income added successfully!')
+      // Replace optimistic income with real one
+      onIncomeAdded(realIncome, optimisticIncome.id)
       
-      // Reset form
-      setAmount('')
-      setSource('')
-      setDescription('')
-      setDate(new Date().toISOString().split('T')[0])
-      setIsRecurring(false)
-      
-      onIncomeAdded(newIncome)
-      
-      if (onClose) {
-        onClose()
-      }
     } catch (error) {
       console.error('Error adding income:', error)
+      // Remove optimistic income on error
+      onIncomeAdded(null, optimisticIncome.id)
       toast.error('Failed to add income. Please try again.')
     } finally {
       setIsSubmitting(false)
@@ -124,7 +145,7 @@ export function IncomeForm({ onIncomeAdded, isInDialog = false, onClose }: Incom
         <ContentWrapper className={`relative ${isInDialog ? 'px-6 pb-6' : ''}`}>
           <form onSubmit={handleSubmit} className="space-y-4">
             <motion.div 
-              className="grid grid-cols-1 md:grid-cols-2 gap-4"
+              className="space-y-4"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3, delay: 0.1 }}
@@ -159,7 +180,7 @@ export function IncomeForm({ onIncomeAdded, isInDialog = false, onClose }: Incom
                     required
                   />
                   <Select value={currency} onValueChange={setCurrency}>
-                    <SelectTrigger className="w-24 backdrop-blur-sm bg-white/50 dark:bg-white/5 border-white/20">
+                    <SelectTrigger className="w-20 backdrop-blur-sm bg-white/50 dark:bg-white/5 border-white/20">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>

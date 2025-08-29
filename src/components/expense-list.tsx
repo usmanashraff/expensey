@@ -24,9 +24,9 @@ import { toast } from 'sonner'
 import { ExpenseCharts } from './expense-charts'
 import { SavingsChart } from './savings-chart'
 import { UtilityCharts } from './utility-charts'
-import { IncomeList } from './income-list'
-import { IncomeCharts } from './income-charts'
-import { ChevronDown, ChevronUp, BarChart3, ChevronLeft, ChevronRight, Calendar, Receipt, Zap, Eye, EyeOff, TrendingUp, PiggyBank, Wallet, Trash2, X, Target, Download, Loader2, Menu, Settings, FileDown, DollarSign } from 'lucide-react'
+import { FinanceOverview } from './finance-overview'
+import AIInsights from './ai-insights'
+import { ChevronDown, ChevronUp, BarChart3, ChevronLeft, ChevronRight, Calendar, Receipt, Zap, Eye, EyeOff, TrendingUp, PiggyBank, Wallet, Trash2, X, Target, Download, Loader2, Menu, Settings, FileDown, DollarSign, Brain } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { BudgetDialog } from './budget-dialog'
 import { Progress } from '@/components/ui/progress'
@@ -82,8 +82,7 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false)
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null)
   const [isMobile, setIsMobile] = useState(false)
-  const [activeView, setActiveView] = useState<'expenses' | 'budget' | 'visualization' | 'income'>('expenses')
-  const [optimisticIncome, setOptimisticIncome] = useState<any>(null)
+  const [activeView, setActiveView] = useState<'expenses' | 'finance' | 'visualization' | 'ai'>('expenses')
   
   const currentMonth = new Date().getMonth() + 1
   const currentYear = new Date().getFullYear()
@@ -579,6 +578,9 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense
       return
     }
 
+    // Show loading toast
+    toast.loading('Generating PDF with AI insights...')
+
     try {
       // Fetch monthly income data
       let monthlyIncome = 0
@@ -591,6 +593,74 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense
         }
       } catch (error) {
         console.error('Error fetching income:', error)
+      }
+      
+      // Get AI-powered insights for smart recommendations
+      let aiInsights: {
+        healthScore?: string
+        recommendations?: string[]
+        concerns?: string[]
+        positives?: string[]
+      } = {}
+      
+      try {
+        const aiResponse = await fetch('/api/ai/analyze-spending', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ month: selectedMonth, year: selectedYear, timeframe: 'month' })
+        })
+        
+        if (aiResponse.ok) {
+          const aiData = await aiResponse.json()
+          if (aiData.analysis) {
+            // Parse health score
+            const scoreMatch = aiData.analysis.match(/Score:\s*(\d+\/10)/i)
+            if (scoreMatch) {
+              aiInsights.healthScore = scoreMatch[1]
+            }
+            
+            // Parse recommendations
+            const recsMatch = aiData.analysis.match(/##\s*4\.\s*Smart Recommendations[\s\S]*?(?=##|$)/i)
+            if (recsMatch) {
+              const recsText = recsMatch[0].replace(/##\s*4\.\s*Smart Recommendations/i, '').trim()
+              aiInsights.recommendations = recsText
+                .split('\n')
+                .filter((line: string) => line.startsWith('•') || line.startsWith('-'))
+                .map((line: string) => line.replace(/^[•\-]\s*/, '').trim())
+                .filter((line: string) => line.length > 0)
+                .slice(0, 4) // Limit to 4 recommendations
+            }
+            
+            // Parse concerns
+            const concernsMatch = aiData.analysis.match(/##\s*3\.\s*Top Concerns[\s\S]*?(?=##|$)/i)
+            if (concernsMatch) {
+              const concernsText = concernsMatch[0].replace(/##\s*3\.\s*Top Concerns/i, '').trim()
+              aiInsights.concerns = concernsText
+                .split('\n')
+                .filter((line: string) => line.startsWith('•') || line.startsWith('-'))
+                .map((line: string) => line.replace(/^[•\-]\s*/, '').trim())
+                .filter((line: string) => line.length > 0)
+                .slice(0, 3)
+            }
+            
+            // Parse positive points
+            const positivesMatch = aiData.analysis.match(/##\s*5\.\s*Positive Points[\s\S]*?(?=##|$)/i)
+            if (positivesMatch) {
+              const positivesText = positivesMatch[0].replace(/##\s*5\.\s*Positive Points/i, '').trim()
+              aiInsights.positives = positivesText
+                .split('\n')
+                .filter((line: string) => line.startsWith('•') || line.startsWith('-'))
+                .map((line: string) => line.replace(/^[•\-]\s*/, '').trim())
+                .filter((line: string) => line.length > 0)
+                .slice(0, 2)
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error getting AI insights:', error)
+        // Continue without AI insights if there's an error
       }
       // Dynamic import to handle client-side loading
       const jsPDFModule = await import('jspdf')
@@ -1240,11 +1310,18 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense
       
       yPosition += 10
       
-      // Recommendations
+      // AI-Powered Recommendations Section
       pdf.setFontSize(14)
       pdf.setFont('helvetica', 'bold')
       pdf.setTextColor(...colors.accent)
-      pdf.text('Personalized Recommendations', 15, yPosition)
+      
+      // Add AI health score if available
+      if (aiInsights.healthScore) {
+        pdf.text(`AI Financial Health Score: ${aiInsights.healthScore}`, 15, yPosition)
+        yPosition += 10
+      }
+      
+      pdf.text('AI-Powered Smart Recommendations', 15, yPosition)
       yPosition += 10
       
       pdf.setFontSize(10)
@@ -1253,76 +1330,74 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense
       
       const recommendations: string[] = []
       
-      if (hasIncome) {
-        // Income-based recommendations using 50/30/20 rule
-        const needsDiff = needsSpent - idealNeeds
-        const wantsDiff = wantsSpent - idealWants
-        const savingsDiff = savingsActual - idealSavings
-        
-        // Needs recommendations (50% rule)
-        if (needsPercent > 50) {
-          recommendations.push(`🔴 NEEDS OVERSPENDING: You're spending ${needsPercent.toFixed(1)}% on needs (target: 50%). Cut PKR ${needsDiff.toLocaleString()} to meet the target.`)
-          if (needsPercent > 60) {
-            recommendations.push('⚠️ Review essential expenses: Consider cheaper alternatives for utilities, groceries, or transportation.')
-          }
-        } else if (needsPercent < 40) {
-          recommendations.push(`✅ Great job on needs! You're under budget by PKR ${Math.abs(needsDiff).toLocaleString()}.`)
+      // Use AI recommendations if available
+      if (aiInsights.recommendations && aiInsights.recommendations.length > 0) {
+        // Add AI concerns first (if any)
+        if (aiInsights.concerns && aiInsights.concerns.length > 0) {
+          aiInsights.concerns.forEach(concern => {
+            recommendations.push(`⚠️ ${concern}`)
+          })
         }
         
-        // Wants recommendations (30% rule)
-        if (wantsPercent > 30) {
-          recommendations.push(`🟡 WANTS OVERSPENDING: You're spending ${wantsPercent.toFixed(1)}% on wants (target: 30%). Reduce by PKR ${wantsDiff.toLocaleString()}.`)
-          recommendations.push('💡 TIP: Delay non-essential purchases, use the 24-hour rule before buying wants.')
-        } else if (wantsPercent < 20) {
-          recommendations.push(`✅ Excellent control on wants! You saved PKR ${Math.abs(wantsDiff).toLocaleString()} from discretionary spending.`)
-        }
+        // Add AI recommendations
+        aiInsights.recommendations.forEach(rec => {
+          recommendations.push(`💡 ${rec}`)
+        })
         
-        // Savings recommendations (20% rule)
-        if (savingsRate < 20) {
-          recommendations.push(`🔴 CRITICAL - LOW SAVINGS: You saved only ${savingsRate.toFixed(1)}% (target: 20%). Increase savings by PKR ${Math.abs(savingsDiff).toLocaleString()}.`)
-          if (savingsRate < 10) {
-            recommendations.push('⚠️ URGENT: Your savings are critically low. Set up automatic transfers to save at least 20% of income.')
-          }
-        } else if (savingsRate >= 20) {
-          recommendations.push(`✅ Excellent savings rate of ${savingsRate.toFixed(1)}%! You're securing your financial future.`)
-        }
-        
-        // Self-development recommendations
-        if (selfDevPercent < 5 && monthlyIncome > 50000) {
-          recommendations.push(`💡 Consider investing ${(monthlyIncome * 0.05).toLocaleString()} (5%) in self-development for long-term growth.`)
+        // Add positive observations
+        if (aiInsights.positives && aiInsights.positives.length > 0) {
+          aiInsights.positives.forEach(positive => {
+            recommendations.push(`✅ ${positive}`)
+          })
         }
       } else {
-        recommendations.push('📊 Please record your monthly income to get personalized 50/30/20 rule recommendations.')
-        recommendations.push('💡 The 50/30/20 rule suggests: 50% for needs, 30% for wants, 20% for savings.')
-      }
-      
-      // Budget overrun recommendations
-      Object.entries(categoryTotals).forEach(([category, spent]) => {
-        const budget = budgetGoals[category as keyof typeof budgetGoals] || 0
-        if (budget > 0 && spent > budget) {
-          const overage = spent - budget
-          const categoryName = categoryLabels[category as keyof typeof categoryLabels] || category
-          recommendations.push(`⚠️ You exceeded your ${categoryName} budget by PKR ${overage.toLocaleString()}. Review and adjust spending in this category.`)
+        // Fallback to rule-based recommendations if AI is not available
+        if (hasIncome) {
+          // Income-based recommendations using 50/30/20 rule
+          const needsDiff = needsSpent - idealNeeds
+          const wantsDiff = wantsSpent - idealWants
+          const savingsDiff = savingsActual - idealSavings
+          
+          // Needs recommendations (50% rule)
+          if (needsPercent > 50) {
+            recommendations.push(`Needs overspending: ${needsPercent.toFixed(1)}% (target: 50%). Cut PKR ${needsDiff.toLocaleString()}`)
+            if (needsPercent > 60) {
+              recommendations.push('Review essential expenses for cheaper alternatives')
+            }
+          } else if (needsPercent < 40) {
+            recommendations.push(`Great job on needs! Under budget by PKR ${Math.abs(needsDiff).toLocaleString()}`)
+          }
+          
+          // Wants recommendations (30% rule)
+          if (wantsPercent > 30) {
+            recommendations.push(`Wants overspending: ${wantsPercent.toFixed(1)}% (target: 30%). Reduce by PKR ${wantsDiff.toLocaleString()}`)
+          } else if (wantsPercent < 20) {
+            recommendations.push(`Excellent wants control! Saved PKR ${Math.abs(wantsDiff).toLocaleString()}`)
+          }
+          
+          // Savings recommendations (20% rule)
+          if (savingsRate < 20) {
+            recommendations.push(`Low savings: ${savingsRate.toFixed(1)}% (target: 20%). Increase by PKR ${Math.abs(savingsDiff).toLocaleString()}`)
+            if (savingsRate < 10) {
+              recommendations.push('Set up automatic transfers for 20% savings')
+            }
+          } else if (savingsRate >= 20) {
+            recommendations.push(`Excellent savings rate of ${savingsRate.toFixed(1)}%!`)
+          }
+        } else {
+          recommendations.push('Record monthly income for personalized recommendations')
+          recommendations.push('Follow 50/30/20 rule: 50% needs, 30% wants, 20% savings')
         }
-      })
-      
-      // Top utility recommendations
-      const sortedUtilities = Object.entries(utilityBreakdown)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 3)
-      
-      if (sortedUtilities.length > 0) {
-        const topUtility = sortedUtilities[0]
-        recommendations.push(`💰 Your highest utility expense is "${topUtility[0]}" at PKR ${topUtility[1].toLocaleString()}. Consider if this can be optimized.`)
-      }
-      
-      // Positive reinforcement
-      if (savingsRate >= 20) {
-        recommendations.push('✅ Excellent! Your savings rate of ' + savingsRate.toFixed(1) + '% exceeds the recommended 20%. Keep it up!')
-      }
-      
-      if (needsPercent <= 50 && wantsPercent <= 30) {
-        recommendations.push('✅ Great job! You are following the 50/30/20 rule well. Your spending discipline is commendable.')
+        
+        // Budget overrun recommendations
+        Object.entries(categoryTotals).forEach(([category, spent]) => {
+          const budget = budgetGoals[category as keyof typeof budgetGoals] || 0
+          if (budget > 0 && spent > budget) {
+            const overage = spent - budget
+            const categoryName = categoryLabels[category as keyof typeof categoryLabels] || category
+            recommendations.push(`${categoryName} budget exceeded by PKR ${overage.toLocaleString()}`)
+          }
+        })
       }
       
       // Display recommendations with better formatting
@@ -1415,10 +1490,13 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense
       // Save the PDF
       const fileName = `expensey-${monthName.replace(/\s+/g, '-').toLowerCase()}.pdf`
       pdf.save(fileName)
-      toast.success('PDF exported successfully!')
+      toast.dismiss() // Dismiss loading toast
+      const hasAI = aiInsights.recommendations && aiInsights.recommendations.length > 0
+      toast.success(hasAI ? 'PDF exported with AI insights!' : 'PDF exported successfully!')
       
     } catch (error) {
       console.error('Error exporting PDF:', error)
+      toast.dismiss() // Dismiss loading toast
       toast.error(`Failed to export PDF: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
@@ -1657,17 +1735,31 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense
                 </p>
               ) : (
                 <div className="space-y-3">
-                  {paginatedExpenses.map((expense, index) => (
+                  {paginatedExpenses.map((expense, index) => {
+                    const isOptimistic = typeof expense.id === 'string' && expense.id.startsWith('temp-')
+                    return (
                 <motion.div
                   key={expense.id}
                   initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  animate={{ opacity: isOptimistic ? 0.7 : 1, y: 0 }}
                   exit={{ opacity: 0, x: -100 }}
                   transition={{ duration: 0.3, delay: index * 0.05 }}
-                  whileHover={{ scale: 1.01 }}
-                  className="flex items-center justify-between p-4 rounded-2xl border bg-white/30 dark:bg-white/5 backdrop-blur-sm hover:shadow-lg transition-all duration-300 cursor-pointer"
-                  onClick={() => handleExpenseClick(expense)}
+                  whileHover={{ scale: isOptimistic ? 1 : 1.01 }}
+                  className={`flex items-center justify-between p-4 rounded-2xl border ${
+                    isOptimistic 
+                      ? 'bg-blue-50/50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-800 animate-pulse' 
+                      : 'bg-white/30 dark:bg-white/5 border-white/20'
+                  } backdrop-blur-sm hover:shadow-lg transition-all duration-300 ${isOptimistic ? '' : 'cursor-pointer'} relative`}
+                  onClick={() => !isOptimistic && handleExpenseClick(expense)}
                 >
+                  {isOptimistic && (
+                    <div className="absolute top-2 right-2">
+                      <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded-full flex items-center gap-1">
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                        Saving...
+                      </span>
+                    </div>
+                  )}
                   <div className="flex-1">
                     <div className="flex items-center gap-3 flex-wrap">
                       <h4 className="text-sm sm:text-base font-medium">{expense.description}</h4>
@@ -1704,32 +1796,34 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense
                         </Button>
                       </motion.div>
                     )}
-                    <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleDeleteClick(expense)
-                        }}
-                        disabled={deletingExpenseId === expense.id}
-                        className="text-destructive hover:text-destructive hover:bg-destructive/10 disabled:opacity-50"
-                      >
-                        {deletingExpenseId === expense.id ? (
-                          <motion.div
-                            animate={{ rotate: 360 }}
-                            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                          >
-                            <Loader2 className="h-4 w-4" />
-                          </motion.div>
-                        ) : (
-                          <Trash2 className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </motion.div>
+                    {!isOptimistic && (
+                      <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleDeleteClick(expense)
+                          }}
+                          disabled={deletingExpenseId === expense.id}
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10 disabled:opacity-50"
+                        >
+                          {deletingExpenseId === expense.id ? (
+                            <motion.div
+                              animate={{ rotate: 360 }}
+                              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                            >
+                              <Loader2 className="h-4 w-4" />
+                            </motion.div>
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </motion.div>
+                    )}
                   </div>
                 </motion.div>
-              ))}
+              )})}
                 </div>
               )}
               
@@ -2664,24 +2758,11 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense
                 >
                   <Button
                     variant="outline"
-                    onClick={() => setActiveView('income')}
+                    onClick={() => setActiveView('finance')}
                     className="h-24 w-full flex flex-col items-center justify-center gap-2 bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 backdrop-blur-xl border-white/20 dark:border-white/10 hover:bg-white/60 dark:hover:bg-[oklch(0.25_0.02_250)]/50 transition-colors"
                   >
                     <DollarSign className="h-6 w-6 text-green-600 dark:text-green-400" />
-                    <span className="text-xs font-medium">Income</span>
-                  </Button>
-                </motion.div>
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <Button
-                    variant="outline"
-                    onClick={() => setActiveView('budget')}
-                    className="h-24 w-full flex flex-col items-center justify-center gap-2 bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 backdrop-blur-xl border-white/20 dark:border-white/10 hover:bg-white/60 dark:hover:bg-[oklch(0.25_0.02_250)]/50 transition-colors"
-                  >
-                    <Target className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-                    <span className="text-xs font-medium">Budget</span>
+                    <span className="text-xs font-medium">Finance</span>
                   </Button>
                 </motion.div>
                 <motion.div
@@ -2695,6 +2776,19 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense
                   >
                     <BarChart3 className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                     <span className="text-xs font-medium">Charts</span>
+                  </Button>
+                </motion.div>
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Button
+                    variant="outline"
+                    onClick={() => setActiveView('ai')}
+                    className="h-24 w-full flex flex-col items-center justify-center gap-2 bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 backdrop-blur-xl border-white/20 dark:border-white/10 hover:bg-white/60 dark:hover:bg-[oklch(0.25_0.02_250)]/50 transition-colors"
+                  >
+                    <Brain className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                    <span className="text-xs font-medium">AI Insights</span>
                   </Button>
                 </motion.div>
               </div>
@@ -2720,43 +2814,36 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense
           
           {/* Mobile Content - Conditional rendering based on activeView */}
           {activeView === 'expenses' && renderExpensesContent()}
-          {activeView === 'income' && (
-            <div className="space-y-6">
-              <IncomeList 
-                optimisticIncome={optimisticIncome}
-                onOptimisticIncomeConfirmed={() => setOptimisticIncome(null)}
-                onIncomeAdded={(income) => setOptimisticIncome(income)}
-                selectedMonth={selectedMonth}
-                selectedYear={selectedYear}
-              />
-              <IncomeCharts 
-                year={selectedYear} 
-                optimisticIncome={optimisticIncome}
-              />
-            </div>
+          {activeView === 'finance' && (
+            <FinanceOverview 
+              selectedMonth={selectedMonth}
+              selectedYear={selectedYear}
+              showAmounts={showAmounts}
+              onToggleAmounts={() => setShowAmounts(!showAmounts)}
+            />
           )}
-          {activeView === 'budget' && renderBudgetContent()}
           {activeView === 'visualization' && renderVisualizationContent()}
+          {activeView === 'ai' && <AIInsights month={selectedMonth} year={selectedYear} />}
         </div>
       ) : (
         // Desktop View - Keep existing tabs structure
         <Tabs defaultValue="expenses" className="space-y-6">
           <TabsList className="w-full bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 backdrop-blur-xl border border-white/20 dark:border-white/10">
             <TabsTrigger value="expenses" className="flex-1 data-[state=active]:bg-white/60 dark:data-[state=active]:bg-[oklch(0.25_0.02_250)]/50">
-              <Receipt className="w-4 h-4 mr-2" />
-              Expenses
+              <Receipt className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Expenses</span>
             </TabsTrigger>
-            <TabsTrigger value="income" className="flex-1 data-[state=active]:bg-white/60 dark:data-[state=active]:bg-[oklch(0.25_0.02_250)]/50">
-              <DollarSign className="w-4 h-4 mr-2" />
-              Income
-            </TabsTrigger>
-            <TabsTrigger value="budget" className="flex-1 data-[state=active]:bg-white/60 dark:data-[state=active]:bg-[oklch(0.25_0.02_250)]/50">
-              <Target className="w-4 h-4 mr-2" />
-              Budget
+            <TabsTrigger value="finance" className="flex-1 data-[state=active]:bg-white/60 dark:data-[state=active]:bg-[oklch(0.25_0.02_250)]/50">
+              <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Finance</span>
             </TabsTrigger>
             <TabsTrigger value="visualization" className="flex-1 data-[state=active]:bg-white/60 dark:data-[state=active]:bg-[oklch(0.25_0.02_250)]/50">
-              <BarChart3 className="w-4 h-4 mr-2" />
-              Charts
+              <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Charts</span>
+            </TabsTrigger>
+            <TabsTrigger value="ai" className="flex-1 data-[state=active]:bg-white/60 dark:data-[state=active]:bg-[oklch(0.25_0.02_250)]/50">
+              <Brain className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+              <span className="hidden sm:inline">AI</span>
             </TabsTrigger>
           </TabsList>
 
@@ -2764,28 +2851,21 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense
             {renderExpensesContent()}
           </TabsContent>
 
-          <TabsContent value="income">
-            <div className="space-y-6">
-              <IncomeList 
-                optimisticIncome={optimisticIncome}
-                onOptimisticIncomeConfirmed={() => setOptimisticIncome(null)}
-                onIncomeAdded={(income) => setOptimisticIncome(income)}
-                selectedMonth={selectedMonth}
-                selectedYear={selectedYear}
-              />
-              <IncomeCharts 
-                year={selectedYear} 
-                optimisticIncome={optimisticIncome}
-              />
-            </div>
+          <TabsContent value="finance">
+            <FinanceOverview 
+              selectedMonth={selectedMonth}
+              selectedYear={selectedYear}
+              showAmounts={showAmounts}
+              onToggleAmounts={() => setShowAmounts(!showAmounts)}
+            />
           </TabsContent>
 
           <TabsContent value="visualization">
             {renderVisualizationContent()}
           </TabsContent>
 
-          <TabsContent value="budget">
-            {renderBudgetContent()}
+          <TabsContent value="ai">
+            <AIInsights month={selectedMonth} year={selectedYear} />
           </TabsContent>
         </Tabs>
       )}

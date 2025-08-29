@@ -6,6 +6,7 @@ import { ExpenseList } from '@/components/expense-list'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { UtilityTypeManager } from '@/components/utility-type-manager'
 import { UserDropdown } from '@/components/user-dropdown'
+import SmartExpenseInput from '@/components/smart-expense-input'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -31,6 +32,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
   const [showExpenseDialog, setShowExpenseDialog] = useState(false)
   const [showUtilityDialog, setShowUtilityDialog] = useState(false)
   const [optimisticExpense, setOptimisticExpense] = useState<any>(null)
+  const [utilityTypes, setUtilityTypes] = useState<string[]>([])
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -51,15 +53,40 @@ export function DashboardClient({ user }: DashboardClientProps) {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
+  // Fetch utility types for natural language processing
+  useEffect(() => {
+    const fetchUtilityTypes = async () => {
+      try {
+        const response = await fetch('/api/utility-types')
+        if (response.ok) {
+          const data = await response.json()
+          setUtilityTypes(data.map((ut: any) => ut.name))
+        }
+      } catch (error) {
+        console.error('Error fetching utility types:', error)
+      }
+    }
+    
+    fetchUtilityTypes()
+  }, [utilityRefreshTrigger])
+
   const handleExpenseAdded = (newExpense?: any) => {
     if (newExpense) {
-      // Set optimistic expense before triggering refresh
+      // For optimistic updates, just set the optimistic expense
+      // Don't trigger refresh immediately - let the component handle the API call
       setOptimisticExpense(newExpense)
-      // Small delay to ensure optimistic state is set before refresh
-      setTimeout(() => {
-        setRefreshTrigger(prev => prev + 1)
-      }, 0)
+      
+      // Only trigger refresh after a delay to allow the real data to come in
+      if (typeof newExpense.id === 'string' && !newExpense.id.startsWith('temp-')) {
+        // This is real data from the server, trigger refresh
+        setTimeout(() => {
+          setRefreshTrigger(prev => prev + 1)
+          setOptimisticExpense(null) // Clear optimistic expense after real data
+        }, 100)
+      }
     } else {
+      // No expense means error or just refresh needed
+      setOptimisticExpense(null)
       setRefreshTrigger(prev => prev + 1)
     }
     
@@ -171,11 +198,15 @@ export function DashboardClient({ user }: DashboardClientProps) {
                 className="lg:col-span-1 space-y-6"
               >
                 <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-purple-400/20 dark:from-blue-600/10 dark:to-purple-600/10 rounded-3xl blur-xl" />
-                  <ExpenseForm onExpenseAdded={handleExpenseAdded} utilityRefreshTrigger={utilityRefreshTrigger} />
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-400/20 to-pink-400/20 dark:from-purple-600/10 dark:to-pink-600/10 rounded-3xl blur-xl" />
+                  <SmartExpenseInput 
+                    onExpenseAdded={handleExpenseAdded} 
+                    utilityRefreshTrigger={utilityRefreshTrigger}
+                    utilityTypes={utilityTypes} 
+                  />
                 </div>
                 <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-400/20 to-pink-400/20 dark:from-purple-600/10 dark:to-pink-600/10 rounded-3xl blur-xl" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-green-400/20 to-emerald-400/20 dark:from-green-600/10 dark:to-emerald-600/10 rounded-3xl blur-xl" />
                   <UtilityTypeManager onUtilityTypesChanged={handleUtilityTypesChanged} />
                 </div>
               </motion.div>

@@ -20,6 +20,7 @@ interface ExpenseFormProps {
   utilityRefreshTrigger?: number
   isInDialog?: boolean
   onClose?: () => void
+  compact?: boolean
 }
 
 interface UtilityType {
@@ -27,7 +28,7 @@ interface UtilityType {
   name: string
 }
 
-export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger, isInDialog = false, onClose }: ExpenseFormProps) {
+export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger, isInDialog = false, onClose, compact = false }: ExpenseFormProps) {
   const [amount, setAmount] = useState('')
   const [description, setDescription] = useState('')
   const [category, setCategory] = useState<ExpenseCategory | ''>('')
@@ -125,24 +126,22 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger, isInDialog 
         receipts: receiptData ? [receiptData] : [],
       }
       
-      console.log('Sending expense data:', payload)
-      
-      const response = await fetch('/api/expenses', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        console.error('Failed to add expense:', errorData)
-        throw new Error(errorData.error || 'Failed to add expense')
+      // Create optimistic expense
+      const optimisticExpense = {
+        ...payload,
+        id: `temp-${Date.now()}-${Math.random()}`,
+        userId: 'current-user',
+        date: expenseDate,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        receipt: receiptData || null,
+        receipts: receiptData ? [receiptData] : []
       }
-
-      const newExpense = await response.json()
-
+      
+      // Store form values for potential restoration
+      const formBackup = { amount, description, category, utilityType, date, receipt, receiptPreview }
+      
+      // Clear form immediately for better UX
       setAmount('')
       setDescription('')
       setCategory('')
@@ -150,8 +149,50 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger, isInDialog 
       setDate(new Date())
       setReceipt(null)
       setReceiptPreview(null)
-      toast.success('Expense added successfully!')
-      onExpenseAdded(newExpense)
+      
+      // Immediately show optimistic update
+      onExpenseAdded(optimisticExpense)
+      
+      console.log('Sending expense data:', payload)
+      
+      try {
+        const response = await fetch('/api/expenses', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        })
+
+        const responseData = await response.json()
+        
+        if (!response.ok) {
+          console.error('Failed to add expense:', responseData)
+          // Remove optimistic update on error
+          onExpenseAdded(undefined)
+          // Restore form data on error
+          setAmount(formBackup.amount)
+          setDescription(formBackup.description)
+          setCategory(formBackup.category)
+          setUtilityType(formBackup.utilityType)
+          setDate(formBackup.date)
+          setReceipt(formBackup.receipt)
+          setReceiptPreview(formBackup.receiptPreview)
+          toast.error(responseData.error || 'Failed to add expense')
+          throw new Error(responseData.error || 'Failed to add expense')
+        }
+
+        // Send real expense to replace optimistic one
+        onExpenseAdded(responseData)
+        toast.success('Expense added successfully!')
+      } catch (apiError) {
+        // On any API error, remove optimistic update
+        if (apiError instanceof Error && !apiError.message.includes('Failed to add expense')) {
+          onExpenseAdded(undefined)
+          toast.error('Network error. Please try again.')
+        }
+        throw apiError
+      }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to add expense. Please try again.'
       toast.error(errorMessage)
@@ -187,6 +228,149 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger, isInDialog 
     WANT: { label: 'Want', color: 'from-red-500 to-pink-500' },
     SELF_DEVELOPMENT: { label: 'Self Development', color: 'from-green-500 to-emerald-500' },
     SAVINGS: { label: 'Savings', color: 'from-blue-500 to-cyan-500' },
+  }
+
+  if (compact) {
+    return (
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <Input
+              type="number"
+              step="1"
+              placeholder="Amount"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              required
+              className="h-9 text-sm backdrop-blur-sm bg-white/50 dark:bg-white/5"
+            />
+          </div>
+          <div>
+            <Select value={category} onValueChange={(value) => {
+              setCategory(value as ExpenseCategory)
+              if (value === 'SAVINGS') setUtilityType('')
+            }}>
+              <SelectTrigger className="h-9 text-sm backdrop-blur-sm bg-white/50 dark:bg-white/5">
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(categoryConfig).map(([value, config]) => (
+                  <SelectItem key={value} value={value}>
+                    <div className="flex items-center gap-1">
+                      <div className={`w-2 h-2 rounded-full bg-gradient-to-r ${config.color}`} />
+                      <span className="text-xs">{config.label}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        
+        <Input
+          type="text"
+          placeholder="Description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          required
+          className="h-9 text-sm backdrop-blur-sm bg-white/50 dark:bg-white/5"
+        />
+        
+        <div className="grid grid-cols-2 gap-2">
+          <Select 
+            value={utilityType} 
+            onValueChange={setUtilityType} 
+            required={category !== 'SAVINGS'}
+            disabled={loadingUtilities || category === 'SAVINGS'}
+          >
+            <SelectTrigger className="h-9 text-sm backdrop-blur-sm bg-white/50 dark:bg-white/5">
+              <SelectValue placeholder="Utility" />
+            </SelectTrigger>
+            <SelectContent>
+              {utilityTypes.map((type) => (
+                <SelectItem key={type.id} value={type.name}>
+                  <span className="text-xs">{type.name}</span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className="h-9 text-xs justify-start text-left font-normal backdrop-blur-sm bg-white/50 dark:bg-white/5"
+              >
+                <CalendarIcon className="mr-1 h-3 w-3" />
+                {date ? format(date, 'MMM d') : 'Date'}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={date}
+                onSelect={setDate}
+                initialFocus
+                disabled={(date) => date > new Date()}
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+        
+        {/* Receipt Upload - Compact Version */}
+        <div className="space-y-2">
+          {!receipt ? (
+            <div className="flex items-center justify-center w-full">
+              <label htmlFor="receipt-upload-compact" className="flex items-center justify-center w-full h-9 border border-dashed rounded-lg cursor-pointer bg-white/50 dark:bg-white/5 hover:bg-white/70 dark:hover:bg-white/10 transition-colors">
+                <div className="flex items-center gap-2">
+                  <Paperclip className="w-4 h-4 text-gray-400" />
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    Add receipt (optional)
+                  </span>
+                </div>
+                <input
+                  id="receipt-upload-compact"
+                  type="file"
+                  className="hidden"
+                  accept="image/jpeg,image/jpg,image/png,image/webp,application/pdf"
+                  onChange={handleReceiptUpload}
+                />
+              </label>
+            </div>
+          ) : (
+            <div className="relative p-2 border rounded-lg bg-white/50 dark:bg-white/5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Paperclip className="w-4 h-4 text-gray-400" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium truncate">{receipt.name}</p>
+                    <p className="text-[10px] text-gray-500">
+                      {(receipt.size / 1024).toFixed(1)} KB
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={removeReceipt}
+                  className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+        
+        <Button 
+          type="submit" 
+          className="w-full h-9 text-sm bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600" 
+          disabled={isSubmitting}
+        >
+          <PlusCircle className="mr-1 h-3 w-3" />
+          {isSubmitting ? 'Adding...' : 'Add Expense'}
+        </Button>
+      </form>
+    )
   }
 
   return (

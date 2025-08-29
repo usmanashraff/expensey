@@ -49,12 +49,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Utility type (subcategory) is required for all categories except SAVINGS
+    // However, we'll be lenient and allow null subcategory with a warning
     if (category !== 'SAVINGS' && !subcategory) {
-      console.log('Missing utility type for non-SAVINGS category')
-      return NextResponse.json(
-        { error: 'Utility type is required for this category.' },
-        { status: 400 }
-      )
+      console.warn('Missing utility type for non-SAVINGS category, proceeding with null subcategory')
+      // Don't return error, just log warning and continue
     }
 
     if (!Object.values(ExpenseCategory).includes(category)) {
