@@ -331,7 +331,7 @@ Return ONLY valid JSON with cleaned descriptions and correct categories.`
             
             // Word boundary match
             const words = subLower.split(/\s+/)
-            return words.some(word => utilLower.includes(word))
+            return words.some((word: string) => utilLower.includes(word))
           })
           subcategory = match || null
         }
