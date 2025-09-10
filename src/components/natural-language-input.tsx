@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Mic, MicOff, Send, Loader2, Sparkles, Check, X, Edit2, Plus } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
@@ -47,7 +48,30 @@ export default function NaturalLanguageInput({ onExpenseAdded, utilityTypes = []
   const [showConfirmation, setShowConfirmation] = useState(false)
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [isSaving, setIsSaving] = useState(false)
+  const [availableUtilities, setAvailableUtilities] = useState<string[]>([])
+  const [loadingUtilities, setLoadingUtilities] = useState(false)
   const recognitionRef = useRef<any>(null)
+
+  // Fetch utility types
+  useEffect(() => {
+    const fetchUtilityTypes = async () => {
+      setLoadingUtilities(true)
+      try {
+        const response = await fetch('/api/utility-types')
+        if (!response.ok) throw new Error('Failed to fetch utility types')
+        const data = await response.json()
+        setAvailableUtilities(data.map((u: any) => u.name))
+      } catch (error) {
+        console.error('Failed to fetch utility types:', error)
+        // Use provided utility types as fallback
+        setAvailableUtilities(utilityTypes)
+      } finally {
+        setLoadingUtilities(false)
+      }
+    }
+    
+    fetchUtilityTypes()
+  }, [utilityTypes])
 
   // Initialize speech recognition
   useEffect(() => {
@@ -325,28 +349,116 @@ export default function NaturalLanguageInput({ onExpenseAdded, utilityTypes = []
                   key={index}
                   className="p-2 bg-white/60 dark:bg-gray-900/60 rounded-lg border border-gray-200 dark:border-gray-700"
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">{expense.description}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-sm font-bold">
-                          {expense.currency} {expense.amount.toLocaleString()}
-                        </span>
-                        <Badge className={`${categoryColors[expense.category]} scale-90`}>
-                          {categoryLabels[expense.category]}
-                        </Badge>
+                  {editingIndex === index ? (
+                    <div className="space-y-2">
+                      <input
+                        type="text"
+                        value={expense.description}
+                        onChange={(e) => updateExpense(index, 'description', e.target.value)}
+                        className="w-full px-2 py-1 text-xs rounded border dark:bg-gray-800 dark:border-gray-600"
+                        placeholder="Description"
+                      />
+                      <div className="flex gap-1">
+                        <input
+                          type="number"
+                          value={expense.amount}
+                          onChange={(e) => updateExpense(index, 'amount', parseFloat(e.target.value))}
+                          className="w-20 px-2 py-1 text-xs rounded border dark:bg-gray-800 dark:border-gray-600"
+                          placeholder="Amount"
+                        />
+                        <Select
+                          value={expense.category}
+                          onValueChange={(value) => updateExpense(index, 'category', value)}
+                        >
+                          <SelectTrigger className="flex-1 h-7 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="NEED">Need</SelectItem>
+                            <SelectItem value="WANT">Want</SelectItem>
+                            <SelectItem value="SELF_DEVELOPMENT">Self Dev</SelectItem>
+                            <SelectItem value="SAVINGS">Savings</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {expense.category !== 'SAVINGS' && (
+                          <Select
+                            value={expense.subcategory || ''}
+                            onValueChange={(value) => updateExpense(index, 'subcategory', value)}
+                          >
+                            <SelectTrigger className="flex-1 h-7 text-xs">
+                              <SelectValue placeholder="Utility" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {availableUtilities.map((utility) => (
+                                <SelectItem key={utility} value={utility}>
+                                  {utility}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </div>
+                      <div className="flex gap-1 justify-end">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-5 w-5"
+                          onClick={() => setEditingIndex(null)}
+                        >
+                          <Check className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-5 w-5 text-red-600"
+                          onClick={() => removeExpense(index)}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
                       </div>
                     </div>
-                    
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-6 w-6 text-red-600"
-                      onClick={() => removeExpense(index)}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </div>
+                  ) : (
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">{expense.description}</p>
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
+                          <span className="text-sm font-bold">
+                            {expense.currency} {expense.amount.toLocaleString()}
+                          </span>
+                          <Badge className={`${categoryColors[expense.category]} scale-90`}>
+                            {categoryLabels[expense.category]}
+                          </Badge>
+                          {expense.subcategory && (
+                            <Badge variant="outline" className="scale-90">{expense.subcategory}</Badge>
+                          )}
+                          {!expense.subcategory && expense.category !== 'SAVINGS' && (
+                            <Badge variant="outline" className="scale-90 bg-yellow-50 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300">
+                              No utility
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div className="flex gap-1">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-5 w-5"
+                          onClick={() => setEditingIndex(index)}
+                        >
+                          <Edit2 className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-5 w-5 text-red-600"
+                          onClick={() => removeExpense(index)}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -514,19 +626,54 @@ export default function NaturalLanguageInput({ onExpenseAdded, utilityTypes = []
                               type="text"
                               value={expense.description}
                               onChange={(e) => updateExpense(index, 'description', e.target.value)}
-                              className="w-full px-2 py-1 text-sm rounded border"
+                              className="w-full px-2 py-1 text-sm rounded border dark:bg-gray-800 dark:border-gray-600"
+                              placeholder="Description"
                             />
-                            <input
-                              type="number"
-                              value={expense.amount}
-                              onChange={(e) => updateExpense(index, 'amount', parseFloat(e.target.value))}
-                              className="w-24 px-2 py-1 text-sm rounded border"
-                            />
+                            <div className="flex gap-2">
+                              <input
+                                type="number"
+                                value={expense.amount}
+                                onChange={(e) => updateExpense(index, 'amount', parseFloat(e.target.value))}
+                                className="w-24 px-2 py-1 text-sm rounded border dark:bg-gray-800 dark:border-gray-600"
+                                placeholder="Amount"
+                              />
+                              <Select
+                                value={expense.category}
+                                onValueChange={(value) => updateExpense(index, 'category', value)}
+                              >
+                                <SelectTrigger className="flex-1 h-8 text-sm">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="NEED">Needs</SelectItem>
+                                  <SelectItem value="WANT">Wants</SelectItem>
+                                  <SelectItem value="SELF_DEVELOPMENT">Self Development</SelectItem>
+                                  <SelectItem value="SAVINGS">Savings</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              {expense.category !== 'SAVINGS' && (
+                                <Select
+                                  value={expense.subcategory || ''}
+                                  onValueChange={(value) => updateExpense(index, 'subcategory', value)}
+                                >
+                                  <SelectTrigger className="flex-1 h-8 text-sm">
+                                    <SelectValue placeholder="Select utility" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {availableUtilities.map((utility) => (
+                                      <SelectItem key={utility} value={utility}>
+                                        {utility}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              )}
+                            </div>
                           </>
                         ) : (
                           <>
                             <p className="font-medium">{expense.description}</p>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                               <span className="text-lg font-bold">
                                 {expense.currency} {expense.amount.toLocaleString()}
                               </span>
@@ -535,6 +682,11 @@ export default function NaturalLanguageInput({ onExpenseAdded, utilityTypes = []
                               </Badge>
                               {expense.subcategory && (
                                 <Badge variant="outline">{expense.subcategory}</Badge>
+                              )}
+                              {!expense.subcategory && expense.category !== 'SAVINGS' && (
+                                <Badge variant="outline" className="bg-yellow-50 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300">
+                                  No utility selected
+                                </Badge>
                               )}
                             </div>
                             <p className="text-xs text-muted-foreground">
