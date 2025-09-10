@@ -58,128 +58,133 @@ Text: "${text}"
 
 Available utility types for subcategory field (YOU MUST USE ONE OF THESE): [${utilities.map((u: string) => `"${u}"`).join(', ')}]
 
-CRITICAL SUBCATEGORY MATCHING RULES:
-1. You MUST select a subcategory from the available list above
-2. Match based on keywords in the expense description:
-   - "transport", "bus", "fare", "taxi", "uber", "fuel" → Select utility containing "Transport" 
-   - "food", "lunch", "dinner", "restaurant", "coffee" → Select utility containing "Food" or "Snacks"
-   - "medical", "doctor", "medicine", "hospital" → Select utility containing "Medical" or "Health"
-   - "sent home", "family" → Select utility containing "Sent" or "Family"
-   - "groceries", "vegetables", "fruits" → Select utility containing "Groceries" or specific food items
-   - "electricity", "gas", "water", "internet" → Select utility containing these words
-3. If multiple utilities match, choose the most specific one
-4. Only use null if category is SAVINGS
+CRITICAL PARSING RULES:
+1. DESCRIPTION: Extract ONLY the core expense item, removing filler words like "add", "spent", "for", "on", etc.
+   - "add 200 for transport fare" → description: "transport fare"
+   - "spent 500 on groceries" → description: "groceries"
+   - "bought coffee 350" → description: "coffee"
+   - "paid electricity bill 3000" → description: "electricity bill"
+
+2. SUBCATEGORY MATCHING: Find the BEST matching utility from the available list based on keywords:
+   - Look for exact or partial matches in utility names
+   - "transport fare" → match utility containing "Transport"
+   - "coffee" → match utility containing "Food", "Snacks", or "Outside Food"
+   - "electricity" → match utility containing "Electric" or "Electricity"
+   - If multiple matches, choose the most specific one
 
 Context:
 - Default currency is ${defaultCurrency}
 - Today's date is ${new Date().toISOString().split('T')[0]}
 - Categories must be one of: NEED, WANT, SELF_DEVELOPMENT, SAVINGS
 
-CRITICAL categorization rules - BE VERY CAREFUL AND ACCURATE:
+CATEGORIZATION RULES (MUST BE FOLLOWED STRICTLY):
 
-NEED (Essential expenses that are necessary for survival and basic functioning):
-- Housing: rent, mortgage, property tax, home insurance
-- Utilities: electricity, gas, water, sewage, trash, internet (basic plan), phone (basic plan)
-- Food/Groceries: essential groceries, basic food items (NOT restaurants or fancy foods)
-- Transportation: public transport, bus fare, train tickets, metro, fuel for work commute, basic car maintenance, car insurance
-- Healthcare: medical bills, prescriptions, health insurance, doctor visits
-- Family obligations: sending money home, child support, elderly care
-- Basic clothing: work clothes, essential clothing items
-- Essential home items: basic toiletries, cleaning supplies
+NEED (Essential for survival and basic functioning):
+- Transportation: transport, fare, bus, metro, train, taxi, uber, rickshaw, fuel, commute, petrol, diesel
+- Groceries/Food: groceries, vegetables, fruits, milk, bread, rice, wheat, eggs, meat, fish, market
+- Utilities: electricity, gas, water, internet, phone, wifi, mobile recharge
+- Housing: rent, maintenance, property tax, home repairs
+- Healthcare: medicine, doctor, hospital, clinic, pharmacy, medical
+- Family Support: sent home, family, parents, support
+- Essential Items: toiletries, soap, shampoo, toothpaste, cleaning supplies
 
-WANT (Non-essential discretionary spending for pleasure/comfort):
-- Dining out: restaurants, cafes, fast food, coffee shops, food delivery, takeout
-- Entertainment: movies, concerts, streaming services, games, sports events
-- Shopping: non-essential clothing, accessories, gadgets, electronics for fun
-- Hobbies: hobby supplies, recreational activities
-- Travel: vacations, leisure trips, hotels for vacation
-- Luxury items: expensive brands, premium products, upgrades
-- Social: parties, gifts (non-obligatory), social outings
-- Convenience: premium internet/phone plans, subscription boxes, apps
+WANT (Non-essential/discretionary):
+- Dining Out: restaurant, cafe, coffee shop, starbucks, pizza, burger, fast food, dining, lunch out, dinner out
+- Entertainment: movie, cinema, netflix, spotify, gaming, concert, sports
+- Shopping: clothes (non-essential), shoes, accessories, gadgets, electronics
+- Social: party, gifts, celebration, outing with friends
 
-SELF_DEVELOPMENT (Investments in personal growth and skills):
-- Education: courses, workshops, certifications, tuition, online learning platforms
-- Books: educational books, skill development books, professional literature
-- Fitness: gym membership, yoga classes, sports training, personal trainer
-- Professional development: conferences, seminars, networking events
-- Skills: language learning, coding bootcamps, art classes, music lessons
-- Mental health: therapy, counseling, meditation apps, self-improvement programs
-- Career tools: professional software, tools for skill building
+SELF_DEVELOPMENT:
+- Fitness: gym, yoga, sports, fitness, workout, training
+- Education: course, class, book, learning, certification, workshop
+- Skills: music lessons, art class, language learning
 
-SAVINGS (Money set aside for future):
-- Bank savings deposits
-- Investment contributions
-- Emergency fund additions
-- Retirement contributions
-- Fixed deposits
-- Mutual funds or stocks
+SAVINGS:
+- Any mention of savings, investment, deposit, mutual fund
 
-EXTREMELY IMPORTANT CATEGORIZATION RULES:
-1. ANY mention of "transport", "fare", "bus", "metro", "train", "commute", "taxi", "uber" (for work), "rickshaw", "fuel" → ALWAYS NEED
-2. "coffee", "starbucks", "restaurant", "pizza", "dining" → ALWAYS WANT
-3. "groceries", "vegetables", "market", "food shopping" → ALWAYS NEED
-4. "gym", "fitness", "training", "yoga" → ALWAYS SELF_DEVELOPMENT
-5. "movie", "netflix", "gaming", "entertainment" → ALWAYS WANT
-6. "course", "learning", "book" (educational), "certification" → ALWAYS SELF_DEVELOPMENT
-7. "sending home", "family support", "sent money home" → ALWAYS NEED
+KEYWORD-BASED CATEGORY ENFORCEMENT:
+Transport keywords → ALWAYS NEED:
+- transport, fare, bus, metro, train, commute, taxi, uber, ola, rickshaw, auto, fuel, petrol, diesel, cab
 
-SPECIAL RULE FOR TRANSPORT: If the text contains ANY of these words: transport, fare, bus, metro, commute, train, public transport - it MUST be categorized as NEED, never as WANT.
+Food/Grocery keywords → ALWAYS NEED:
+- groceries, vegetables, fruits, market, sabzi, dal, rice, wheat, milk, eggs
 
-For subcategory: Look for exact matches in available utility types. Common mappings:
-- "transport" text → look for "Transport" or "Public Transport" in utilities
-- "outside food" → look for "Outside Food, Snacks" or similar
-- "sent home" → look for "Sent home" or "Family Support"
-- If no utility type matches, suggest creating one or use "Other" if available
-- For NEED expenses without clear utility: suggest "General Expenses" or "Miscellaneous"
-- For WANT expenses without clear utility: suggest "Personal" or "Miscellaneous"
+Restaurant/Cafe keywords → ALWAYS WANT:
+- restaurant, cafe, coffee (at shop), starbucks, pizza, burger, dining out, lunch out, dinner out, zomato, swiggy
 
-Extract and return a JSON array of expenses with this structure:
+Utility keywords → ALWAYS NEED:
+- electricity, electric, gas, water, internet, wifi, phone, mobile, recharge, bill
+
+Gym/Fitness keywords → ALWAYS SELF_DEVELOPMENT:
+- gym, fitness, yoga, workout, training, sports
+
+UTILITY MATCHING ALGORITHM:
+1. Extract main expense keyword from description
+2. Find utility that contains this keyword (case-insensitive)
+3. Priority order for matching:
+   - Exact match
+   - Contains match (utility contains keyword)
+   - Keyword contains utility name
+   - Semantic similarity
+4. Common mappings:
+   - transport/fare/bus/metro → "Transport" or "Public Transport"
+   - groceries/vegetables/fruits → "Groceries"
+   - restaurant/cafe/coffee → "Outside Food" or "Food & Dining"
+   - electricity/electric → "Electricity"
+   - gas → "Gas"
+   - internet/wifi → "Internet"
+   - sent home/family → "Sent home" or "Family Support"
+
+Extract and return a JSON array with this structure:
 {
   "expenses": [
     {
-      "amount": number (extract the amount, default to 0 if unclear),
-      "description": "string (clear, concise description)",
+      "amount": number,
+      "description": "string (cleaned, concise description WITHOUT filler words)",
       "category": "NEED|WANT|SELF_DEVELOPMENT|SAVINGS",
-      "subcategory": "string or null (match from available utilities if applicable)",
-      "date": "YYYY-MM-DD format (default to today if not specified)",
-      "currency": "${defaultCurrency} (unless another currency is mentioned)"
+      "subcategory": "string or null (MUST match from available utilities)",
+      "date": "YYYY-MM-DD",
+      "currency": "${defaultCurrency}"
     }
   ],
-  "interpretation": "Brief explanation of what was understood",
-  "suggestions": ["Any clarifications needed or suggestions"]
+  "interpretation": "Brief explanation",
+  "suggestions": []
 }
 
-Examples - ALWAYS include subcategory from available list:
-- "Spent 500 on groceries" -> category: NEED, subcategory: (match "Groceries" from list)
-- "Transport fare 200" -> category: NEED, subcategory: (match "Transport" or "Public Transport" from list)
-- "Bus ticket 50" -> category: NEED, subcategory: (match "Transport" from list)
-- "Gym membership 2000" -> category: SELF_DEVELOPMENT, subcategory: (match "Gym" or "Fitness" from list)
-- "Coffee at starbucks 350" -> category: WANT, subcategory: (match "Outside Food" or "Food" from list)
-- "Sent home 30000" -> category: NEED, subcategory: (match "Sent home" or "Family" from list)
-- "Movie tickets 1200" -> category: WANT, subcategory: (match "Entertainment" from list)
-- "Vegetables 300" -> category: NEED, subcategory: (match "Groceries" or "Vegetables" from list)
-- "Restaurant dinner 1500" -> category: WANT, subcategory: (match "Outside Food" from list)
-- "Electricity bill 3000" -> category: NEED, subcategory: (match "Electricity" or "Electric" from list)
+EXAMPLES WITH CORRECT PARSING:
+- "add 200 for transport fare" → description: "transport fare", category: NEED, subcategory: (match "Transport")
+- "spent 500 on groceries" → description: "groceries", category: NEED, subcategory: (match "Groceries")
+- "coffee at starbucks 350" → description: "coffee at starbucks", category: WANT, subcategory: (match "Outside Food")
+- "paid electricity bill 3000" → description: "electricity bill", category: NEED, subcategory: (match "Electricity")
+- "gym membership 2000" → description: "gym membership", category: SELF_DEVELOPMENT, subcategory: (match "Gym")
 
-REMEMBER: Always select subcategory from the provided utility types list!
-
-Return ONLY valid JSON, no additional text.`
+Return ONLY valid JSON.`
 
     // Call GROQ AI
     const completion = await groq.chat.completions.create({
       messages: [
         {
           role: "system",
-          content: `You are an expert expense categorization AI with deep understanding of personal finance. Your primary job is to:
-1. Extract expense amounts and descriptions accurately
-2. CATEGORIZE EXPENSES CORRECTLY based on their actual purpose:
-   - NEED: Essential for survival/basic functioning (transport, groceries, utilities, rent, family support)
-   - WANT: Discretionary/pleasure spending (restaurants, entertainment, non-essential shopping)
-   - SELF_DEVELOPMENT: Personal growth investments (education, gym, courses, books for learning)
-   - SAVINGS: Money being saved or invested
-3. Use context clues - "transport", "bus", "fare", "commute" are ALWAYS NEED, not WANT
-4. Be strict about categories - coffee shops and restaurants are WANT, not NEED
-5. Return ONLY valid JSON, no explanations outside the JSON structure`
+          content: `You are an expert expense parser AI. Your STRICT rules:
+
+1. CLEAN DESCRIPTIONS: Remove ALL filler words ("add", "spent", "for", "on", "paid", "bought"). Keep ONLY the core expense item.
+   - "add 200 for transport fare" → "transport fare"
+   - "spent 500 on groceries" → "groceries"
+   - "bought coffee 350" → "coffee"
+
+2. STRICT CATEGORIZATION:
+   NEED: transport, fare, bus, metro, groceries, vegetables, fruits, electricity, gas, water, internet, rent, medicine, family support
+   WANT: restaurant, cafe, coffee shop, starbucks, pizza, burger, movie, netflix, shopping (non-essential)
+   SELF_DEVELOPMENT: gym, fitness, yoga, course, book (educational), certification
+   SAVINGS: savings, investment, deposit
+
+3. TRANSPORT IS ALWAYS NEED: Any mention of transport/fare/bus/metro/taxi MUST be categorized as NEED.
+
+4. RESTAURANT/CAFE IS ALWAYS WANT: Coffee shops, restaurants, dining out are ALWAYS WANT.
+
+5. UTILITY MATCHING: Match subcategory to the BEST available utility type based on keywords.
+
+Return ONLY valid JSON with cleaned descriptions and correct categories.`
         },
         {
           role: "user",
@@ -219,24 +224,72 @@ Return ONLY valid JSON, no additional text.`
 
     // Validate and clean the parsed expenses
     const validatedExpenses = parsedData.expenses?.map((expense: any) => {
-      // Double-check transport categorization
-      const transportKeywords = ['transport', 'fare', 'bus', 'metro', 'train', 'commute', 'taxi', 'uber', 'rickshaw', 'public transport']
+      // Enhanced categorization validation
       const descriptionLower = (expense.description || '').toLowerCase()
       const textLower = text.toLowerCase()
       
-      // Force NEED category for transport-related expenses
-      const isTransport = transportKeywords.some(keyword => 
-        descriptionLower.includes(keyword) || textLower.includes(keyword)
-      )
+      // Define comprehensive keyword lists for each category
+      const needKeywords = [
+        'transport', 'fare', 'bus', 'metro', 'train', 'commute', 'taxi', 'uber', 'ola', 'rickshaw', 'auto', 'fuel', 'petrol', 'diesel', 'cab',
+        'groceries', 'vegetables', 'fruits', 'market', 'sabzi', 'dal', 'rice', 'wheat', 'milk', 'eggs', 'bread',
+        'electricity', 'electric', 'gas', 'water', 'internet', 'wifi', 'phone', 'mobile', 'recharge', 'bill',
+        'rent', 'maintenance', 'medicine', 'doctor', 'hospital', 'pharmacy', 'medical',
+        'sent home', 'family support', 'parents'
+      ]
       
-      // Ensure category is valid
+      const wantKeywords = [
+        'restaurant', 'cafe', 'coffee shop', 'starbucks', 'pizza', 'burger', 'fast food', 'dining out', 
+        'lunch out', 'dinner out', 'zomato', 'swiggy', 'takeout', 'delivery',
+        'movie', 'cinema', 'netflix', 'spotify', 'gaming', 'entertainment', 'concert',
+        'shopping', 'clothes', 'shoes', 'accessories', 'gadgets', 'party', 'gifts'
+      ]
+      
+      const selfDevKeywords = [
+        'gym', 'fitness', 'yoga', 'workout', 'training', 'sports', 'exercise',
+        'course', 'class', 'book', 'learning', 'certification', 'workshop', 'education',
+        'skill', 'music lesson', 'art class', 'language'
+      ]
+      
+      const savingsKeywords = ['savings', 'investment', 'deposit', 'mutual fund', 'fixed deposit']
+      
+      // Validate and potentially correct the category
       const validCategories = ['NEED', 'WANT', 'SELF_DEVELOPMENT', 'SAVINGS']
       let category = validCategories.includes(expense.category) ? expense.category : 'WANT'
       
-      // Override category if it's transport but miscategorized
-      if (isTransport && category === 'WANT') {
+      // Force correct categorization based on keywords
+      const hasNeedKeyword = needKeywords.some(k => descriptionLower.includes(k) || textLower.includes(k))
+      const hasWantKeyword = wantKeywords.some(k => descriptionLower.includes(k) || textLower.includes(k))
+      const hasSelfDevKeyword = selfDevKeywords.some(k => descriptionLower.includes(k) || textLower.includes(k))
+      const hasSavingsKeyword = savingsKeywords.some(k => descriptionLower.includes(k) || textLower.includes(k))
+      
+      // Priority-based category correction
+      if (hasSavingsKeyword) {
+        category = 'SAVINGS'
+      } else if (hasSelfDevKeyword && !hasNeedKeyword) {
+        category = 'SELF_DEVELOPMENT'
+      } else if (hasNeedKeyword && !hasWantKeyword) {
+        category = 'NEED'
+      } else if (hasWantKeyword && !hasNeedKeyword) {
+        category = 'WANT'
+      }
+      
+      // Special rules for common misclassifications
+      if (descriptionLower.includes('transport') || descriptionLower.includes('fare') || 
+          descriptionLower.includes('bus') || descriptionLower.includes('metro')) {
         category = 'NEED'
       }
+      if (descriptionLower.includes('coffee') && (descriptionLower.includes('shop') || 
+          descriptionLower.includes('starbucks') || descriptionLower.includes('cafe'))) {
+        category = 'WANT'
+      }
+      
+      // Clean the description - remove common filler words
+      let cleanDescription = expense.description || ''
+      const fillerWords = ['add', 'added', 'spent', 'spend', 'for', 'on', 'paid', 'bought', 'buy', 'purchase']
+      fillerWords.forEach(word => {
+        const regex = new RegExp(`^${word}\\s+|\\s+${word}\\s+|\\s+${word}$`, 'gi')
+        cleanDescription = cleanDescription.replace(regex, ' ').trim()
+      })
       
       // Ensure date is valid
       let date = expense.date || new Date().toISOString().split('T')[0]
@@ -257,71 +310,112 @@ Return ONLY valid JSON, no additional text.`
         date = new Date().toISOString().split('T')[0]
       }
       
-      // Clean and validate subcategory - try multiple matching strategies
+      // Enhanced subcategory matching
       let subcategory = null
       
-      if (expense.subcategory) {
+      if (expense.subcategory && utilities.length > 0) {
         // First try exact match
         if (utilities.includes(expense.subcategory)) {
           subcategory = expense.subcategory
         } else {
-          // Try case-insensitive match
-          const match = utilities.find((u: string) => 
-            u.toLowerCase() === expense.subcategory.toLowerCase() ||
-            u.toLowerCase().includes(expense.subcategory.toLowerCase()) ||
-            expense.subcategory.toLowerCase().includes(u.toLowerCase())
-          )
+          // Try various matching strategies
+          const match = utilities.find((u: string) => {
+            const utilLower = u.toLowerCase()
+            const subLower = expense.subcategory.toLowerCase()
+            
+            // Exact match (case-insensitive)
+            if (utilLower === subLower) return true
+            
+            // Contains match
+            if (utilLower.includes(subLower) || subLower.includes(utilLower)) return true
+            
+            // Word boundary match
+            const words = subLower.split(/\s+/)
+            return words.some(word => utilLower.includes(word))
+          })
           subcategory = match || null
         }
       }
       
-      // If no subcategory found and category requires one, try keyword-based matching
-      if (!subcategory && category !== 'SAVINGS') {
-        const descLower = (expense.description || '').toLowerCase()
-        const textLower = text.toLowerCase()
+      // Smart keyword-based utility matching if no subcategory found
+      if (!subcategory && category !== 'SAVINGS' && utilities.length > 0) {
+        const descLower = cleanDescription.toLowerCase()
         
-        // Define keyword mappings
-        const keywordMappings = [
-          { keywords: ['transport', 'bus', 'fare', 'taxi', 'uber', 'metro', 'train', 'fuel', 'commute'], utilityKeywords: ['transport', 'commute', 'travel'] },
-          { keywords: ['food', 'lunch', 'dinner', 'breakfast', 'restaurant', 'coffee', 'snack', 'eat'], utilityKeywords: ['food', 'snack', 'meal'] },
-          { keywords: ['medical', 'doctor', 'medicine', 'hospital', 'clinic', 'health'], utilityKeywords: ['medical', 'health', 'medicine'] },
-          { keywords: ['sent', 'home', 'family', 'transfer'], utilityKeywords: ['sent', 'family', 'home'] },
-          { keywords: ['grocery', 'groceries', 'vegetables', 'fruits', 'market'], utilityKeywords: ['grocery', 'groceries', 'market'] },
-          { keywords: ['electricity', 'electric', 'power'], utilityKeywords: ['electric', 'electricity', 'power'] },
-          { keywords: ['gas', 'lpg'], utilityKeywords: ['gas'] },
-          { keywords: ['water'], utilityKeywords: ['water'] },
-          { keywords: ['internet', 'wifi', 'broadband'], utilityKeywords: ['internet', 'wifi'] },
-          { keywords: ['phone', 'mobile', 'cellular'], utilityKeywords: ['phone', 'mobile'] },
+        // Enhanced keyword mappings with priority
+        const utilityMappings = [
+          { priority: 1, keywords: ['transport', 'fare', 'bus', 'metro', 'train', 'taxi', 'uber', 'ola', 'rickshaw', 'auto', 'cab'], utilityPatterns: ['transport', 'commute', 'travel', 'public transport'] },
+          { priority: 1, keywords: ['groceries', 'vegetables', 'fruits', 'sabzi', 'market'], utilityPatterns: ['groceries', 'grocery', 'vegetables', 'market'] },
+          { priority: 1, keywords: ['electricity', 'electric', 'power'], utilityPatterns: ['electric', 'electricity', 'power'] },
+          { priority: 1, keywords: ['gas', 'lpg', 'cylinder'], utilityPatterns: ['gas', 'lpg'] },
+          { priority: 1, keywords: ['water', 'water bill'], utilityPatterns: ['water'] },
+          { priority: 1, keywords: ['internet', 'wifi', 'broadband'], utilityPatterns: ['internet', 'wifi', 'broadband'] },
+          { priority: 1, keywords: ['phone', 'mobile', 'cellular', 'recharge'], utilityPatterns: ['phone', 'mobile', 'recharge'] },
+          { priority: 2, keywords: ['restaurant', 'cafe', 'coffee', 'dining', 'food'], utilityPatterns: ['outside food', 'food', 'dining', 'snacks'] },
+          { priority: 2, keywords: ['gym', 'fitness', 'workout'], utilityPatterns: ['gym', 'fitness', 'health'] },
+          { priority: 2, keywords: ['medical', 'doctor', 'medicine', 'hospital', 'pharmacy'], utilityPatterns: ['medical', 'health', 'medicine', 'healthcare'] },
+          { priority: 2, keywords: ['sent', 'home', 'family', 'parents'], utilityPatterns: ['sent home', 'family', 'support'] },
+          { priority: 3, keywords: ['rent', 'house rent', 'room rent'], utilityPatterns: ['rent', 'housing'] },
+          { priority: 3, keywords: ['entertainment', 'movie', 'netflix'], utilityPatterns: ['entertainment', 'leisure'] }
         ]
         
-        // Try to find a matching utility based on keywords
-        for (const mapping of keywordMappings) {
+        // Sort by priority and try to match
+        utilityMappings.sort((a, b) => a.priority - b.priority)
+        
+        for (const mapping of utilityMappings) {
           const hasKeyword = mapping.keywords.some(k => descLower.includes(k) || textLower.includes(k))
           if (hasKeyword) {
-            const matchedUtility = utilities.find((u: string) => 
-              mapping.utilityKeywords.some(uk => u.toLowerCase().includes(uk))
-            )
+            const matchedUtility = utilities.find((u: string) => {
+              const utilLower = u.toLowerCase()
+              return mapping.utilityPatterns.some(pattern => utilLower.includes(pattern))
+            })
             if (matchedUtility) {
               subcategory = matchedUtility
-              console.log(`Matched utility "${matchedUtility}" based on keywords`)
+              console.log(`Matched utility "${matchedUtility}" for description "${cleanDescription}"`)
               break
             }
           }
         }
         
-        // If still no match, look for common default utility types
+        // If still no match, try to find the most relevant utility based on the description
         if (!subcategory) {
-          const defaults = ['Other', 'Miscellaneous', 'General', 'Personal']
-          const defaultMatch = utilities.find((u: string) => 
-            defaults.some(d => u.toLowerCase().includes(d.toLowerCase()))
-          )
-          subcategory = defaultMatch || null
+          // Extract key words from description
+          const words = cleanDescription.toLowerCase().split(/\s+/)
+          let bestMatch = null
+          let bestScore = 0
+          
+          for (const utility of utilities) {
+            const utilLower = utility.toLowerCase()
+            let score = 0
+            
+            // Check how many words from description match the utility
+            for (const word of words) {
+              if (word.length > 2 && utilLower.includes(word)) {
+                score += word.length // Longer words get more weight
+              }
+            }
+            
+            if (score > bestScore) {
+              bestScore = score
+              bestMatch = utility
+            }
+          }
+          
+          if (bestScore > 0) {
+            subcategory = bestMatch
+          } else {
+            // Last resort: look for default utilities
+            const defaults = ['Other', 'Miscellaneous', 'General', 'Personal']
+            const defaultMatch = utilities.find((u: string) => 
+              defaults.some(d => u.toLowerCase().includes(d.toLowerCase()))
+            )
+            subcategory = defaultMatch || null
+          }
         }
       }
       
       return {
         amount: Math.abs(parseFloat(expense.amount) || 0),
-        description: expense.description?.substring(0, 200) || 'Expense',
+        description: cleanDescription.substring(0, 200) || 'Expense',
         category,
         subcategory,
         date,
