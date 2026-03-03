@@ -71,6 +71,12 @@ export async function POST(req: NextRequest) {
       }
     })
 
+    // Get user's currency preference from settings
+    const userSettings = await prisma.userSettings.findUnique({
+      where: { userId: dbUser.id }
+    })
+    const userCurrency = userSettings?.defaultCurrency || 'PKR'
+
     // Fetch income for the period
     const income = await prisma.income.findMany({
       where: {
@@ -132,6 +138,7 @@ export async function POST(req: NextRequest) {
 
     // Prepare data for AI analysis
     const analysisData = {
+      currency: userCurrency,
       period: `${new Date(startDate).toLocaleDateString()} to ${new Date(endDate).toLocaleDateString()}`,
       totalIncome,
       totalExpenses,
@@ -173,8 +180,7 @@ export async function POST(req: NextRequest) {
     const prompt = `Analyze this spending data and provide CONCISE insights:
 
 ${JSON.stringify(analysisData, null, 2)}
-
-Provide BRIEF responses using markdown format:
+. IMPORTANT: All currency amounts should be in ${userCurrency} unless otherwise specified.
 
 ## 1. Financial Health Score
 - Score: X/10
@@ -190,18 +196,19 @@ Provide BRIEF responses using markdown format:
 • Concern 3 (max 15 words)
 
 ## 4. Smart Recommendations  
-• Action 1 (max 15 words with specific amount)
-• Action 2 (max 15 words with specific amount)
-• Action 3 (max 15 words with specific amount)
+• Action 1 (max 15 words with specific amount in ${userCurrency})
+• Action 2 (max 15 words with specific amount in ${userCurrency})
+• Action 3 (max 15 words with specific amount in ${userCurrency})
 
 ## 5. Positive Points
 • Achievement 1 (max 10 words)
 • Achievement 2 (max 10 words)
 
 ## 6. Next Month Forecast
-• Predicted spending: PKR amount
+• Predicted spending: ${userCurrency} amount
 • Key insight (max 10 words)
 
+IMPORTANT: Keep each point VERY SHORT and use bullet points. Include specific numbers in ${userCurrency}
 IMPORTANT: Keep each point VERY SHORT and use bullet points. Include specific numbers but keep text minimal.`
 
     // Call GROQ AI

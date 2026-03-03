@@ -293,7 +293,7 @@ export default function NaturalLanguageInput({ onExpenseAdded, utilityTypes = []
             />
             
             <div className="flex gap-2">
-              <Button
+              {/* <Button
                 onClick={toggleRecording}
                 variant={isRecording ? "destructive" : "outline"}
                 size="icon"
@@ -305,7 +305,7 @@ export default function NaturalLanguageInput({ onExpenseAdded, utilityTypes = []
                 ) : (
                   <Mic className="h-4 w-4" />
                 )}
-              </Button>
+              </Button> */}
               
               <Button
                 onClick={handleSubmit}
