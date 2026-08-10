@@ -23,6 +23,7 @@ interface FinanceOverviewProps {
   selectedYear: number
   showAmounts: boolean
   onToggleAmounts: () => void
+  monthlyExpenses?: any[]
 }
 
 interface Income {
@@ -40,51 +41,84 @@ interface Budget {
   savingsBudget: number
 }
 
+// Module-level in-memory cache for instant tab switching
+const financeDataCache = new Map<string, { income: Income[]; budget: Budget | null }>()
+
 export function FinanceOverview({ 
   selectedMonth, 
   selectedYear, 
   showAmounts,
-  onToggleAmounts 
+  onToggleAmounts,
+  monthlyExpenses
 }: FinanceOverviewProps) {
-  const [income, setIncome] = useState<Income[]>([])
-  const [budget, setBudget] = useState<Budget | null>(null)
-  const [expenses, setExpenses] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+  const cacheKey = `${selectedYear}-${selectedMonth}`
+  const cached = financeDataCache.get(cacheKey)
+
+  const [income, setIncome] = useState<Income[]>(cached?.income || [])
+  const [budget, setBudget] = useState<Budget | null>(cached?.budget || null)
+  const [expenses, setExpenses] = useState<any[]>(monthlyExpenses || [])
+  const [loading, setLoading] = useState(!cached)
   const [showIncomeDialog, setShowIncomeDialog] = useState(false)
   const [deletingIncomeId, setDeletingIncomeId] = useState<string | null>(null)
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
 
   const monthName = new Date(selectedYear, selectedMonth - 1).toLocaleString('default', { month: 'long' })
   
-  // Fetch all financial data
+  // Sync expenses whenever monthlyExpenses prop updates
+  useEffect(() => {
+    if (monthlyExpenses) {
+      setExpenses(monthlyExpenses)
+    }
+  }, [monthlyExpenses])
+
+  // Fetch all financial data concurrently
   useEffect(() => {
     fetchFinancialData()
   }, [selectedMonth, selectedYear])
 
   const fetchFinancialData = async () => {
-    setLoading(true)
+    const key = `${selectedYear}-${selectedMonth}`
+    const existingData = financeDataCache.get(key)
+
+    // Only trigger full loading spinner if we don't have cached data yet
+    if (!existingData) {
+      setLoading(true)
+    }
+
     try {
-      // Fetch income
-      const incomeRes = await fetch(`/api/income?month=${selectedMonth}&year=${selectedYear}`)
-      const incomeData = await incomeRes.json()
-      setIncome(Array.isArray(incomeData) ? incomeData : [])
+      // Execute income & budget fetches in parallel
+      const [incomeRes, budgetRes] = await Promise.all([
+        fetch(`/api/income?month=${selectedMonth}&year=${selectedYear}`),
+        fetch(`/api/budget?month=${selectedMonth}&year=${selectedYear}`)
+      ])
 
-      // Fetch budget
-      const budgetRes = await fetch(`/api/budget?month=${selectedMonth}&year=${selectedYear}`)
-      const budgetData = await budgetRes.json()
-      setBudget(budgetData)
+      const [incomeData, budgetData] = await Promise.all([
+        incomeRes.ok ? incomeRes.json() : [],
+        budgetRes.ok ? budgetRes.json() : null
+      ])
 
-      // Fetch expenses for calculations
-      const expensesRes = await fetch('/api/expenses')
-      const expensesData = await expensesRes.json()
-      
-      // Filter expenses for selected month
-      const filteredExpenses = expensesData.filter((exp: any) => {
-        const expDate = new Date(exp.date)
-        return expDate.getMonth() + 1 === selectedMonth && 
-               expDate.getFullYear() === selectedYear
-      })
-      setExpenses(filteredExpenses)
+      const validIncome = Array.isArray(incomeData) ? incomeData : []
+      const validBudget = budgetData && !budgetData.error ? budgetData : null
+
+      setIncome(validIncome)
+      setBudget(validBudget)
+
+      // Save to cache for instant rendering
+      financeDataCache.set(key, { income: validIncome, budget: validBudget })
+
+      // Fallback: If parent didn't supply monthlyExpenses, fetch expenses
+      if (!monthlyExpenses) {
+        const expensesRes = await fetch('/api/expenses')
+        if (expensesRes.ok) {
+          const expensesData = await expensesRes.json()
+          const filteredExpenses = expensesData.filter((exp: any) => {
+            const expDate = new Date(exp.date)
+            return expDate.getMonth() + 1 === selectedMonth && 
+                   expDate.getFullYear() === selectedYear
+          })
+          setExpenses(filteredExpenses)
+        }
+      }
     } catch (error) {
       console.error('Error fetching financial data:', error)
     } finally {

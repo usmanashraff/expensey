@@ -2943,6 +2943,7 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense
               selectedYear={selectedYear}
               showAmounts={showAmounts}
               onToggleAmounts={() => setShowAmounts(!showAmounts)}
+              monthlyExpenses={filteredExpenses}
             />
           )}
           {activeView === 'visualization' && renderVisualizationContent()}
@@ -2985,6 +2986,7 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense
               selectedYear={selectedYear}
               showAmounts={showAmounts}
               onToggleAmounts={() => setShowAmounts(!showAmounts)}
+              monthlyExpenses={filteredExpenses}
             />
           </TabsContent>
 
