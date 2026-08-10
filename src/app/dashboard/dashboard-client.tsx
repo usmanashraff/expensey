@@ -140,7 +140,6 @@ export function DashboardClient({ user }: DashboardClientProps) {
             )}
             
             <div className="flex items-center gap-2 lg:hidden">
-              <ThemeToggle />
               <UserDropdown user={user} />
             </div>
           </div>

@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea'
 import { 
   HandCoins, Landmark, Plus, Trash2, CheckCircle2, Clock, 
-  ArrowUpRight, ArrowDownRight, Loader2, Sparkles, AlertCircle
+  ArrowUpRight, ArrowDownRight, Loader2, Sparkles, AlertCircle, Eye, EyeOff
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { formatCurrency } from '@/lib/currency'
@@ -189,8 +189,10 @@ export function LoansManager({ onSavingsChange, showAmounts = true }: LoansManag
     return true
   })
 
+  const [isAmountVisible, setIsAmountVisible] = useState(showAmounts)
+
   const formatDisplayAmount = (val: number, currency: string = 'PKR') => {
-    if (!showAmounts) return '••••••'
+    if (!isAmountVisible) return 'PKR ****'
     return formatCurrency(val, currency)
   }
 
@@ -199,11 +201,22 @@ export function LoansManager({ onSavingsChange, showAmounts = true }: LoansManag
       {/* Header with Add Button */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
-            <HandCoins className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-            Loans Tracker
-          </h2>
-          <p className="text-sm text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
+              <HandCoins className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+              Loans Tracker
+            </h2>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsAmountVisible(!isAmountVisible)}
+              className="h-8 w-8 text-muted-foreground hover:text-foreground rounded-lg"
+              title={isAmountVisible ? "Hide amounts" : "Show amounts"}
+            >
+              {isAmountVisible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+            </Button>
+          </div>
+          <p className="text-sm text-muted-foreground mt-0.5">
             Manage given (lent) and taken (borrowed) loans. Releasing a loan updates your savings.
           </p>
         </div>

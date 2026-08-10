@@ -46,7 +46,7 @@ export function DashboardSidebar({
     { id: 'charts', label: 'Charts', icon: BarChart3, color: 'text-cyan-600 dark:text-cyan-400' },
     { id: 'loans', label: 'Loans', icon: HandCoins, color: 'text-purple-600 dark:text-purple-400' },
     { id: 'utilities', label: 'Manage Utilities', icon: Settings, color: 'text-orange-600 dark:text-orange-400' },
-    { id: 'ai', label: 'AI Section', icon: Brain, color: 'text-pink-600 dark:text-pink-400', badge: 'AI' },
+    { id: 'ai', label: 'AI Insights', icon: Brain, color: 'text-pink-600 dark:text-pink-400', badge: 'AI' },
   ]
 
   const sidebarContent = (isCollapsedMode = false) => (
