@@ -49,6 +49,6 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error setting password:', error)
-    return NextResponse.json({ error: 'Failed to set password' }, { status: 500 })
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Failed to set password' }, { status: 500 })
   }
 }
