@@ -222,7 +222,7 @@ export function LoansManager({ onSavingsChange, showAmounts = true }: LoansManag
         </div>
         <Button
           onClick={() => setShowAddDialog(true)}
-          className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-md rounded-xl"
+          className="bg-purple-600 hover:bg-purple-700 text-white shadow-md rounded-xl transition-colors"
         >
           <Plus className="h-4 w-4 mr-2" />
           Add New Loan

@@ -181,7 +181,7 @@ export function UtilityTypeManager({ onUtilityTypesChanged, isInDialog = false, 
                   <Button 
                     type="submit" 
                     disabled={isAdding}
-                    className="bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 text-white shadow-lg"
+                    className="bg-violet-600 hover:bg-violet-700 text-white shadow-md transition-colors"
                   >
                     <Plus className="h-4 w-4 mr-1" />
                     Add

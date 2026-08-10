@@ -41,7 +41,7 @@ export default function SmartExpenseInput({
                 initial={{ rotate: -10 }}
                 animate={{ rotate: 10 }}
                 transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }}
-                className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 shadow-lg"
+                className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-purple-600 text-white shadow-md"
               >
                 <Sparkles className="h-5 w-5 text-white" />
               </motion.div>

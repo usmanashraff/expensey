@@ -132,7 +132,7 @@ export function DashboardSidebar({
                   isCollapsedMode ? 'justify-center px-2 py-3' : 'justify-between px-3 py-2.5'
                 } rounded-2xl text-sm font-medium transition-all group relative ${
                   isActive
-                    ? 'bg-gradient-to-r from-blue-500/15 via-purple-500/15 to-pink-500/15 dark:from-blue-500/25 dark:via-purple-500/25 dark:to-pink-500/25 text-foreground shadow-xs border border-purple-500/30'
+                    ? 'bg-purple-500/15 dark:bg-purple-500/25 text-foreground shadow-xs border border-purple-500/30'
                     : 'text-muted-foreground hover:text-foreground hover:bg-white/40 dark:hover:bg-white/5 border border-transparent'
                 }`}
               >
@@ -150,7 +150,7 @@ export function DashboardSidebar({
                 {!isCollapsedMode && (
                   <div className="flex items-center gap-1.5">
                     {item.badge && (
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-xs">
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-purple-600 text-white shadow-xs">
                         {item.badge}
                       </span>
                     )}

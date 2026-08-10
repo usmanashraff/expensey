@@ -2649,7 +2649,7 @@ export function ExpenseList({
                 transition={{ duration: 0.3 }}
               >
                 <p className="text-sm text-muted-foreground mb-1">Total Expenses</p>
-                <p className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-gray-600 to-gray-800 dark:from-gray-300 dark:to-gray-100 bg-clip-text text-transparent">
+                <p className="text-lg sm:text-2xl font-bold text-foreground">
                   {formatAmount(totalExpenses, 'PKR')}
                 </p>
               </motion.div>
@@ -2662,7 +2662,7 @@ export function ExpenseList({
                   transition={{ duration: 0.3, delay: index * 0.1 }}
                 >
                   <p className="text-sm text-muted-foreground mb-1">{config.label}</p>
-                  <p className={`text-base sm:text-xl font-bold bg-gradient-to-r ${config.color} bg-clip-text text-transparent`}>
+                  <p className="text-base sm:text-xl font-bold text-foreground">
                     {formatAmount(expensesByCategory[key] || 0, 'PKR')}
                   </p>
                 </motion.div>
@@ -2696,7 +2696,7 @@ export function ExpenseList({
                       <Pencil className="h-3.5 w-3.5" />
                     </Button>
                   </div>
-                  <p className="text-base sm:text-xl font-semibold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                  <p className="text-base sm:text-xl font-semibold text-purple-600 dark:text-purple-400">
                     {formatAmount(optimisticMonthlySavings, 'PKR')}
                   </p>
                 </motion.div>
@@ -2718,7 +2718,7 @@ export function ExpenseList({
                       <Pencil className="h-3.5 w-3.5" />
                     </Button>
                   </div>
-                  <p className="text-base sm:text-xl font-semibold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                  <p className="text-base sm:text-xl font-semibold text-emerald-600 dark:text-emerald-400">
                     {formatAmount(totalSavings, 'PKR')}
                   </p>
                 </motion.div>

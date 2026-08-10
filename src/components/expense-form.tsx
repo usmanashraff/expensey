@@ -363,7 +363,7 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger, isInDialog 
         
         <Button 
           type="submit" 
-          className="w-full h-9 text-sm bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600" 
+          className="w-full h-9 text-sm bg-purple-600 hover:bg-purple-700 text-white transition-colors" 
           disabled={isSubmitting}
         >
           <PlusCircle className="mr-1 h-3 w-3" />
@@ -632,7 +632,7 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger, isInDialog 
           >
             <Button 
               type="submit" 
-              className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white shadow-lg" 
+              className="w-full bg-purple-600 hover:bg-purple-700 text-white shadow-md transition-colors" 
               disabled={isSubmitting}
             >
               <PlusCircle className="mr-2 h-4 w-4" />
