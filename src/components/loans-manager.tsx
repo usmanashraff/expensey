@@ -421,7 +421,6 @@ export function LoansManager({ onSavingsChange, showAmounts = true }: LoansManag
                             disabled={releasingId === loan.id}
                             className={
                               loan.type === 'GIVEN'
-                                ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700 shadow-sm text-xs sm:text-sm'
                                 ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700 shadow-sm text-xs sm:text-sm'
                                 : 'bg-gradient-to-r from-amber-600 to-orange-600 text-white hover:from-amber-700 hover:to-orange-700 shadow-sm text-xs sm:text-sm'
                             }
