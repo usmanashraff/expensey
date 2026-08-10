@@ -26,7 +26,8 @@ import { SavingsChart } from './savings-chart'
 import { UtilityCharts } from './utility-charts'
 import { FinanceOverview } from './finance-overview'
 import AIInsights from './ai-insights'
-import { ChevronDown, ChevronUp, BarChart3, ChevronLeft, ChevronRight, Calendar, Receipt, Zap, Eye, EyeOff, TrendingUp, PiggyBank, Wallet, Trash2, X, Target, Download, Loader2, Menu, Settings, FileDown, DollarSign, Brain, Pencil } from 'lucide-react'
+import { LoansManager } from './loans-manager'
+import { ChevronDown, ChevronUp, BarChart3, ChevronLeft, ChevronRight, Calendar, Receipt, Zap, Eye, EyeOff, TrendingUp, PiggyBank, Wallet, Trash2, X, Target, Download, Loader2, Menu, Settings, FileDown, DollarSign, Brain, Pencil, HandCoins } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { BudgetDialog } from './budget-dialog'
 import { Progress } from '@/components/ui/progress'
@@ -89,7 +90,7 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false)
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null)
   const [isMobile, setIsMobile] = useState(false)
-  const [activeView, setActiveView] = useState<'expenses' | 'finance' | 'visualization' | 'ai'>('expenses')
+  const [activeView, setActiveView] = useState<'expenses' | 'finance' | 'visualization' | 'loans' | 'ai'>('expenses')
   
   const currentMonth = new Date().getMonth() + 1
   const currentYear = new Date().getFullYear()
@@ -2900,6 +2901,19 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense
                     <span className="text-xs font-medium">AI Insights</span>
                   </Button>
                 </motion.div>
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Button
+                    variant="outline"
+                    onClick={() => setActiveView('loans')}
+                    className="h-24 w-full flex flex-col items-center justify-center gap-2 bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 backdrop-blur-xl border-white/20 dark:border-white/10 hover:bg-white/60 dark:hover:bg-[oklch(0.25_0.02_250)]/50 transition-colors"
+                  >
+                    <HandCoins className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                    <span className="text-xs font-medium">Loans</span>
+                  </Button>
+                </motion.div>
               </div>
               
               {/* Utilities button */}
@@ -2932,6 +2946,7 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense
             />
           )}
           {activeView === 'visualization' && renderVisualizationContent()}
+          {activeView === 'loans' && <LoansManager onSavingsChange={fetchSavings} showAmounts={showAmounts} />}
           {activeView === 'ai' && <AIInsights month={selectedMonth} year={selectedYear} />}
         </div>
       ) : (
@@ -2949,6 +2964,10 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense
             <TabsTrigger value="visualization" className="flex-1 data-[state=active]:bg-white/60 dark:data-[state=active]:bg-[oklch(0.25_0.02_250)]/50">
               <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
               <span className="hidden sm:inline">Charts</span>
+            </TabsTrigger>
+            <TabsTrigger value="loans" className="flex-1 data-[state=active]:bg-white/60 dark:data-[state=active]:bg-[oklch(0.25_0.02_250)]/50">
+              <HandCoins className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2 text-purple-600 dark:text-purple-400" />
+              <span className="hidden sm:inline">Loans</span>
             </TabsTrigger>
             <TabsTrigger value="ai" className="flex-1 data-[state=active]:bg-white/60 dark:data-[state=active]:bg-[oklch(0.25_0.02_250)]/50">
               <Brain className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
@@ -2971,6 +2990,10 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense
 
           <TabsContent value="visualization">
             {renderVisualizationContent()}
+          </TabsContent>
+
+          <TabsContent value="loans">
+            <LoansManager onSavingsChange={fetchSavings} showAmounts={showAmounts} />
           </TabsContent>
 
           <TabsContent value="ai">
