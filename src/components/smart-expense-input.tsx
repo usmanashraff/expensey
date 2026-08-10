@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
-import { Sparkles, Keyboard, ChevronDown, ChevronUp } from 'lucide-react'
+import { Sparkles, Keyboard, ChevronDown, ChevronUp, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import NaturalLanguageInput from './natural-language-input'
 import { ExpenseForm } from './expense-form'
@@ -13,14 +13,16 @@ interface SmartExpenseInputProps {
   onExpenseAdded: (expense?: any) => void
   utilityRefreshTrigger?: number
   utilityTypes?: string[]
+  onClose?: () => void
 }
 
 export default function SmartExpenseInput({ 
   onExpenseAdded, 
   utilityRefreshTrigger,
-  utilityTypes = []
+  utilityTypes = [],
+  onClose
 }: SmartExpenseInputProps) {
-  const [activeTab, setActiveTab] = useState<'ai' | 'manual'>('ai')
+  const [activeTab, setActiveTab] = useState<'ai' | 'manual'>('manual')
   const [isCollapsed, setIsCollapsed] = useState(false)
 
   return (
@@ -50,14 +52,25 @@ export default function SmartExpenseInput({
                 </CardDescription>
               </div>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsCollapsed(!isCollapsed)}
-              className="h-8 w-8 p-0"
-            >
-              {isCollapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
-            </Button>
+            {onClose ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onClose}
+                className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsCollapsed(!isCollapsed)}
+                className="h-8 w-8 p-0"
+              >
+                {isCollapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+              </Button>
+            )}
           </div>
         </CardHeader>
 

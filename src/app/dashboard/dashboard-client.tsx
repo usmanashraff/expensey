@@ -7,12 +7,10 @@ import { ThemeToggle } from '@/components/theme-toggle'
 import { UtilityTypeManager } from '@/components/utility-type-manager'
 import { UserDropdown } from '@/components/user-dropdown'
 import SmartExpenseInput from '@/components/smart-expense-input'
-import { motion } from 'framer-motion'
-import Image from 'next/image'
-import Link from 'next/link'
-import { Sparkles, Plus, Settings } from 'lucide-react'
+import { DashboardSidebar, MenuId } from '@/components/dashboard-sidebar'
+import { Menu, Plus, PanelLeft, PanelLeftClose } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
 interface DashboardClientProps {
   user: {
@@ -25,33 +23,15 @@ interface DashboardClientProps {
 }
 
 export function DashboardClient({ user }: DashboardClientProps) {
+  const [activeMenu, setActiveMenu] = useState<MenuId>('dashboard')
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
+  const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(false)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
   const [utilityRefreshTrigger, setUtilityRefreshTrigger] = useState(0)
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
-  const [isMobile, setIsMobile] = useState(false)
   const [showExpenseDialog, setShowExpenseDialog] = useState(false)
   const [showUtilityDialog, setShowUtilityDialog] = useState(false)
   const [optimisticExpense, setOptimisticExpense] = useState<any>(null)
   const [utilityTypes, setUtilityTypes] = useState<string[]>([])
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY })
-    }
-    window.addEventListener('mousemove', handleMouseMove)
-    return () => window.removeEventListener('mousemove', handleMouseMove)
-  }, [])
-  
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 1024) // lg breakpoint
-    }
-    
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
 
   // Fetch utility types for natural language processing
   useEffect(() => {
@@ -72,27 +52,19 @@ export function DashboardClient({ user }: DashboardClientProps) {
 
   const handleExpenseAdded = (newExpense?: any) => {
     if (newExpense) {
-      // For optimistic updates, just set the optimistic expense
-      // Don't trigger refresh immediately - let the component handle the API call
       setOptimisticExpense(newExpense)
-      
-      // Only trigger refresh after a delay to allow the real data to come in
       if (typeof newExpense.id === 'string' && !newExpense.id.startsWith('temp-')) {
-        // This is real data from the server, trigger refresh
         setTimeout(() => {
           setRefreshTrigger(prev => prev + 1)
-          setOptimisticExpense(null) // Clear optimistic expense after real data
+          setOptimisticExpense(null)
         }, 100)
       }
     } else {
-      // No expense means error or just refresh needed
       setOptimisticExpense(null)
       setRefreshTrigger(prev => prev + 1)
     }
     
-    if (isMobile) {
-      setShowExpenseDialog(false)
-    }
+    setShowExpenseDialog(false)
   }
 
   const handleOptimisticExpenseConfirmed = () => {
@@ -103,158 +75,150 @@ export function DashboardClient({ user }: DashboardClientProps) {
     setUtilityRefreshTrigger(prev => prev + 1)
   }
 
+  const menuTitles: Record<MenuId, string> = {
+    dashboard: 'Dashboard',
+    finance: 'Financial Overview',
+    charts: 'Visual Analytics',
+    loans: 'Loans Tracker',
+    utilities: 'Manage Utilities',
+    ai: 'AI Insights & Recommendations',
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-[oklch(0.13_0.02_250)] dark:via-[oklch(0.14_0.02_260)] dark:to-[oklch(0.15_0.02_270)] overflow-hidden relative">
-      {/* Animated background elements */}
-      <div className="absolute inset-0">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-[oklch(0.13_0.02_250)] dark:via-[oklch(0.14_0.02_260)] dark:to-[oklch(0.15_0.02_270)] relative">
+      {/* Background Blobs */}
+      <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute top-20 -left-40 w-80 h-80 bg-purple-300 dark:bg-purple-600/20 rounded-full filter blur-3xl opacity-30 animate-blob" />
         <div className="absolute top-40 -right-40 w-80 h-80 bg-blue-300 dark:bg-blue-600/20 rounded-full filter blur-3xl opacity-30 animate-blob animation-delay-2000" />
         <div className="absolute -bottom-20 left-40 w-80 h-80 bg-pink-300 dark:bg-pink-600/20 rounded-full filter blur-3xl opacity-30 animate-blob animation-delay-4000" />
-        <div 
-          className="absolute w-96 h-96 bg-gradient-to-r from-blue-400/10 to-purple-400/10 rounded-full filter blur-3xl transition-all duration-1000"
-          style={{
-            left: `${mousePosition.x * 0.05}px`,
-            top: `${mousePosition.y * 0.05}px`,
-          }}
-        />
       </div>
 
-      <div className="container mx-auto pl-4 pr-2 sm:px-4 pt-4 sm:pt-0 pb-4 max-w-7xl relative z-10">
-        <motion.header
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-12 relative"
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link href="/" className="hidden sm:block hover:opacity-80 transition-opacity">
-                <Image 
-                  src="/logo.png" 
-                  alt="Expensey Logo" 
-                  width={80} 
-                  height={20}
-                  className="object-contain"
-                  priority
-                />
-              </Link>
-              <motion.div
-                animate={{ 
-                  rotate: [0, 5, -5, 0],
-                  scale: [1, 1.05, 1]
-                }}
-                transition={{ 
-                  duration: 4,
-                  repeat: Infinity,
-                  repeatType: "reverse"
-                }}
-              >
-                <Sparkles className="w-6 h-6 text-yellow-500/40" />
-              </motion.div>
+      {/* Sidebar Navigation */}
+      <DashboardSidebar
+        activeMenu={activeMenu}
+        onSelectMenu={setActiveMenu}
+        user={user}
+        isMobileOpen={isMobileSidebarOpen}
+        onMobileOpenChange={setIsMobileSidebarOpen}
+        isDesktopCollapsed={isDesktopCollapsed}
+        onToggleDesktopCollapse={() => setIsDesktopCollapsed(!isDesktopCollapsed)}
+      />
+
+      {/* Main Content Workspace */}
+      <div className={`transition-all duration-300 ${
+        isDesktopCollapsed ? 'lg:pl-20' : 'lg:pl-64'
+      } min-h-screen flex flex-col relative z-10`}>
+        {/* Top Header Bar */}
+        <header className="px-4 py-3.5 sm:px-8 border-b border-white/20 dark:border-white/10 backdrop-blur-xl bg-white/40 dark:bg-[oklch(0.18_0.02_250)]/40 flex items-center justify-between sticky top-0 z-30 shadow-xs">
+          <div className="flex items-center gap-3">
+            {/* Mobile Hamburger Menu */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsMobileSidebarOpen(true)}
+              className="lg:hidden h-9 w-9 text-foreground"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+
+            {/* Desktop Sidebar Toggle Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsDesktopCollapsed(!isDesktopCollapsed)}
+              className="hidden lg:flex h-9 w-9 text-muted-foreground hover:text-foreground rounded-xl"
+              title={isDesktopCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+            >
+              {isDesktopCollapsed ? <PanelLeft className="h-5 w-5 text-purple-600 dark:text-purple-400" /> : <PanelLeftClose className="h-5 w-5" />}
+            </Button>
+
+            <div>
+              <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                {menuTitles[activeMenu]}
+              </h1>
             </div>
-            <div className="flex items-center gap-2">
+          </div>
+
+          <div className="flex items-center gap-3">
+            {activeMenu === 'dashboard' && (
+              <Button
+                onClick={() => setShowExpenseDialog(true)}
+                className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 text-white rounded-xl shadow-md h-9.5 px-4 gap-2 font-medium"
+              >
+                <Plus className="h-4 w-4" />
+                <span className="hidden sm:inline">Add Expense</span>
+              </Button>
+            )}
+            
+            <div className="flex items-center gap-2 lg:hidden">
               <ThemeToggle />
               <UserDropdown user={user} />
             </div>
           </div>
-          {/* <motion.p 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="text-lg text-muted-foreground mt-4"
-          >
-            Track your expenses wisely, achieve your financial goals
-          </motion.p> */}
-        </motion.header>
+        </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 -mt-8 gap-8">
-          {isMobile ? (
-            <>
-              {/* Mobile: Show Add Expense button */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                className="fixed bottom-4 right-4 z-50"
-              >
-                <Button
-                  onClick={() => setShowExpenseDialog(true)}
-                  size="lg"
-                  className="rounded-full h-14 w-14 md:h-auto md:w-auto md:px-6 shadow-lg bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white p-0 md:p-2"
-                >
-                  <Plus className="h-6 w-6 md:mr-2" />
-                  <span className="hidden md:inline">Add Expense</span>
-                </Button>
-              </motion.div>
-              <ExpenseList refreshTrigger={refreshTrigger} onOpenUtilities={() => setShowUtilityDialog(true)} optimisticExpense={optimisticExpense} onOptimisticExpenseConfirmed={handleOptimisticExpenseConfirmed} />
-            </>
-          ) : (
-            <>
-              {/* Desktop: Show form sidebar */}
-              <motion.div
-                initial={{ opacity: 0, x: -50 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                className="lg:col-span-1 space-y-6"
-              >
-                <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-400/20 to-pink-400/20 dark:from-purple-600/10 dark:to-pink-600/10 rounded-3xl blur-xl" />
-                  <SmartExpenseInput 
-                    onExpenseAdded={handleExpenseAdded} 
-                    utilityRefreshTrigger={utilityRefreshTrigger}
-                    utilityTypes={utilityTypes} 
-                  />
-                </div>
-                <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-green-400/20 to-emerald-400/20 dark:from-green-600/10 dark:to-emerald-600/10 rounded-3xl blur-xl" />
-                  <UtilityTypeManager onUtilityTypesChanged={handleUtilityTypesChanged} />
-                </div>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, x: 50 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.4 }}
-                className="lg:col-span-2"
-              >
-                <ExpenseList refreshTrigger={refreshTrigger} optimisticExpense={optimisticExpense} onOptimisticExpenseConfirmed={handleOptimisticExpenseConfirmed} />
-              </motion.div>
-            </>
-          )}
-        </div>
-
-        {/* Mobile Expense Dialog */}
-        <Dialog open={showExpenseDialog} onOpenChange={setShowExpenseDialog}>
-          <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto bg-transparent border-0 shadow-none p-0 [&>button]:hidden">
-            <DialogHeader className="sr-only">
-              <DialogTitle>Add New Expense</DialogTitle>
-            </DialogHeader>
-            <ExpenseForm 
-              onExpenseAdded={handleExpenseAdded} 
-              utilityRefreshTrigger={utilityRefreshTrigger}
-              isInDialog={true}
-              onClose={() => setShowExpenseDialog(false)}
-            />
-          </DialogContent>
-        </Dialog>
-
-        {/* Mobile Utility Dialog */}
-        <Dialog open={showUtilityDialog} onOpenChange={setShowUtilityDialog}>
-          <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto bg-transparent border-0 shadow-none p-0 [&>button]:hidden">
-            <DialogHeader className="sr-only">
-              <DialogTitle>Manage Utility Types</DialogTitle>
-            </DialogHeader>
-            <UtilityTypeManager 
-              onUtilityTypesChanged={() => {
-                handleUtilityTypesChanged()
-                setShowUtilityDialog(false)
-              }}
-              isInDialog={true}
-              onClose={() => setShowUtilityDialog(false)}
-            />
-          </DialogContent>
-        </Dialog>
+        {/* Main Content Workspace */}
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto space-y-6">
+          <ExpenseList
+            activeMenu={activeMenu}
+            refreshTrigger={refreshTrigger}
+            onOpenUtilities={() => setShowUtilityDialog(true)}
+            optimisticExpense={optimisticExpense}
+            onOptimisticExpenseConfirmed={handleOptimisticExpenseConfirmed}
+            utilityTypeManagerNode={
+              <div className="relative max-w-3xl mx-auto pt-2">
+                <div className="absolute inset-0 bg-gradient-to-r from-green-400/20 to-emerald-400/20 dark:from-green-600/10 dark:to-emerald-600/10 rounded-3xl blur-xl" />
+                <UtilityTypeManager onUtilityTypesChanged={handleUtilityTypesChanged} />
+              </div>
+            }
+          />
+        </main>
       </div>
+
+      {/* Floating Add Expense Button for Mobile on Dashboard view */}
+      {activeMenu === 'dashboard' && (
+        <div className="fixed bottom-5 right-5 z-40 sm:hidden">
+          <Button
+            onClick={() => setShowExpenseDialog(true)}
+            size="lg"
+            className="rounded-full h-14 w-14 shadow-2xl bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white p-0 flex items-center justify-center"
+          >
+            <Plus className="h-6 w-6" />
+          </Button>
+        </div>
+      )}
+
+      {/* Add Expense Dialog */}
+      <Dialog open={showExpenseDialog} onOpenChange={setShowExpenseDialog}>
+        <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto custom-scrollbar bg-transparent border-0 shadow-none p-0 [&>button]:hidden">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Add New Expense</DialogTitle>
+          </DialogHeader>
+          <SmartExpenseInput 
+            onExpenseAdded={handleExpenseAdded} 
+            utilityRefreshTrigger={utilityRefreshTrigger}
+            utilityTypes={utilityTypes} 
+            onClose={() => setShowExpenseDialog(false)}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Utility Dialog */}
+      <Dialog open={showUtilityDialog} onOpenChange={setShowUtilityDialog}>
+        <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto custom-scrollbar bg-transparent border-0 shadow-none p-0 [&>button]:hidden">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Manage Utility Types</DialogTitle>
+          </DialogHeader>
+          <UtilityTypeManager 
+            onUtilityTypesChanged={() => {
+              handleUtilityTypesChanged()
+              setShowUtilityDialog(false)
+            }}
+            isInDialog={true}
+            onClose={() => setShowUtilityDialog(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

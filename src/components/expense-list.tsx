@@ -35,14 +35,27 @@ import { formatCurrencyWithMask } from '@/lib/currency'
 import { DeleteExpenseDialog } from './delete-expense-dialog'
 import { ExpenseDetailsDialog } from './expense-details-dialog'
 
+export type MenuId = 'dashboard' | 'finance' | 'charts' | 'loans' | 'utilities' | 'ai'
+
 interface ExpenseListProps {
   refreshTrigger: number
   onOpenUtilities?: () => void
   optimisticExpense?: Expense | null
   onOptimisticExpenseConfirmed?: () => void
+  activeMenu?: MenuId
+  smartExpenseInputNode?: React.ReactNode
+  utilityTypeManagerNode?: React.ReactNode
 }
 
-export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense, onOptimisticExpenseConfirmed }: ExpenseListProps) {
+export function ExpenseList({ 
+  refreshTrigger, 
+  onOpenUtilities, 
+  optimisticExpense, 
+  onOptimisticExpenseConfirmed,
+  activeMenu = 'dashboard',
+  smartExpenseInputNode,
+  utilityTypeManagerNode,
+}: ExpenseListProps) {
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [loading, setLoading] = useState(true)
   const [monthLoading, setMonthLoading] = useState(false)
@@ -50,9 +63,9 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense
   const [totalSavings, setTotalSavings] = useState<number>(0)
   const [optimisticUpdateActive, setOptimisticUpdateActive] = useState(false)
   const [previousOptimisticExpense, setPreviousOptimisticExpense] = useState<Expense | null>(null)
-  const [showCharts, setShowCharts] = useState(false)
-  const [showUtilityCharts, setShowUtilityCharts] = useState(false)
-  const [showExpenses, setShowExpenses] = useState(false)
+  const [showCharts, setShowCharts] = useState(true)
+  const [showUtilityCharts, setShowUtilityCharts] = useState(true)
+  const [showExpenses, setShowExpenses] = useState(true)
   const [showAmounts, setShowAmounts] = useState(false)
   const [showMonthPicker, setShowMonthPicker] = useState(false)
   const [availableMonths, setAvailableMonths] = useState<{year: number, month: number}[]>([])
@@ -2015,12 +2028,11 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense
       }}
     >
       <div className="space-y-6">
-        {/* Analytics & Insights Chart */}
-      <Card className="relative backdrop-blur-xl bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 border-white/20 dark:border-white/10 rounded-3xl overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-blue-500/5 dark:from-purple-500/10 dark:to-blue-500/10" />
-        
-        <CardHeader className="relative z-10">
-          <div className="flex items-center justify-between">
+        {/* Category Analytics Chart */}
+        <Card className="relative backdrop-blur-xl bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 border-white/20 dark:border-white/10 rounded-3xl overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-blue-500/5 dark:from-purple-500/10 dark:to-blue-500/10" />
+          
+          <CardHeader className="relative z-10">
             <div className="flex items-center gap-3">
               <motion.div
                 whileHover={{ rotate: 360 }}
@@ -2029,85 +2041,32 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense
               >
                 <BarChart3 className="h-5 w-5 text-white" />
               </motion.div>
-              <CardTitle className="text-base sm:text-xl">Category Analytics</CardTitle>
+              <div>
+                <CardTitle className="text-base sm:text-xl">Category Analytics</CardTitle>
+                <CardDescription className="text-xs sm:text-sm">Visual representation of your financial data</CardDescription>
+              </div>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowCharts(!showCharts)}
-              className="flex items-center gap-2"
-            >
-              <motion.div
-                animate={{ rotate: showCharts ? 180 : 0 }}
-                transition={{ duration: 0.3 }}
-                className="h-4 w-4"
-              >
-                <ChevronDown className="h-4 w-4" />
-              </motion.div>
-              {showCharts ? 'Hide Charts' : 'Show Charts'}
-            </Button>
-          </div>
-          {showCharts && (
-            <CardDescription>Visual representation of your financial data</CardDescription>
-          )}
-        </CardHeader>
-        <AnimatePresence>
-          {showCharts && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{
-                height: { duration: 0.4, ease: "easeInOut" },
-                opacity: { duration: 0.3, ease: "easeInOut" }
-              }}
-              className="overflow-hidden"
-            >
-              <CardContent className="space-y-6 relative z-10" id="analytics-content">
-                {monthLoading ? (
-                  <div className="flex items-center justify-center py-12">
-                    <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
-                    <span className="ml-2 text-sm text-muted-foreground">Loading analytics...</span>
-                  </div>
-                ) : (
-                  <>
-                    <ExpenseCharts expenses={expenses} />
-                    <SavingsChart />
-                  </>
-                )}
-                
-                {/* Hide button at the bottom */}
-                <div className="flex justify-center pt-4 border-t">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      const element = document.getElementById('analytics-content');
-                      if (element) {
-                        element.style.transition = 'all 0.4s ease-in-out';
-                        element.style.opacity = '0';
-                        element.style.transform = 'translateY(-10px)';
-                      }
-                      setTimeout(() => setShowCharts(false), 300);
-                    }}
-                    className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
-                  >
-                    <ChevronUp className="h-4 w-4" />
-                    Hide Analytics
-                  </Button>
-                </div>
-              </CardContent>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </Card>
+          </CardHeader>
+          <CardContent className="space-y-6 relative z-10" id="analytics-content">
+            {monthLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
+                <span className="ml-2 text-sm text-muted-foreground">Loading analytics...</span>
+              </div>
+            ) : (
+              <>
+                <ExpenseCharts expenses={expenses} />
+                <SavingsChart />
+              </>
+            )}
+          </CardContent>
+        </Card>
 
-      {/* Utility Analytics Chart */}
-      <Card className="relative backdrop-blur-xl bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 border-white/20 dark:border-white/10 rounded-3xl overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-yellow-500/5 dark:from-orange-500/10 dark:to-yellow-500/10" />
-        
-        <CardHeader className="relative z-10">
-          <div className="flex items-center justify-between">
+        {/* Utility Analytics Chart */}
+        <Card className="relative backdrop-blur-xl bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 border-white/20 dark:border-white/10 rounded-3xl overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-yellow-500/5 dark:from-orange-500/10 dark:to-yellow-500/10" />
+          
+          <CardHeader className="relative z-10">
             <div className="flex items-center gap-3">
               <motion.div
                 whileHover={{ scale: 1.1 }}
@@ -2116,76 +2075,24 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense
               >
                 <Zap className="h-5 w-5 text-white" />
               </motion.div>
-              <CardTitle className="text-base sm:text-xl">Utility Analytics</CardTitle>
+              <div>
+                <CardTitle className="text-base sm:text-xl">Utility Analytics</CardTitle>
+                <CardDescription className="text-xs sm:text-sm">Breakdown of your spending by utility type</CardDescription>
+              </div>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowUtilityCharts(!showUtilityCharts)}
-              className="flex items-center gap-2"
-            >
-              <motion.div
-                animate={{ rotate: showUtilityCharts ? 180 : 0 }}
-                transition={{ duration: 0.3 }}
-                className="h-4 w-4"
-              >
-                <ChevronDown className="h-4 w-4" />
-              </motion.div>
-              {showUtilityCharts ? 'Hide Charts' : 'Show Charts'}
-            </Button>
-          </div>
-          {showUtilityCharts && (
-            <CardDescription>Breakdown of your spending by utility type</CardDescription>
-          )}
-        </CardHeader>
-        <AnimatePresence>
-          {showUtilityCharts && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{
-                height: { duration: 0.4, ease: "easeInOut" },
-                opacity: { duration: 0.3, ease: "easeInOut" }
-              }}
-              className="overflow-hidden"
-            >
-              <CardContent className="relative z-10" id="utility-content">
-                {monthLoading ? (
-                  <div className="flex items-center justify-center py-12">
-                    <Loader2 className="h-6 w-6 animate-spin text-orange-500" />
-                    <span className="ml-2 text-sm text-muted-foreground">Loading utility analytics...</span>
-                  </div>
-                ) : (
-                  <UtilityCharts expenses={expenses} />
-                )}
-                
-                {/* Hide button at the bottom */}
-                <div className="flex justify-center mt-6 pt-4 border-t">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      const element = document.getElementById('utility-content');
-                      if (element) {
-                        element.style.transition = 'all 0.4s ease-in-out';
-                        element.style.opacity = '0';
-                        element.style.transform = 'translateY(-10px)';
-                      }
-                      setTimeout(() => setShowUtilityCharts(false), 300);
-                    }}
-                    className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
-                  >
-                    <ChevronUp className="h-4 w-4" />
-                    Hide Utility Analytics
-                  </Button>
-                </div>
-              </CardContent>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </Card>
-    </div>
+          </CardHeader>
+          <CardContent className="relative z-10" id="utility-content">
+            {monthLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-6 w-6 animate-spin text-orange-500" />
+                <span className="ml-2 text-sm text-muted-foreground">Loading utility analytics...</span>
+              </div>
+            ) : (
+              <UtilityCharts expenses={expenses} />
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </motion.div>
   )
 
@@ -2410,7 +2317,8 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense
 
   return (
     <div className="space-y-6">
-      {/* Monthly Summary Card */}
+      {/* Monthly Summary Card - Only rendered on Dashboard view */}
+      {activeMenu === 'dashboard' && (
       <Card className="relative backdrop-blur-xl bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 border-white/20 dark:border-white/10 rounded-3xl overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 dark:from-blue-500/10 dark:to-purple-500/10" />
         
@@ -2834,6 +2742,7 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense
           }}
         />
       </Card>
+      )}
 
       {/* Mobile Navigation Buttons */}
       {isMobile && activeView !== 'expenses' && (
@@ -2854,155 +2763,34 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense
         </motion.div>
       )}
 
-      {/* Render appropriate content */}
-      {isMobile ? (
-        // Mobile View - Show one section at a time
-        <div className="space-y-6">
-          {/* Mobile Quick Access Buttons - Only show on expenses view */}
-          {activeView === 'expenses' && (
-            <>
-              <div className="grid grid-cols-2 gap-3">
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <Button
-                    variant="outline"
-                    onClick={() => setActiveView('finance')}
-                    className="h-24 w-full flex flex-col items-center justify-center gap-2 bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 backdrop-blur-xl border-white/20 dark:border-white/10 hover:bg-white/60 dark:hover:bg-[oklch(0.25_0.02_250)]/50 transition-colors"
-                  >
-                    <DollarSign className="h-6 w-6 text-green-600 dark:text-green-400" />
-                    <span className="text-xs font-medium">Finance</span>
-                  </Button>
-                </motion.div>
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <Button
-                    variant="outline"
-                    onClick={() => setActiveView('visualization')}
-                    className="h-24 w-full flex flex-col items-center justify-center gap-2 bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 backdrop-blur-xl border-white/20 dark:border-white/10 hover:bg-white/60 dark:hover:bg-[oklch(0.25_0.02_250)]/50 transition-colors"
-                  >
-                    <BarChart3 className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                    <span className="text-xs font-medium">Charts</span>
-                  </Button>
-                </motion.div>
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <Button
-                    variant="outline"
-                    onClick={() => setActiveView('ai')}
-                    className="h-24 w-full flex flex-col items-center justify-center gap-2 bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 backdrop-blur-xl border-white/20 dark:border-white/10 hover:bg-white/60 dark:hover:bg-[oklch(0.25_0.02_250)]/50 transition-colors"
-                  >
-                    <Brain className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-                    <span className="text-xs font-medium">AI Insights</span>
-                  </Button>
-                </motion.div>
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <Button
-                    variant="outline"
-                    onClick={() => setActiveView('loans')}
-                    className="h-24 w-full flex flex-col items-center justify-center gap-2 bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 backdrop-blur-xl border-white/20 dark:border-white/10 hover:bg-white/60 dark:hover:bg-[oklch(0.25_0.02_250)]/50 transition-colors"
-                  >
-                    <HandCoins className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-                    <span className="text-xs font-medium">Loans</span>
-                  </Button>
-                </motion.div>
-              </div>
-              
-              {/* Utilities button */}
-              {onOpenUtilities && (
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <Button
-                    variant="outline"
-                    onClick={onOpenUtilities}
-                    className="h-24 w-full flex flex-col items-center justify-center gap-2 bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 backdrop-blur-xl border-white/20 dark:border-white/10 hover:bg-white/60 dark:hover:bg-[oklch(0.25_0.02_250)]/50 transition-colors"
-                  >
-                    <Settings className="h-6 w-6 text-orange-600 dark:text-orange-400" />
-                    <span className="text-xs font-medium">Manage Utilities</span>
-                  </Button>
-                </motion.div>
-              )}
-            </>
-          )}
-          
-          {/* Mobile Content - Conditional rendering based on activeView */}
-          {activeView === 'expenses' && renderExpensesContent()}
-          {activeView === 'finance' && (
-            <FinanceOverview 
-              selectedMonth={selectedMonth}
-              selectedYear={selectedYear}
-              showAmounts={showAmounts}
-              onToggleAmounts={() => setShowAmounts(!showAmounts)}
-              monthlyExpenses={filteredExpenses}
-            />
-          )}
-          {activeView === 'visualization' && renderVisualizationContent()}
-          {activeView === 'loans' && <LoansManager onSavingsChange={fetchSavings} showAmounts={showAmounts} />}
-          {activeView === 'ai' && <AIInsights month={selectedMonth} year={selectedYear} />}
-        </div>
-      ) : (
-        // Desktop View - Keep existing tabs structure
-        <Tabs defaultValue="expenses" className="space-y-6">
-          <TabsList className="w-full bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 backdrop-blur-xl border border-white/20 dark:border-white/10">
-            <TabsTrigger value="expenses" className="flex-1 data-[state=active]:bg-white/60 dark:data-[state=active]:bg-[oklch(0.25_0.02_250)]/50">
-              <Receipt className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
-              <span className="hidden sm:inline">Expenses</span>
-            </TabsTrigger>
-            <TabsTrigger value="finance" className="flex-1 data-[state=active]:bg-white/60 dark:data-[state=active]:bg-[oklch(0.25_0.02_250)]/50">
-              <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
-              <span className="hidden sm:inline">Finance</span>
-            </TabsTrigger>
-            <TabsTrigger value="visualization" className="flex-1 data-[state=active]:bg-white/60 dark:data-[state=active]:bg-[oklch(0.25_0.02_250)]/50">
-              <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
-              <span className="hidden sm:inline">Charts</span>
-            </TabsTrigger>
-            <TabsTrigger value="loans" className="flex-1 data-[state=active]:bg-white/60 dark:data-[state=active]:bg-[oklch(0.25_0.02_250)]/50">
-              <HandCoins className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2 text-purple-600 dark:text-purple-400" />
-              <span className="hidden sm:inline">Loans</span>
-            </TabsTrigger>
-            <TabsTrigger value="ai" className="flex-1 data-[state=active]:bg-white/60 dark:data-[state=active]:bg-[oklch(0.25_0.02_250)]/50">
-              <Brain className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
-              <span className="hidden sm:inline">AI</span>
-            </TabsTrigger>
-          </TabsList>
+      {/* Render appropriate content based on activeMenu */}
+      <div className="space-y-6">
+        {activeMenu === 'dashboard' && renderExpensesContent()}
 
-          <TabsContent value="expenses">
-            {renderExpensesContent()}
-          </TabsContent>
+        {activeMenu === 'finance' && (
+          <FinanceOverview 
+            selectedMonth={selectedMonth}
+            selectedYear={selectedYear}
+            showAmounts={showAmounts}
+            onToggleAmounts={() => setShowAmounts(!showAmounts)}
+            monthlyExpenses={filteredExpenses}
+          />
+        )}
 
-          <TabsContent value="finance">
-            <FinanceOverview 
-              selectedMonth={selectedMonth}
-              selectedYear={selectedYear}
-              showAmounts={showAmounts}
-              onToggleAmounts={() => setShowAmounts(!showAmounts)}
-              monthlyExpenses={filteredExpenses}
-            />
-          </TabsContent>
+        {activeMenu === 'charts' && renderVisualizationContent()}
 
-          <TabsContent value="visualization">
-            {renderVisualizationContent()}
-          </TabsContent>
+        {activeMenu === 'loans' && (
+          <LoansManager onSavingsChange={fetchSavings} showAmounts={showAmounts} />
+        )}
 
-          <TabsContent value="loans">
-            <LoansManager onSavingsChange={fetchSavings} showAmounts={showAmounts} />
-          </TabsContent>
+        {activeMenu === 'utilities' && (
+          utilityTypeManagerNode || null
+        )}
 
-          <TabsContent value="ai">
-            <AIInsights month={selectedMonth} year={selectedYear} />
-          </TabsContent>
-        </Tabs>
-      )}
+        {activeMenu === 'ai' && (
+          <AIInsights month={selectedMonth} year={selectedYear} />
+        )}
+      </div>
 
       {/* Delete Confirmation Dialog */}
       <DeleteExpenseDialog
