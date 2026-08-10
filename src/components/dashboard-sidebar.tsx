@@ -212,8 +212,9 @@ export function DashboardSidebar({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
               onClick={() => onMobileOpenChange(false)}
-              className="lg:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-xs"
+              className="lg:hidden fixed inset-0 z-50 bg-black/60"
             />
 
             {/* Slide-over Drawer */}
@@ -221,10 +222,10 @@ export function DashboardSidebar({
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 250 }}
-              className="lg:hidden fixed top-0 left-0 bottom-0 z-50 w-72 p-3"
+              transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
+              className="lg:hidden fixed top-0 left-0 bottom-0 z-50 w-72 p-3 transform-gpu will-change-transform"
             >
-              <div className="h-full rounded-3xl backdrop-blur-2xl bg-white/90 dark:bg-[oklch(0.18_0.02_250)]/90 border border-white/20 dark:border-white/10 shadow-2xl overflow-hidden">
+              <div className="h-full rounded-3xl bg-white dark:bg-[oklch(0.18_0.02_250)] text-foreground border border-gray-200 dark:border-white/10 shadow-2xl overflow-hidden">
                 {sidebarContent(false)}
               </div>
             </motion.aside>
