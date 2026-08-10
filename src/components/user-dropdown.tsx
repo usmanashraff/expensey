@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,8 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components"
-import { LogOut, User, ChevronDown, Settings } from 'lucide-react'
+import { LogOut, ChevronDown, Settings } from 'lucide-react'
 import Link from 'next/link'
 
 interface UserDropdownProps {
@@ -26,11 +26,22 @@ interface UserDropdownProps {
 
 export function UserDropdown({ user }: UserDropdownProps) {
   const [open, setOpen] = useState(false)
+  const router = useRouter()
   
   const userInitials = `${user.given_name?.charAt(0) || ''}${user.family_name?.charAt(0) || ''}`.toUpperCase() || user.email?.charAt(0).toUpperCase() || 'U'
   const userName = user.given_name && user.family_name 
     ? `${user.given_name} ${user.family_name}` 
     : user.given_name || user.email || 'User'
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' })
+      router.push('/login')
+      router.refresh()
+    } catch (err) {
+      console.error('Logout error:', err)
+    }
+  }
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -59,12 +70,6 @@ export function UserDropdown({ user }: UserDropdownProps) {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          {/* <div className="flex items-center gap-2 text-muted-foreground">
-            <User className="h-4 w-4" />
-            <span className="text-sm">Profile</span>
-          </div> */}
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
           <Link href="/settings" className="w-full">
             <div className="flex items-center gap-2 text-muted-foreground cursor-pointer">
               <Settings className="h-4 w-4" />
@@ -73,13 +78,11 @@ export function UserDropdown({ user }: UserDropdownProps) {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <LogoutLink className="w-full">
-            <div className="flex items-center gap-2 text-destructive cursor-pointer">
-              <LogOut className="h-4 w-4" />
-              <span className="text-sm">Log out</span>
-            </div>
-          </LogoutLink>
+        <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+          <div className="flex items-center gap-2 text-destructive">
+            <LogOut className="h-4 w-4" />
+            <span className="text-sm">Log out</span>
+          </div>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

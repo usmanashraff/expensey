@@ -1,36 +1,51 @@
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
-import { redirect } from "next/navigation";
-import { syncUserWithDatabase } from './sync-user';
-
-export async function getUserId() {
-  const user = await getUser();
-  
-  if (!user || !user.dbUser || !user.dbId) {
-    redirect("/login");
-  }
-  
-  return user.dbId;
-}
+import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
+import { prisma } from '@/lib/prisma'
+import { verifyToken } from '@/lib/jwt'
 
 export async function getUser() {
-  const { getUser: getKindeUser, isAuthenticated } = getKindeServerSession();
-  const authenticated = await isAuthenticated();
-  
-  if (!authenticated) {
-    return null;
-  }
-  
-  const kindeUser = await getKindeUser();
-  
-  if (kindeUser) {
-    // Sync with database and get the database user
-    const dbUser = await syncUserWithDatabase(kindeUser);
+  try {
+    const cookieStore = await cookies()
+    const token = cookieStore.get('token')?.value
+
+    if (!token) {
+      return null
+    }
+
+    const payload = verifyToken(token)
+    if (!payload || !payload.userId) {
+      return null
+    }
+
+    const dbUser = await prisma.user.findUnique({
+      where: { id: payload.userId },
+    })
+
+    if (!dbUser) {
+      return null
+    }
+
     return {
-      ...kindeUser,
-      dbId: dbUser.id, // Database ID for references
-      dbUser: dbUser
-    };
+      id: dbUser.id,
+      email: dbUser.email,
+      given_name: dbUser.firstName,
+      family_name: dbUser.lastName,
+      picture: dbUser.profilePicture,
+      dbId: dbUser.id,
+      dbUser: dbUser,
+    }
+  } catch (error) {
+    console.error('Error getting user from session:', error)
+    return null
   }
-  
-  return null;
+}
+
+export async function getUserId() {
+  const user = await getUser()
+
+  if (!user || !user.dbUser || !user.dbId) {
+    redirect('/login')
+  }
+
+  return user.dbId
 }

@@ -9,9 +9,9 @@ export default async function Dashboard() {
     redirect('/login')
   }
 
-  // Pass database user data instead of Kinde data
+  // Pass database user data
   const userData = {
-    id: user.dbUser.kindeId,
+    id: user.dbUser.id,
     email: user.dbUser.email,
     given_name: user.dbUser.firstName,
     family_name: user.dbUser.lastName,

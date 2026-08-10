@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server'
+import { getUser } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import Groq from 'groq-sdk'
 
@@ -19,14 +19,9 @@ interface ParsedExpense {
 
 export async function POST(req: NextRequest) {
   try {
-    const { isAuthenticated, getUser } = getKindeServerSession()
-    if (!isAuthenticated()) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     const user = await getUser()
-    if (!user?.id) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    if (!user || !user.dbUser) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const { text, utilities = [] } = await req.json()
@@ -35,14 +30,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No text provided' }, { status: 400 })
     }
 
-    // Get user from database for default settings
-    const dbUser = await prisma.user.findUnique({
-      where: { kindeId: user.id }
-    })
-
-    if (!dbUser) {
-      return NextResponse.json({ error: 'User not found in database' }, { status: 404 })
-    }
+    const dbUser = user.dbUser
 
     // Get user settings for default currency
     const userSettings = await prisma.userSettings.findUnique({

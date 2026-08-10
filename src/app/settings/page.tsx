@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -12,10 +13,10 @@ import { motion } from 'framer-motion'
 import { getCurrencyList } from '@/lib/currency'
 import Link from 'next/link'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components"
 import { Skeleton } from '@/components/ui/skeleton'
 
 export default function SettingsPage() {
+  const router = useRouter()
   const [defaultCurrency, setDefaultCurrency] = useState('PKR')
   const [loading, setLoading] = useState(true)
   const [profileLoading, setProfileLoading] = useState(true)
@@ -146,6 +147,16 @@ export default function SettingsPage() {
   }
 
   const userInitials = `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U'
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' })
+      router.push('/login')
+      router.refresh()
+    } catch (err) {
+      console.error('Logout error:', err)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4">
@@ -386,12 +397,10 @@ export default function SettingsPage() {
               )}
             </Button>
 
-            <LogoutLink>
-              <Button variant="destructive" className="w-full sm:w-auto">
-                <LogOut className="h-4 w-4 mr-2" />
-                Log Out
-              </Button>
-            </LogoutLink>
+            <Button onClick={handleLogout} variant="destructive" className="w-full sm:w-auto">
+              <LogOut className="h-4 w-4 mr-2" />
+              Log Out
+            </Button>
           </motion.div>
         </motion.div>
       </div>

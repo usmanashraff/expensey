@@ -2,7 +2,6 @@
 
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/theme-toggle'
-import { LoginLink, RegisterLink } from "@kinde-oss/kinde-auth-nextjs/components"
 import { ArrowRight, TrendingUp, Shield, PieChart, Sparkles, Zap, BarChart3, Users } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -74,12 +73,12 @@ export default function Home() {
               </Link>
             ) : (
               <>
-                <LoginLink>
+                <Link href="/login">
                   <Button variant="ghost" size="sm">Login</Button>
-                </LoginLink>
-                <RegisterLink>
+                </Link>
+                <Link href="/register">
                   <Button size="sm">Get Started</Button>
-                </RegisterLink>
+                </Link>
               </>
             )}
           </div>
@@ -150,16 +149,16 @@ export default function Home() {
               </Link>
             ) : (
               <>
-                <RegisterLink>
+                <Link href="/register">
                   <Button size="lg" className="gap-2">
                     Start Free <ArrowRight className="h-4 w-4" />
                   </Button>
-                </RegisterLink>
-                <LoginLink>
+                </Link>
+                <Link href="/login">
                   <Button size="lg" variant="outline">
                     Sign In
                   </Button>
-                </LoginLink>
+                </Link>
               </>
             )}
           </motion.div>

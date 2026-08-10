@@ -1,22 +1,31 @@
-import { withAuth } from "@kinde-oss/kinde-auth-nextjs/middleware";
-import { NextRequest } from "next/server";
+import { NextResponse, NextRequest } from 'next/server'
 
-export default function middleware(req: NextRequest) {
-  return withAuth(req);
+export function middleware(req: NextRequest) {
+  const token = req.cookies.get('token')?.value
+  const { pathname } = req.nextUrl
+
+  // Protected paths requiring auth
+  const isProtectedPath = pathname.startsWith('/dashboard') || pathname.startsWith('/settings')
+  
+  if (isProtectedPath && !token) {
+    const loginUrl = new URL('/login', req.url)
+    return NextResponse.redirect(loginUrl)
+  }
+
+  // Redirect authenticated user away from login/register to dashboard
+  if ((pathname === '/login' || pathname === '/register') && token) {
+    const dashboardUrl = new URL('/dashboard', req.url)
+    return NextResponse.redirect(dashboardUrl)
+  }
+
+  return NextResponse.next()
 }
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api/auth (auth endpoints)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder
-     * - home page (/)
-     */
-    "/dashboard/:path*",
-    "/api/((?!auth).)*",
+    '/dashboard/:path*',
+    '/settings/:path*',
+    '/login',
+    '/register',
   ],
-};
+}

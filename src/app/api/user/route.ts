@@ -20,7 +20,7 @@ export async function GET() {
     }
 
     return NextResponse.json({
-      id: freshUser.kindeId,
+      id: freshUser.id,
       email: freshUser.email,
       given_name: freshUser.firstName,
       family_name: freshUser.lastName,
@@ -66,7 +66,7 @@ export async function PATCH(request: Request) {
     })
     
     return NextResponse.json({
-      id: updatedUser.kindeId,
+      id: updatedUser.id,
       email: updatedUser.email,
       given_name: updatedUser.firstName,
       family_name: updatedUser.lastName,
