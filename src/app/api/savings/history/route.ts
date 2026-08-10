@@ -67,8 +67,13 @@ export async function GET() {
       }
     })
 
-    // Calculate cumulative savings
-    let cumulative = 0
+    // Get user settings for initial savings baseline
+    const userSettings = await prisma.userSettings.findUnique({
+      where: { userId }
+    })
+
+    // Calculate cumulative savings starting from initialSavings baseline
+    let cumulative = userSettings?.initialSavings || 0
     const historyWithCumulative = completeHistory.map(record => {
       cumulative += record.monthlyContribution
       return {

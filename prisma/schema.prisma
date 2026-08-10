@@ -99,6 +99,7 @@ model UserSettings {
   id               String   @id @default(cuid())
   userId           String   @unique
   defaultCurrency  String   @default("PKR")
+  initialSavings   Float    @default(0)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
   

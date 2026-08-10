@@ -26,7 +26,7 @@ import { SavingsChart } from './savings-chart'
 import { UtilityCharts } from './utility-charts'
 import { FinanceOverview } from './finance-overview'
 import AIInsights from './ai-insights'
-import { ChevronDown, ChevronUp, BarChart3, ChevronLeft, ChevronRight, Calendar, Receipt, Zap, Eye, EyeOff, TrendingUp, PiggyBank, Wallet, Trash2, X, Target, Download, Loader2, Menu, Settings, FileDown, DollarSign, Brain } from 'lucide-react'
+import { ChevronDown, ChevronUp, BarChart3, ChevronLeft, ChevronRight, Calendar, Receipt, Zap, Eye, EyeOff, TrendingUp, PiggyBank, Wallet, Trash2, X, Target, Download, Loader2, Menu, Settings, FileDown, DollarSign, Brain, Pencil } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { BudgetDialog } from './budget-dialog'
 import { Progress } from '@/components/ui/progress'
@@ -61,6 +61,13 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense
     selfDevelopmentBudget: number
     savingsBudget: number
   } | null>(null)
+  
+  // Savings editing state
+  const [isEditingMonthlySavings, setIsEditingMonthlySavings] = useState(false)
+  const [isEditingLifetimeSavings, setIsEditingLifetimeSavings] = useState(false)
+  const [monthlySavingsInput, setMonthlySavingsInput] = useState('')
+  const [lifetimeSavingsInput, setLifetimeSavingsInput] = useState('')
+  const [savingSavingsLoading, setSavingSavingsLoading] = useState(false)
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
@@ -244,6 +251,86 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense
       }
     } catch (error) {
       console.error('Failed to fetch budget:', error)
+    }
+  }
+
+  const handleOpenEditMonthlySavings = () => {
+    setMonthlySavingsInput(optimisticMonthlySavings.toString())
+    setIsEditingMonthlySavings(true)
+  }
+
+  const handleOpenEditLifetimeSavings = () => {
+    setLifetimeSavingsInput(totalSavings.toString())
+    setIsEditingLifetimeSavings(true)
+  }
+
+  const handleSaveMonthlySavings = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const amount = parseFloat(monthlySavingsInput)
+    if (isNaN(amount) || amount < 0) {
+      toast.error('Please enter a valid non-negative savings amount')
+      return
+    }
+
+    setSavingSavingsLoading(true)
+    try {
+      const res = await fetch('/api/savings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount,
+          month: selectedMonth,
+          year: selectedYear,
+        }),
+      })
+
+      if (res.ok) {
+        setMonthlySavings(amount)
+        await fetchSavings()
+        toast.success(`${new Date(selectedYear, selectedMonth - 1).toLocaleDateString('en-US', { month: 'short' })} savings updated successfully!`)
+        setIsEditingMonthlySavings(false)
+      } else {
+        const data = await res.json()
+        toast.error(data.error || 'Failed to update monthly savings')
+      }
+    } catch (error) {
+      console.error('Error saving monthly savings:', error)
+      toast.error('An error occurred while updating monthly savings')
+    } finally {
+      setSavingSavingsLoading(false)
+    }
+  }
+
+  const handleSaveLifetimeSavings = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const amount = parseFloat(lifetimeSavingsInput)
+    if (isNaN(amount) || amount < 0) {
+      toast.error('Please enter a valid non-negative savings amount')
+      return
+    }
+
+    setSavingSavingsLoading(true)
+    try {
+      const res = await fetch('/api/total-savings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ totalSavings: amount }),
+      })
+
+      if (res.ok) {
+        setTotalSavings(amount)
+        await fetchSavings()
+        toast.success('Lifetime savings updated successfully!')
+        setIsEditingLifetimeSavings(false)
+      } else {
+        const data = await res.json()
+        toast.error(data.error || 'Failed to update lifetime savings')
+      }
+    } catch (error) {
+      console.error('Error saving lifetime savings:', error)
+      toast.error('An error occurred while updating lifetime savings')
+    } finally {
+      setSavingSavingsLoading(false)
     }
   }
   
@@ -2681,25 +2768,47 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <motion.div 
-                  className="text-center p-4 rounded-2xl bg-gradient-to-br from-purple-500/10 to-pink-500/10"
+                  className="text-center p-4 rounded-2xl bg-gradient-to-br from-purple-500/10 to-pink-500/10 relative group border border-purple-500/20 hover:border-purple-500/40 transition-all shadow-sm"
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <p className="text-sm text-muted-foreground">
-                    {new Date(selectedYear, selectedMonth - 1).toLocaleDateString('en-US', { month: 'short' })} Savings
-                  </p>
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-sm text-muted-foreground">
+                      {new Date(selectedYear, selectedMonth - 1).toLocaleDateString('en-US', { month: 'short' })} Savings
+                    </p>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleOpenEditMonthlySavings}
+                      className="h-7 w-7 text-purple-600 dark:text-purple-400 hover:bg-purple-500/20 rounded-lg transition-colors"
+                      title={`Edit ${new Date(selectedYear, selectedMonth - 1).toLocaleDateString('en-US', { month: 'short' })} Savings`}
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
                   <p className="text-base sm:text-xl font-semibold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
                     {formatAmount(optimisticMonthlySavings, 'PKR')}
                   </p>
                 </motion.div>
                 <motion.div 
-                  className="text-center p-4 rounded-2xl bg-gradient-to-br from-green-500/10 to-emerald-500/10"
+                  className="text-center p-4 rounded-2xl bg-gradient-to-br from-green-500/10 to-emerald-500/10 relative group border border-green-500/20 hover:border-green-500/40 transition-all shadow-sm"
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.3, delay: 0.1 }}
                 >
-                  <p className="text-sm text-muted-foreground">Lifetime Savings</p>
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-sm text-muted-foreground">Lifetime Savings</p>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleOpenEditLifetimeSavings}
+                      className="h-7 w-7 text-green-600 dark:text-green-400 hover:bg-green-500/20 rounded-lg transition-colors"
+                      title="Edit Lifetime Savings"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
                   <p className="text-base sm:text-xl font-semibold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
                     {formatAmount(totalSavings, 'PKR')}
                   </p>
@@ -2897,6 +3006,113 @@ export function ExpenseList({ refreshTrigger, onOpenUtilities, optimisticExpense
           setDetailsDialogOpen(false)
         }}
       />
+
+      {/* Edit Monthly Savings Dialog */}
+      <Dialog open={isEditingMonthlySavings} onOpenChange={setIsEditingMonthlySavings}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-purple-600 dark:text-purple-400">
+              <PiggyBank className="h-5 w-5" />
+              Edit {new Date(selectedYear, selectedMonth - 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} Savings
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSaveMonthlySavings} className="space-y-4 pt-2">
+            <div className="space-y-2">
+              <Label htmlFor="monthlySavingsInput">Savings Amount (PKR)</Label>
+              <Input
+                id="monthlySavingsInput"
+                type="number"
+                step="0.01"
+                min="0"
+                value={monthlySavingsInput}
+                onChange={(e) => setMonthlySavingsInput(e.target.value)}
+                placeholder="Enter savings amount"
+                required
+                autoFocus
+              />
+            </div>
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsEditingMonthlySavings(false)}
+                disabled={savingSavingsLoading}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700"
+                disabled={savingSavingsLoading}
+              >
+                {savingSavingsLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  'Save Changes'
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Lifetime Savings Dialog */}
+      <Dialog open={isEditingLifetimeSavings} onOpenChange={setIsEditingLifetimeSavings}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+              <PiggyBank className="h-5 w-5" />
+              Edit Lifetime Savings
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSaveLifetimeSavings} className="space-y-4 pt-2">
+            <div className="space-y-2">
+              <Label htmlFor="lifetimeSavingsInput">Total Lifetime Savings (PKR)</Label>
+              <Input
+                id="lifetimeSavingsInput"
+                type="number"
+                step="0.01"
+                min="0"
+                value={lifetimeSavingsInput}
+                onChange={(e) => setLifetimeSavingsInput(e.target.value)}
+                placeholder="Enter overall total savings"
+                required
+                autoFocus
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                This updates your overall baseline savings across all tracked and prior months.
+              </p>
+            </div>
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsEditingLifetimeSavings(false)}
+                disabled={savingSavingsLoading}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700"
+                disabled={savingSavingsLoading}
+              >
+                {savingSavingsLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  'Save Changes'
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
