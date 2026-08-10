@@ -22,9 +22,10 @@ interface UserDropdownProps {
     family_name?: string | null
     picture?: string | null
   }
+  isCollapsed?: boolean
 }
 
-export function UserDropdown({ user }: UserDropdownProps) {
+export function UserDropdown({ user, isCollapsed = false }: UserDropdownProps) {
   const [open, setOpen] = useState(false)
   const router = useRouter()
   
@@ -46,18 +47,33 @@ export function UserDropdown({ user }: UserDropdownProps) {
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-10 px-2 gap-2">
-          <Avatar className="h-8 w-8">
-            <AvatarImage 
-              src={user.picture || undefined} 
-              alt={userName}
-              className="object-cover"
-            />
-            <AvatarFallback className="text-xs">{userInitials}</AvatarFallback>
-          </Avatar>
-          <span className="hidden md:inline-block text-sm font-medium">{userName}</span>
-          <ChevronDown className="h-4 w-4 opacity-50" />
-        </Button>
+        {isCollapsed ? (
+          <Button variant="ghost" size="icon" className="relative h-9 w-9 rounded-full">
+            <Avatar className="h-8 w-8">
+              <AvatarImage 
+                src={user.picture || undefined} 
+                alt={userName}
+                className="object-cover"
+              />
+              <AvatarFallback className="text-xs">{userInitials}</AvatarFallback>
+            </Avatar>
+          </Button>
+        ) : (
+          <Button variant="ghost" className="relative h-10 w-auto sm:w-full px-1.5 sm:px-2 justify-between gap-2">
+            <div className="flex items-center gap-2 overflow-hidden">
+              <Avatar className="h-8 w-8 shrink-0">
+                <AvatarImage 
+                  src={user.picture || undefined} 
+                  alt={userName}
+                  className="object-cover"
+                />
+                <AvatarFallback className="text-xs">{userInitials}</AvatarFallback>
+              </Avatar>
+              <span className="hidden sm:inline-block text-sm font-medium truncate">{userName}</span>
+            </div>
+            <ChevronDown className="hidden sm:inline-block h-4 w-4 opacity-50 shrink-0" />
+          </Button>
+        )}
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">

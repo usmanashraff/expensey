@@ -216,8 +216,8 @@ export function LoansManager({ onSavingsChange, showAmounts = true }: LoansManag
         </Button>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Summary Cards (Hidden on small screens) */}
+      <div className="hidden sm:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Given Loans (To Collect) */}
         <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
           <Card className="bg-gradient-to-br from-purple-500/10 to-indigo-500/10 border-purple-500/20 shadow-sm rounded-2xl">

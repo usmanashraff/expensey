@@ -183,9 +183,9 @@ export function DashboardSidebar({
             </div>
           </>
         ) : (
-          <div className="flex flex-col items-center gap-3">
-            <ThemeToggle />
-            <UserDropdown user={user} />
+          <div className="flex flex-col items-center gap-3 py-1">
+            <ThemeToggle isCollapsed={true} />
+            <UserDropdown user={user} isCollapsed={true} />
           </div>
         )}
       </div>

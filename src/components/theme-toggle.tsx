@@ -5,9 +5,32 @@ import { Moon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
 import { motion } from "framer-motion"
 
-export function ThemeToggle() {
+interface ThemeToggleProps {
+  isCollapsed?: boolean
+}
+
+export function ThemeToggle({ isCollapsed = false }: ThemeToggleProps) {
   const { theme, setTheme } = useTheme()
   const isDark = theme === "dark"
+
+  if (isCollapsed) {
+    return (
+      <motion.button
+        onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+        className="relative flex items-center justify-center w-9 h-9 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-gray-800 dark:to-gray-700 rounded-full border border-gray-200/50 dark:border-gray-700/50 shadow-xs hover:shadow-md transition-all"
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        title={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+      >
+        {isDark ? (
+          <Sun className="h-4.5 w-4.5 text-amber-400" />
+        ) : (
+          <Moon className="h-4.5 w-4.5 text-purple-600" />
+        )}
+        <span className="sr-only">Toggle theme</span>
+      </motion.button>
+    )
+  }
 
   return (
     <motion.button

@@ -28,7 +28,7 @@ export function UtilityTypeManager({ onUtilityTypesChanged, isInDialog = false, 
   const [isLoading, setIsLoading] = useState(false)
   const [isAdding, setIsAdding] = useState(false)
   const [currentPage, setCurrentPage] = useState(0)
-  const [showManager, setShowManager] = useState(isInDialog)
+  const [showManager, setShowManager] = useState(true)
   const [isFetching, setIsFetching] = useState(true)
   
   const itemsPerPage = 4
@@ -147,12 +147,10 @@ export function UtilityTypeManager({ onUtilityTypesChanged, isInDialog = false, 
             </motion.div>
             <div>
               <CardTitle className="text-base sm:text-xl">Manage Utility Types</CardTitle>
-              {showManager && (
-                <CardDescription className="mt-1">Create and manage utility categories</CardDescription>
-              )}
+              <CardDescription className="mt-1">Create and manage utility categories</CardDescription>
             </div>
           </div>
-          {isInDialog && onClose ? (
+          {isInDialog && onClose && (
             <Button
               variant="ghost"
               size="sm"
@@ -161,38 +159,10 @@ export function UtilityTypeManager({ onUtilityTypesChanged, isInDialog = false, 
             >
               <X className="h-4 w-4" />
             </Button>
-          ) : !isInDialog ? (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowManager(!showManager)}
-              className="flex items-center gap-2"
-            >
-              <motion.div
-                animate={{ rotate: showManager ? 180 : 0 }}
-                transition={{ duration: 0.3 }}
-                className="h-4 w-4"
-              >
-                <ChevronDown className="h-4 w-4" />
-              </motion.div>
-              {showManager ? 'Hide' : 'Show'}
-            </Button>
-          ) : null}
+          )}
         </div>
       </CardHeader>
-      <AnimatePresence>
-        {showManager && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{
-              height: { duration: 0.4, ease: "easeInOut" },
-              opacity: { duration: 0.3, ease: "easeInOut" }
-            }}
-            className="overflow-hidden"
-          >
-            <CardContent className="relative z-10">
+      <CardContent className="relative z-10">
               <motion.form 
                 onSubmit={handleAddType} 
                 className="flex flex-col sm:flex-row gap-2 mb-6"
@@ -315,9 +285,6 @@ export function UtilityTypeManager({ onUtilityTypesChanged, isInDialog = false, 
                 )}
               </div>
             </CardContent>
-          </motion.div>
-        )}
-      </AnimatePresence>
       
       {/* Decorative element */}
       <motion.div

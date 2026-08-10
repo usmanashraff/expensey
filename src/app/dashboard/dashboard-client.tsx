@@ -121,17 +121,6 @@ export function DashboardClient({ user }: DashboardClientProps) {
               <Menu className="h-5 w-5" />
             </Button>
 
-            {/* Desktop Sidebar Toggle Button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsDesktopCollapsed(!isDesktopCollapsed)}
-              className="hidden lg:flex h-9 w-9 text-muted-foreground hover:text-foreground rounded-xl"
-              title={isDesktopCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
-            >
-              {isDesktopCollapsed ? <PanelLeft className="h-5 w-5 text-purple-600 dark:text-purple-400" /> : <PanelLeftClose className="h-5 w-5" />}
-            </Button>
-
             <div>
               <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
                 {menuTitles[activeMenu]}
@@ -143,10 +132,10 @@ export function DashboardClient({ user }: DashboardClientProps) {
             {activeMenu === 'dashboard' && (
               <Button
                 onClick={() => setShowExpenseDialog(true)}
-                className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 text-white rounded-xl shadow-md h-9.5 px-4 gap-2 font-medium"
+                className="hidden sm:flex bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 text-white rounded-xl shadow-md h-9.5 px-4 gap-2 font-medium"
               >
                 <Plus className="h-4 w-4" />
-                <span className="hidden sm:inline">Add Expense</span>
+                <span>Add Expense</span>
               </Button>
             )}
             
@@ -166,7 +155,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
             optimisticExpense={optimisticExpense}
             onOptimisticExpenseConfirmed={handleOptimisticExpenseConfirmed}
             utilityTypeManagerNode={
-              <div className="relative max-w-3xl mx-auto pt-2">
+              <div className="relative w-full pt-2">
                 <div className="absolute inset-0 bg-gradient-to-r from-green-400/20 to-emerald-400/20 dark:from-green-600/10 dark:to-emerald-600/10 rounded-3xl blur-xl" />
                 <UtilityTypeManager onUtilityTypesChanged={handleUtilityTypesChanged} />
               </div>
