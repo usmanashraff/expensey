@@ -199,27 +199,18 @@ export function LoansManager({ onSavingsChange, showAmounts = true }: LoansManag
   return (
     <div className="space-y-6">
       {/* Header Section */}
-      <div className="flex justify-end items-center mb-6 gap-4">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setIsAmountVisible(!isAmountVisible)}
-            className="p-3 text-on-surface-variant hover:text-on-surface transition-colors rounded-full hover:bg-surface-container"
-            title={isAmountVisible ? "Hide amounts" : "Show amounts"}
-          >
-            <span className="material-symbols-outlined">{isAmountVisible ? 'visibility' : 'visibility_off'}</span>
-          </button>
-          <button
-            onClick={() => setShowAddDialog(true)}
-            className="bg-[#212529] dark:bg-[#f6fafe] text-white dark:text-[#14171a] font-sans text-sm font-semibold tracking-wide px-6 py-3 rounded-full flex items-center gap-2 hover:bg-black dark:hover:bg-white transition-colors whitespace-nowrap"
-          >
-            <span className="material-symbols-outlined text-[20px]">add</span>
-            Add New Loan
-          </button>
-        </div>
+      <div className="hidden sm:flex justify-end items-center mb-6 gap-4">
+        <button
+          onClick={() => setShowAddDialog(true)}
+          className="bg-[#212529] dark:bg-[#f6fafe] text-white dark:text-[#14171a] font-sans text-sm font-semibold tracking-wide px-6 py-3 rounded-full flex items-center gap-2 hover:bg-black dark:hover:bg-white transition-colors whitespace-nowrap"
+        >
+          <span className="material-symbols-outlined text-[20px]">add</span>
+          Add New Loan
+        </button>
       </div>
 
       {/* Status Cards Bento Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+      <div className="hidden sm:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
         {/* Card 1 */}
         <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
           <div className="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant flex flex-col justify-between min-h-[140px] shadow-sm hover:border-[#496177]/50 transition-colors">
@@ -279,7 +270,16 @@ export function LoansManager({ onSavingsChange, showAmounts = true }: LoansManag
 
       {/* Overview Section */}
       <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-        <h4 className="font-serif-heading text-xl font-medium text-on-surface">Loans Overview</h4>
+        <div className="flex items-center gap-2">
+          <h4 className="font-serif-heading text-xl font-medium text-on-surface">Loans Overview</h4>
+          <button
+            onClick={() => setIsAmountVisible(!isAmountVisible)}
+            className="p-2 -ml-1 text-on-surface-variant hover:text-on-surface transition-colors rounded-full hover:bg-surface-container shrink-0"
+            title={isAmountVisible ? "Hide amounts" : "Show amounts"}
+          >
+            <span className="material-symbols-outlined text-[20px]">{isAmountVisible ? 'visibility' : 'visibility_off'}</span>
+          </button>
+        </div>
         <div className="flex bg-surface-container rounded-full p-1 border border-outline-variant">
           <button 
             onClick={() => setActiveTab('all')}
@@ -571,6 +571,16 @@ export function LoansManager({ onSavingsChange, showAmounts = true }: LoansManag
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      
+      {/* Floating Add Loan Button for Mobile */}
+      <div className="fixed bottom-5 right-5 z-40 sm:hidden">
+        <button
+          onClick={() => setShowAddDialog(true)}
+          className="rounded-full h-14 w-14 shadow-xl bg-[#212529] hover:bg-[#343a40] text-white dark:bg-[#e4e4cc] dark:text-[#1c1c1a] p-0 flex items-center justify-center transition-colors"
+        >
+          <span className="material-symbols-outlined text-[24px]">add</span>
+        </button>
+      </div>
     </div>
   )
 }

@@ -140,7 +140,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
         </header>
 
         {/* Main Content Workspace */}
-        <main className="flex-1 px-0 py-0 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto space-y-0 sm:space-y-6">
+        <main className="flex-1 px-0 py-2 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto space-y-0 sm:space-y-6">
           <ExpenseList
             activeMenu={activeMenu}
             refreshTrigger={refreshTrigger}
