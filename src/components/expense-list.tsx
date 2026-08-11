@@ -1634,7 +1634,7 @@ export function ExpenseList({
       }}
     >
       {/* Recent Expenses Card */}
-      <Card className="relative bg-[#ffffff] dark:bg-[#14171a] border border-outline-variant rounded-xl overflow-hidden shadow-sm hover:border-[#496177]/50 transition-colors p-6 sm:p-8">
+      <Card className="relative bg-[#ffffff] dark:bg-[#14171a] border border-x-0 sm:border-x border-outline-variant rounded-none sm:rounded-xl overflow-hidden shadow-sm hover:border-[#496177]/50 transition-colors p-3 sm:p-8">
         <CardHeader className="relative z-10 p-0 mb-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -1654,7 +1654,7 @@ export function ExpenseList({
               variant="ghost"
               size="sm"
               onClick={() => setShowExpenses(!showExpenses)}
-              className="flex items-center gap-2 text-sm font-sans font-semibold text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg px-4 py-2 transition-colors"
+              className="hidden sm:flex items-center gap-2 text-sm font-sans font-semibold text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg px-4 py-2 transition-colors"
             >
               <motion.div
                 animate={{ rotate: showExpenses ? 180 : 0 }}
@@ -1847,7 +1847,7 @@ export function ExpenseList({
                           exit={{ opacity: 0, x: -100 }}
                           transition={{ duration: 0.3, delay: index * 0.05 }}
                           whileHover={{ scale: isOptimistic ? 1 : 1.01 }}
-                          className={`flex items-center justify-between p-4 rounded-xl border ${isOptimistic
+                          className={`flex items-center justify-between p-3 sm:p-4 rounded-xl border ${isOptimistic
                             ? 'bg-[#f0f4f8]/50 dark:bg-[#1c2024]/50 border-outline-variant/50/50 animate-pulse'
                             : 'bg-surface-container-lowest border-outline-variant/50 hover:bg-surface-container hover:border-[#496177]/50'
                             } transition-all duration-200 ${isOptimistic ? '' : 'cursor-pointer'} relative`}
@@ -1989,7 +1989,7 @@ export function ExpenseList({
                 )}
 
                 {/* Hide button at the bottom */}
-                <div className="flex justify-center mt-6 pt-4 border-t">
+                <div className="hidden sm:flex justify-center mt-6 pt-4 border-t">
                   <Button
                     variant="ghost"
                     size="sm"
@@ -2311,7 +2311,7 @@ export function ExpenseList({
       {/* Monthly Summary Card - Only rendered on Dashboard view */}
       {activeMenu === 'dashboard' && (
         <div className={cn("sm:block", dashboardMobileTab === 'summary' ? "block" : "hidden")}>
-          <Card className="relative bg-[#ffffff] dark:bg-[#14171a] border border-outline-variant rounded-xl overflow-hidden shadow-sm hover:border-[#496177]/50 transition-colors p-6 sm:p-8">
+          <Card className="relative bg-[#ffffff] dark:bg-[#14171a] border border-x-0 sm:border-x border-outline-variant rounded-none sm:rounded-xl overflow-hidden shadow-sm hover:border-[#496177]/50 transition-colors p-3 sm:p-8">
           <CardHeader className="relative z-10 p-0 mb-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-2">
               <div className="flex items-center gap-3">
