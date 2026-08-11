@@ -191,7 +191,7 @@ export function DashboardSidebar({
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
-              transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
+              transition={{ duration: 0.25, ease: "easeOut" as const }}
               className="lg:hidden fixed top-0 left-0 bottom-0 z-50 w-72 bg-surface text-on-surface border-r border-outline-variant shadow-xl transform-gpu will-change-transform"
             >
               {sidebarContent(false)}

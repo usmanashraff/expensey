@@ -8,14 +8,21 @@ import { ThemeToggle } from '@/components/theme-toggle'
 
 export default function Home() {
   const [authenticated, setAuthenticated] = useState(false)
+  const [authLoading, setAuthLoading] = useState(true)
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
     // Check authentication status
     fetch('/api/check-auth')
       .then(res => res.json())
-      .then(data => setAuthenticated(data.authenticated))
-      .catch(() => setAuthenticated(false))
+      .then(data => {
+        setAuthenticated(data.authenticated)
+        setAuthLoading(false)
+      })
+      .catch(() => {
+        setAuthenticated(false)
+        setAuthLoading(false)
+      })
 
     const handleScroll = () => {
       setScrolled(window.scrollY > 50)
@@ -29,7 +36,7 @@ export default function Home() {
     visible: { 
       opacity: 1, 
       y: 0, 
-      transition: { duration: 0.8, ease: "easeOut" } 
+      transition: { duration: 0.8, ease: "easeOut" as const } 
     }
   }
 
@@ -53,7 +60,9 @@ export default function Home() {
           </div>
           <div className="flex items-center gap-4">
             <ThemeToggle />
-            {authenticated ? (
+            {authLoading ? (
+              <div className="w-[120px] h-[40px] rounded-full bg-surface-variant animate-pulse" />
+            ) : authenticated ? (
               <Link href="/dashboard">
                 <button className="bg-[#212529] dark:bg-[#f6fafe] dark:text-[#14171a] text-white font-label-md text-label-md px-6 py-2.5 rounded-full hover:bg-opacity-90 transition-all">Dashboard</button>
               </Link>
@@ -96,13 +105,17 @@ export default function Home() {
               Track expenses, monitor budgets, and achieve financial clarity with our intuitive, AI-powered expense tracking platform designed for modern professionals.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Link href={authenticated ? "/dashboard" : "/register"}>
-                <button className="w-full sm:w-auto bg-[#212529] dark:bg-[#f6fafe] dark:text-[#14171a] text-white font-label-md text-label-md px-8 py-4 rounded-full hover:bg-opacity-90 transition-all shadow-sm flex items-center justify-center gap-2 group">
-                  {authenticated ? "Open Dashboard" : "Get Started"}
-                  <span className="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
-                </button>
-              </Link>
-              {!authenticated && (
+              {authLoading ? (
+                <div className="w-full sm:w-[200px] h-[56px] rounded-full bg-surface-variant animate-pulse" />
+              ) : (
+                <Link href={authenticated ? "/dashboard" : "/register"}>
+                  <button className="w-full sm:w-auto bg-[#212529] dark:bg-[#f6fafe] dark:text-[#14171a] text-white font-label-md text-label-md px-8 py-4 rounded-full hover:bg-opacity-90 transition-all shadow-sm flex items-center justify-center gap-2 group">
+                    {authenticated ? "Open Dashboard" : "Get Started"}
+                    <span className="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                  </button>
+                </Link>
+              )}
+              {!authLoading && !authenticated && (
                 <Link href="/login">
                   <button className="w-full sm:w-auto border border-outline-variant text-on-surface font-label-md text-label-md px-8 py-4 rounded-full hover:bg-surface-container-low transition-all flex items-center justify-center gap-2">
                     View Demo

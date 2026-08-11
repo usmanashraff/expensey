@@ -1627,7 +1627,7 @@ export function ExpenseList({
       exit={{ opacity: 0, y: -20, scale: 0.95 }}
       transition={{
         duration: 0.4,
-        ease: "easeOut",
+        ease: "easeOut" as const,
         scale: { duration: 0.3 }
       }}
     >
@@ -2022,7 +2022,7 @@ export function ExpenseList({
       exit={{ opacity: 0, y: -20, scale: 0.95 }}
       transition={{
         duration: 0.4,
-        ease: "easeOut",
+        ease: "easeOut" as const,
         scale: { duration: 0.3 }
       }}
     >
@@ -2085,7 +2085,7 @@ export function ExpenseList({
       exit={{ opacity: 0, y: -20, scale: 0.95 }}
       transition={{
         duration: 0.4,
-        ease: "easeOut",
+        ease: "easeOut" as const,
         scale: { duration: 0.3 }
       }}
     >

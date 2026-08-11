@@ -147,7 +147,7 @@ export default function SettingsPage() {
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
+          transition={{ duration: 0.4, ease: "easeOut" as const }}
           className="mb-10 flex items-center gap-4"
         >
           <Link href="/dashboard" className="text-on-surface-variant hover:text-on-surface transition-colors flex items-center justify-center p-2 rounded-full hover:bg-surface-container">
@@ -159,7 +159,7 @@ export default function SettingsPage() {
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: "easeOut", delay: 0.1 }}
+          transition={{ duration: 0.4, ease: "easeOut" as const, delay: 0.1 }}
           className="flex flex-col gap-8"
         >
           {/* Profile Section */}
@@ -284,7 +284,7 @@ export default function SettingsPage() {
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: "easeOut", delay: 0.2 }}
+          transition={{ duration: 0.4, ease: "easeOut" as const, delay: 0.2 }}
           className="mt-12 flex flex-col-reverse md:flex-row justify-between items-center gap-6 border-t border-outline-variant/50 pt-8"
         >
           <button 
