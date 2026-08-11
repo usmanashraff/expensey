@@ -104,6 +104,7 @@ export function ExpenseList({
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null)
   const [isMobile, setIsMobile] = useState(false)
   const [activeView, setActiveView] = useState<'expenses' | 'finance' | 'visualization' | 'loans' | 'ai'>('expenses')
+  const [dashboardMobileTab, setDashboardMobileTab] = useState<'summary' | 'expenses'>('summary')
 
   const currentMonth = new Date().getMonth() + 1
   const currentYear = new Date().getFullYear()
@@ -1622,6 +1623,7 @@ export function ExpenseList({
   // Render function for Recent Expenses content
   const renderExpensesContent = () => (
     <motion.div
+      className={cn("sm:block", dashboardMobileTab === 'expenses' ? "block" : "hidden")}
       initial={{ opacity: 0, y: 20, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -20, scale: 0.95 }}
@@ -1640,7 +1642,7 @@ export function ExpenseList({
                 <span className="material-symbols-outlined text-[20px]">receipt_long</span>
               </div>
               <div>
-                <CardTitle className="text-xl font-bold font-serif-heading tracking-tight text-on-surface">
+                <CardTitle className="text-lg sm:text-xl font-bold font-serif-heading tracking-tight text-on-surface">
                   Recent Expenses
                 </CardTitle>
                 <CardDescription className="text-sm font-sans font-medium text-on-surface-variant mt-1">
@@ -1862,21 +1864,21 @@ export function ExpenseList({
                           <div className="flex-1">
                             <div className="flex items-center gap-3 flex-wrap">
                               <h4 className="font-sans text-sm sm:text-base font-semibold text-on-surface">{expense.description}</h4>
-                              <span className={`text-xs px-3 py-1 rounded-full ${categoryConfig[expense.category].bgColor} ${categoryConfig[expense.category].textColor} font-medium`}>
+                              <span className={`text-[10px] sm:text-xs px-2 sm:px-3 py-1 rounded-full ${categoryConfig[expense.category].bgColor} ${categoryConfig[expense.category].textColor} font-medium`}>
                                 {categoryConfig[expense.category].label}
                               </span>
                               {expense.subcategory && (
-                                <span className="text-xs px-3 py-1 rounded-full bg-[#f0ece5] text-[#635e53] dark:bg-[#282622] dark:text-[#a39e93]">
+                                <span className="text-[10px] sm:text-xs px-2 sm:px-3 py-1 rounded-full bg-[#f0ece5] text-[#635e53] dark:bg-[#282622] dark:text-[#a39e93]">
                                   {expense.subcategory}
                                 </span>
                               )}
                             </div>
-                            <p className="font-sans text-sm font-medium text-on-surface-variant mt-1">
+                            <p className="font-sans text-[10px] sm:text-sm font-medium text-on-surface-variant mt-1">
                               {formatDate(expense.date)} at {formatTime(expense.date)}
                             </p>
                           </div>
                           <div className="flex items-center gap-3">
-                            <p className="font-sans text-base sm:text-lg font-bold text-on-surface">
+                            <p className="font-sans text-sm sm:text-lg font-bold text-on-surface">
                               {formatAmount(expense.amount, expense.currency || 'PKR')}
                             </p>
                             {expense.receipt && (
@@ -2292,9 +2294,24 @@ export function ExpenseList({
 
   return (
     <div className="space-y-0 sm:space-y-6">
+      {/* Mobile Dashboard Tabs */}
+      {activeMenu === 'dashboard' && (
+        <div className="flex sm:hidden bg-surface-container rounded-full p-1 border border-outline-variant mb-4 mx-4">
+          <button 
+            onClick={() => setDashboardMobileTab('summary')}
+            className={`flex-1 px-4 py-2 rounded-full font-sans text-sm font-semibold tracking-wide transition-all ${dashboardMobileTab === 'summary' ? 'bg-[#212529] dark:bg-[#f6fafe] text-white dark:text-[#14171a] shadow-sm' : 'text-on-surface-variant hover:text-on-surface'}`}
+          >Summary</button>
+          <button 
+            onClick={() => setDashboardMobileTab('expenses')}
+            className={`flex-1 px-4 py-2 rounded-full font-sans text-sm font-semibold tracking-wide transition-all ${dashboardMobileTab === 'expenses' ? 'bg-[#212529] dark:bg-[#f6fafe] text-white dark:text-[#14171a] shadow-sm' : 'text-on-surface-variant hover:text-on-surface'}`}
+          >Expenses</button>
+        </div>
+      )}
+
       {/* Monthly Summary Card - Only rendered on Dashboard view */}
       {activeMenu === 'dashboard' && (
-        <Card className="relative bg-[#ffffff] dark:bg-[#14171a] border border-outline-variant rounded-xl overflow-hidden shadow-sm hover:border-[#496177]/50 transition-colors p-6 sm:p-8">
+        <div className={cn("sm:block", dashboardMobileTab === 'summary' ? "block" : "hidden")}>
+          <Card className="relative bg-[#ffffff] dark:bg-[#14171a] border border-outline-variant rounded-xl overflow-hidden shadow-sm hover:border-[#496177]/50 transition-colors p-6 sm:p-8">
           <CardHeader className="relative z-10 p-0 mb-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-2">
               <div className="flex items-center gap-3">
@@ -2302,7 +2319,7 @@ export function ExpenseList({
                   <span className="material-symbols-outlined text-[20px]">trending_up</span>
                 </div>
                 <div>
-                  <CardTitle className="text-xl font-bold font-serif-heading tracking-tight text-on-surface">
+                  <CardTitle className="text-lg sm:text-xl font-bold font-serif-heading tracking-tight text-on-surface">
                     Monthly Summary
                   </CardTitle>
                   <CardDescription className="text-sm font-sans font-medium text-on-surface-variant mt-1">
@@ -2585,8 +2602,8 @@ export function ExpenseList({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <p className="font-sans text-sm text-on-surface-variant mb-1 font-medium">Total Expenses</p>
-                    <p className="font-sans text-base sm:text-2xl font-bold text-on-surface">
+                    <p className="font-sans text-xs sm:text-sm text-on-surface-variant mb-1 font-medium">Total Expenses</p>
+                    <p className="font-sans text-sm sm:text-2xl font-bold text-on-surface">
                       {formatAmount(totalExpenses, 'PKR')}
                     </p>
                   </motion.div>
@@ -2598,8 +2615,8 @@ export function ExpenseList({
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.3, delay: index * 0.1 }}
                     >
-                      <p className="font-sans text-sm text-on-surface-variant mb-1 font-medium">{config.label}</p>
-                      <p className="font-sans text-sm sm:text-xl font-bold text-on-surface">
+                      <p className="font-sans text-[10px] sm:text-sm text-on-surface-variant mb-1 font-medium">{config.label}</p>
+                      <p className="font-sans text-xs sm:text-xl font-bold text-on-surface">
                         {formatAmount(expensesByCategory[key] || 0, 'PKR')}
                       </p>
                     </motion.div>
@@ -2620,7 +2637,7 @@ export function ExpenseList({
                       transition={{ duration: 0.3 }}
                     >
                       <div className="flex items-center justify-center relative mb-1">
-                        <p className="font-sans text-sm text-on-surface-variant font-medium">
+                        <p className="font-sans text-[10px] sm:text-sm text-on-surface-variant font-medium">
                           {new Date(selectedYear, selectedMonth - 1).toLocaleDateString('en-US', { month: 'short' })} Savings
                         </p>
                         <Button
@@ -2633,7 +2650,7 @@ export function ExpenseList({
                           <span className="material-symbols-outlined text-[16px]">edit</span>
                         </Button>
                       </div>
-                      <p className="font-sans text-sm sm:text-xl font-bold text-on-surface">
+                      <p className="font-sans text-xs sm:text-xl font-bold text-on-surface">
                         {formatAmount(optimisticMonthlySavings, 'PKR')}
                       </p>
                     </motion.div>
@@ -2644,7 +2661,7 @@ export function ExpenseList({
                       transition={{ duration: 0.3, delay: 0.1 }}
                     >
                       <div className="flex items-center justify-center relative mb-1">
-                        <p className="font-sans text-sm text-on-surface-variant font-medium">Lifetime Savings</p>
+                        <p className="font-sans text-[10px] sm:text-sm text-on-surface-variant font-medium">Lifetime Savings</p>
                         <Button
                           variant="ghost"
                           size="icon"
@@ -2655,7 +2672,7 @@ export function ExpenseList({
                           <span className="material-symbols-outlined text-[16px]">edit</span>
                         </Button>
                       </div>
-                      <p className="font-sans text-sm sm:text-xl font-bold text-on-surface">
+                      <p className="font-sans text-xs sm:text-xl font-bold text-on-surface">
                         {formatAmount(totalSavings, 'PKR')}
                       </p>
                     </motion.div>
@@ -2667,6 +2684,7 @@ export function ExpenseList({
 
           {/* Decorative element removed for minimal aesthetic */}
         </Card>
+      </div>
       )}
 
       {/* Mobile Navigation Buttons */}
