@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Capital Ledger - Settings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Playfair+Display:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error": "#ba1a1a",
+                        "inverse-primary": "#c5c7c8",
+                        "on-background": "#171c1f",
+                        "on-primary-fixed-variant": "#454748",
+                        "on-tertiary-fixed": "#011d31",
+                        "tertiary-container": "#f6f9ff",
+                        "tertiary": "#496177",
+                        "on-secondary-fixed": "#181c20",
+                        "primary-fixed-dim": "#c5c7c8",
+                        "primary": "#5c5f60",
+                        "background": "#f6fafe",
+                        "surface-bright": "#f6fafe",
+                        "tertiary-fixed": "#cce5ff",
+                        "secondary": "#5b5f63",
+                        "inverse-surface": "#2c3134",
+                        "on-primary-fixed": "#191c1d",
+                        "on-tertiary-fixed-variant": "#31495e",
+                        "primary-fixed": "#e1e3e4",
+                        "on-secondary-fixed-variant": "#43474c",
+                        "on-secondary-container": "#5f6368",
+                        "on-tertiary-container": "#5d758b",
+                        "surface-tint": "#5c5f60",
+                        "on-surface-variant": "#444749",
+                        "outline-variant": "#c4c7c8",
+                        "surface-variant": "#dfe3e7",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-container": "#dde0e5",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-low": "#f0f4f8",
+                        "surface-dim": "#d6dade",
+                        "primary-container": "#f8f9fa",
+                        "secondary-fixed": "#e0e3e8",
+                        "surface-container": "#eaeef2",
+                        "surface": "#f6fafe",
+                        "error-container": "#ffdad6",
+                        "inverse-on-surface": "#edf1f5",
+                        "surface-container-highest": "#dfe3e7",
+                        "on-secondary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-primary-container": "#707273",
+                        "on-error-container": "#93000a",
+                        "on-surface": "#171c1f",
+                        "surface-container-high": "#e5e9ed",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed-dim": "#b0c9e3",
+                        "secondary-fixed-dim": "#c3c7cc",
+                        "outline": "#747879"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "8px",
+                        "margin-desktop": "64px",
+                        "container-max": "1280px",
+                        "margin-mobile": "16px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Playfair Display"],
+                        "display-lg": ["Playfair Display"],
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Playfair Display"],
+                        "headline-lg-mobile": ["Playfair Display"],
+                        "body-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "label-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex">
+<nav class="bg-surface h-screen w-64 fixed left-0 top-0 border-r border-outline-variant flat no shadows flex flex-col h-full py-8 px-6 z-20 hidden md:flex">
+<div class="mb-12">
+<h1 class="font-display-lg text-headline-lg text-on-surface tracking-tight">Capital Ledger</h1>
+<p class="font-body-md text-label-sm text-on-surface-variant mt-1">Premium Asset Management</p>
+</div>
+<ul class="flex flex-col gap-2 flex-1">
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-secondary hover:text-on-surface hover:bg-surface-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-secondary hover:text-on-surface hover:bg-surface-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-label-md text-label-md">Finance</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-secondary hover:text-on-surface hover:bg-surface-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">monitoring</span>
+<span class="font-label-md text-label-md">Charts</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-secondary hover:text-on-surface hover:bg-surface-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">account_balance</span>
+<span class="font-label-md text-label-md">Loans</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-secondary-fixed font-semibold border-r-4 border-on-secondary-fixed bg-secondary-container/10 opacity-90 transition-all" href="#">
+<span class="material-symbols-outlined">settings_applications</span>
+<span class="font-label-md text-label-md">Manage Utilities</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-secondary hover:text-on-surface hover:bg-surface-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">psychology</span>
+<span class="font-label-md text-label-md">AI Insights</span>
+</a>
+</li>
+</ul>
+</nav>
+<div class="flex-1 flex flex-col md:ml-64 w-full">
+<header class="fixed top-0 md:ml-64 w-full md:w-[calc(100%-16rem)] h-20 bg-background/80 backdrop-blur-md border-b border-outline-variant/50 flat no shadows flex justify-between items-center px-12 z-10">
+<div>
+<h2 class="font-headline-md text-headline-md text-primary">Dashboard</h2>
+</div>
+<div class="flex items-center gap-6">
+<button class="text-secondary hover:text-on-secondary-fixed transition-colors focus:ring-1 focus:ring-outline p-2 rounded-full">
+<span class="material-symbols-outlined">dark_mode</span>
+</button>
+<button class="text-secondary hover:text-on-secondary-fixed transition-colors focus:ring-1 focus:ring-outline p-2 rounded-full">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-secondary hover:text-on-secondary-fixed transition-colors focus:ring-1 focus:ring-outline p-2 rounded-full">
+<span class="material-symbols-outlined">help</span>
+</button>
+<div class="w-10 h-10 rounded-full bg-surface-container-high overflow-hidden border border-outline-variant ml-4">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a corporate administrator, female in her 40s, wearing a tailored navy blazer. Soft studio lighting on a pristine off-white background. The aesthetic is high-fidelity, polished, and authoritative, matching a premium financial dashboard environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD9vp2AnBIEd6CPp61d-ToyqNLxd55xuWj5gC0MD04mhodAmfe4AGRLzICqdq-H28sJ2k0sKTo3qD9TbK5esNk6AhDkQ0aUyOLAZ9g7ViSd1VX_kZZIDgoUYzbt1C6ZA4Z6nxemxScDHuqsINYyXVrIkt5IiN9KCm7slnRFTuTPKGgQI5MT4K6I1owN4W-XfycLT_VgzUObKfzx3X45op94a-4X5MHgIoHuO0zr5vSXgmCxUbzEyyGl0w"/>
+</div>
+</div>
+</header>
+<main class="flex-1 w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop pt-32 pb-24">
+<div class="mb-10 flex items-center gap-4">
+<a class="text-secondary hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined">arrow_back</span>
+</a>
+<h2 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface tracking-tight">Settings</h2>
+</div>
+<div class="flex flex-col gap-8">
+<section class="bg-surface-container-lowest border border-outline-variant rounded-xl p-8 md:p-10 relative overflow-hidden group">
+<div class="absolute inset-0 bg-gradient-to-br from-tertiary-container/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+<div class="flex items-center gap-4 mb-8">
+<div class="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Profile</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Your personal information</p>
+</div>
+</div>
+<div class="flex flex-col md:flex-row gap-10 items-start">
+<div class="relative group/avatar cursor-pointer">
+<div class="w-32 h-32 rounded-full overflow-hidden border-2 border-surface-container ring-1 ring-outline-variant shadow-sm relative">
+<img class="w-full h-full object-cover" data-alt="A high-quality portrait photograph of a South Asian male professional in his early 30s. He has dark, neatly styled short hair and a well-maintained beard. He wears a subtle, textured dark casual shirt. The lighting is studio-grade, providing soft, flattering illumination against a clean, neutral background, embodying a sophisticated, modern tech-financial aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuABtua2WiQ0tUl4fR0xrfCH0PbZvEyLxwdVUXyPjKSV_sFSfgB0lUQlUJtH4FgNwXi4nWrnXSdY3tY31Z5YGJT1Xuqm8eO6DuhpYqF_HTWTrlVjNbmwA7aimWhJ8RoNr0ngUpFXFC3nTAWHL4ZBM05MJTX29F_ZkzJSy-o_bd74Y92cThuc9U7NHMSPIVKIYVEXH2vJ0ezKRm2_5hNofyr-LwO9bIdWYf6qCehLVI-I8RQA4jrSlGNwIg"/>
+<div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-200">
+<span class="material-symbols-outlined text-white">photo_camera</span>
+</div>
+</div>
+</div>
+<div class="flex-1 w-full grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+<div class="flex flex-col gap-2">
+<label class="font-label-md text-label-md text-on-surface-variant">First Name</label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-DEFAULT px-4 py-3 font-body-md text-body-md text-on-surface focus:border-tertiary focus:ring-1 focus:ring-tertiary transition-colors outline-none hover:border-outline" type="text" value="usman"/>
+</div>
+<div class="flex flex-col gap-2">
+<label class="font-label-md text-label-md text-on-surface-variant">Last Name</label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-DEFAULT px-4 py-3 font-body-md text-body-md text-on-surface focus:border-tertiary focus:ring-1 focus:ring-tertiary transition-colors outline-none hover:border-outline" type="text" value="ashraf"/>
+</div>
+<div class="flex flex-col gap-2 md:col-span-2">
+<label class="font-label-md text-label-md text-on-surface-variant">Email</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">mail</span>
+<input class="w-full bg-surface-container border border-outline-variant rounded-DEFAULT pl-12 pr-4 py-3 font-body-md text-body-md text-on-surface-variant cursor-not-allowed opacity-70 outline-none" disabled="" type="email" value="osmanashruf@gmail.com"/>
+</div>
+<span class="font-label-sm text-label-sm text-outline mt-1">Email cannot be changed</span>
+</div>
+</div>
+</div>
+</section>
+<section class="bg-surface-container-lowest border border-outline-variant rounded-xl p-8 md:p-10 relative overflow-hidden group">
+<div class="absolute inset-0 bg-gradient-to-br from-tertiary-container/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+<div class="flex items-center gap-4 mb-8">
+<div class="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">settings</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Settings</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Manage your application preferences</p>
+</div>
+</div>
+<div class="max-w-xl">
+<h4 class="font-body-lg text-body-lg text-on-surface mb-2 font-semibold">Default Currency</h4>
+<p class="font-body-md text-body-md text-on-surface-variant mb-4">This currency will be pre-selected when creating new expenses and budgets.</p>
+<div class="relative">
+<select class="w-full appearance-none bg-surface-container-lowest border border-outline-variant rounded-DEFAULT pl-10 pr-12 py-3 font-body-md text-body-md text-on-surface focus:border-tertiary focus:ring-1 focus:ring-tertiary transition-colors outline-none hover:border-outline cursor-pointer">
+<option selected="" value="PKR">PKR - Pakistani Rupee</option>
+<option value="USD">USD - US Dollar</option>
+<option value="EUR">EUR - Euro</option>
+<option value="GBP">GBP - British Pound</option>
+</select>
+<span class="font-body-md text-body-md text-on-surface font-semibold absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">Rs</span>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-outline pointer-events-none">expand_more</span>
+</div>
+</div>
+</section>
+</div>
+<div class="mt-12 flex flex-col-reverse md:flex-row justify-between items-center gap-6 border-t border-outline-variant/50 pt-8">
+<button class="w-full md:w-auto px-6 py-3 rounded-full bg-error text-on-error font-label-md text-label-md flex items-center justify-center gap-2 hover:bg-on-error-container hover:text-white transition-colors duration-200">
+<span class="material-symbols-outlined text-sm">logout</span>
+                    Log Out
+                </button>
+<button class="w-full md:w-auto px-8 py-3 rounded-full bg-secondary text-on-secondary font-label-md text-label-md flex items-center justify-center gap-2 hover:bg-on-secondary-fixed hover:text-surface transition-colors duration-200 shadow-sm">
+<span class="material-symbols-outlined text-sm">save</span>
+                    Save All Changes
+                </button>
+</div>
+</main>
+</div>
+</body></html>

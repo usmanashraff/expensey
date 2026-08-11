@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Capital Ledger | Master Your Financial Narrative</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Playfair+Display:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-surface": "#171c1f",
+                    "on-tertiary-container": "#5d758b",
+                    "on-surface-variant": "#444749",
+                    "surface-container-lowest": "#ffffff",
+                    "on-background": "#171c1f",
+                    "secondary": "#5b5f63",
+                    "on-secondary-container": "#5f6368",
+                    "background": "#f6fafe",
+                    "surface-variant": "#dfe3e7",
+                    "on-primary-container": "#707273",
+                    "on-secondary-fixed": "#181c20",
+                    "on-primary": "#ffffff",
+                    "on-error": "#ffffff",
+                    "on-secondary-fixed-variant": "#43474c",
+                    "tertiary-fixed": "#cce5ff",
+                    "outline": "#747879",
+                    "secondary-fixed": "#e0e3e8",
+                    "tertiary": "#496177",
+                    "surface-container-high": "#e5e9ed",
+                    "tertiary-fixed-dim": "#b0c9e3",
+                    "surface": "#f6fafe",
+                    "primary-fixed-dim": "#c5c7c8",
+                    "surface-dim": "#d6dade",
+                    "outline-variant": "#c4c7c8",
+                    "on-secondary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "on-primary-fixed": "#191c1d",
+                    "on-tertiary": "#ffffff",
+                    "on-primary-fixed-variant": "#454748",
+                    "secondary-container": "#dde0e5",
+                    "on-tertiary-fixed": "#011d31",
+                    "inverse-primary": "#c5c7c8",
+                    "primary-container": "#f8f9fa",
+                    "primary-fixed": "#e1e3e4",
+                    "surface-container-highest": "#dfe3e7",
+                    "inverse-surface": "#2c3134",
+                    "primary": "#5c5f60",
+                    "surface-tint": "#5c5f60",
+                    "surface-container-low": "#f0f4f8",
+                    "surface-bright": "#f6fafe",
+                    "error-container": "#ffdad6",
+                    "surface-container": "#eaeef2",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-fixed-variant": "#31495e",
+                    "inverse-on-surface": "#edf1f5",
+                    "secondary-fixed-dim": "#c3c7cc",
+                    "tertiary-container": "#f6f9ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-mobile": "16px",
+                    "gutter": "24px",
+                    "container-max": "1280px",
+                    "unit": "8px",
+                    "margin-desktop": "64px"
+            },
+            "fontFamily": {
+                    "headline-lg": [
+                            "Playfair Display"
+                    ],
+                    "body-md": [
+                            "Inter"
+                    ],
+                    "body-lg": [
+                            "Inter"
+                    ],
+                    "headline-md": [
+                            "Playfair Display"
+                    ],
+                    "label-sm": [
+                            "Inter"
+                    ],
+                    "headline-lg-mobile": [
+                            "Playfair Display"
+                    ],
+                    "display-lg": [
+                            "Playfair Display"
+                    ],
+                    "label-md": [
+                            "Inter"
+                    ]
+            },
+            "fontSize": {
+                    "headline-lg": [
+                            "32px",
+                            {
+                                    "lineHeight": "40px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "body-lg": [
+                            "18px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-md": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "label-sm": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "headline-lg-mobile": [
+                            "28px",
+                            {
+                                    "lineHeight": "36px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "display-lg": [
+                            "48px",
+                            {
+                                    "lineHeight": "56px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "label-md": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "letterSpacing": "0.05em",
+                                    "fontWeight": "600"
+                            }
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .fill-icon {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        /* Smooth Scroll & Animations */
+        html { scroll-behavior: smooth; }
+        
+        .fade-up {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .fade-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Glassmorphism */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-x-hidden selection:bg-tertiary-fixed selection:text-on-tertiary-fixed">
+<!-- Navigation -->
+<nav class="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-md border-b border-outline-variant/50 h-20 transition-all duration-300" id="mainNav">
+<div class="max-w-[1280px] mx-auto px-6 h-full flex justify-between items-center">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-3xl">account_balance</span>
+<span class="font-display-lg text-display-lg text-on-surface tracking-tight" style="font-size: 24px; line-height: 1;">Capital Ledger</span>
+</div>
+<div class="hidden md:flex items-center gap-8">
+<a class="font-label-md text-label-md text-secondary hover:text-on-surface transition-colors" href="#features">Features</a>
+<a class="font-label-md text-label-md text-secondary hover:text-on-surface transition-colors" href="#insights">AI Insights</a>
+<a class="font-label-md text-label-md text-secondary hover:text-on-surface transition-colors" href="#testimonials">Clients</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="hidden md:block font-label-md text-label-md text-secondary hover:text-on-surface transition-colors px-4 py-2">Log In</button>
+<button class="bg-[#212529] text-white font-label-md text-label-md px-6 py-2.5 rounded-full hover:bg-opacity-90 transition-all">Get Started</button>
+</div>
+</div>
+</nav>
+<!-- Hero Section -->
+<section class="relative min-h-[90vh] flex items-center pt-20 overflow-hidden">
+<!-- Shader Background -->
+<!-- STITCH_SHADER_START:ANIMATION_16 class="absolute inset-0 w-full h-full -z-10 opacity-40" -->
+<div class="absolute inset-0 w-full h-full -z-10 opacity-40" style="display:block;">
+<canvas id="shader-canvas-ANIMATION_16" style="display:block;width:100%;height:100%"></canvas>
+<script>
+(function() {
+  const canvas = document.getElementById('shader-canvas-ANIMATION_16');
+
+  // Sync the WebGL drawing-buffer size with the CSS-driven layout size.
+  // This fires on initial layout and whenever the element is resized.
+  function syncSize() {
+    const w = canvas.clientWidth  || 1280;
+    const h = canvas.clientHeight || 720;
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width  = w;
+      canvas.height = h;
+    }
+  }
+  if (typeof ResizeObserver !== 'undefined') {
+    new ResizeObserver(syncSize).observe(canvas);
+  }
+  syncSize();
+
+  const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+  if (!gl) return;
+  const vs = `attribute vec2 a_position;
+varying vec2 v_texCoord;
+void main() {
+  v_texCoord = a_position * 0.5 + 0.5;
+  gl_Position = vec4(a_position, 0.0, 1.0);
+}`;
+  const fs = `precision highp float;
+varying vec2 v_texCoord;
+uniform float u_time;
+uniform vec2 u_resolution;
+
+void main() {
+    vec2 uv = v_texCoord;
+    
+    // Create a very subtle, slow-moving grain/noise effect for texture
+    float noise = fraction(sin(dot(uv, vec2(12.9898, 78.233))) * 43758.5453);
+    
+    // Soft, ethereal gradient shift
+    vec3 color1 = vec3(0.97, 0.98, 0.98); // #f8f9fa equivalent
+    vec3 color2 = vec3(0.94, 0.95, 0.96); // subtle grey
+    
+    float wave = sin(uv.x * 2.0 + u_time * 0.2) * cos(uv.y * 2.0 + u_time * 0.1);
+    vec3 finalColor = mix(color1, color2, wave * 0.1 + 0.1);
+    
+    // Add micro-texture
+    finalColor += (noise - 0.5) * 0.01;
+    
+    gl_FragColor = vec4(finalColor, 1.0);
+}
+
+float fraction(float x) { return x - floor(x); }
+`;
+  function cs(type, src) {
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    return s;
+  }
+  const prog = gl.createProgram();
+  gl.attachShader(prog, cs(gl.VERTEX_SHADER, vs));
+  gl.attachShader(prog, cs(gl.FRAGMENT_SHADER, fs));
+  gl.linkProgram(prog);
+  gl.useProgram(prog);
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+  const pos = gl.getAttribLocation(prog, 'a_position');
+  gl.enableVertexAttribArray(pos);
+  gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
+  const uTime = gl.getUniformLocation(prog, 'u_time');
+  const uRes = gl.getUniformLocation(prog, 'u_resolution');
+  const uMouse = gl.getUniformLocation(prog, 'u_mouse');
+
+  // u_mouse is in pixel coordinates matching u_resolution (ShaderToy convention).
+  // Shaders that need normalized coords should use: u_mouse / u_resolution.
+  let mouse = { x: canvas.width / 2, y: canvas.height / 2 };
+  window.addEventListener('mousemove', (event) => {
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width && rect.height) {
+      const nx = (event.clientX - rect.left) / rect.width;
+      const ny = 1.0 - (event.clientY - rect.top) / rect.height;
+      mouse.x = nx * canvas.width;
+      mouse.y = ny * canvas.height;
+    }
+  });
+
+  function render(t) {
+    if (typeof ResizeObserver === 'undefined') syncSize();
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    if (uTime) gl.uniform1f(uTime, t * 0.001);
+    if (uRes) gl.uniform2f(uRes, canvas.width, canvas.height);
+    if (uMouse) gl.uniform2f(uMouse, mouse.x, mouse.y);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    requestAnimationFrame(render);
+  }
+  render(0);
+})();
+</script>
+</div>
+<!-- STITCH_SHADER_END:ANIMATION_16 -->
+<div class="max-w-[1280px] mx-auto px-6 w-full grid md:grid-cols-2 gap-12 items-center relative z-10">
+<div class="fade-up pr-0 md:pr-12">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container-high border border-outline-variant/50 mb-6">
+<span class="material-symbols-outlined text-sm text-tertiary">psychology</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Intelligent Asset Management</span>
+</div>
+<h1 class="font-display-lg text-display-lg text-on-surface mb-6 leading-[1.1]">
+                    Master Your <br/>
+<span class="text-tertiary">Financial Narrative</span>
+</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-10 max-w-lg">
+                    Elevate your wealth strategy with precise AI-driven insights, rigorous tracking, and a unified ledger designed for the sophisticated portfolio.
+                </p>
+<div class="flex flex-col sm:flex-row gap-4">
+<button class="bg-[#212529] text-white font-label-md text-label-md px-8 py-4 rounded-full hover:bg-opacity-90 transition-all shadow-sm flex items-center justify-center gap-2 group">
+                        Get Started
+                        <span class="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+<button class="border border-[#DEE2E6] text-on-surface font-label-md text-label-md px-8 py-4 rounded-full hover:bg-surface-container-low transition-all flex items-center justify-center gap-2">
+                        View Demo
+                    </button>
+</div>
+</div>
+<div class="fade-up relative h-[500px] rounded-xl overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.08)] border border-outline-variant/30 hidden md:block">
+<img alt="Professional workspace" class="object-cover w-full h-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDrTxBNRe_bNjlT8Ku2WpNjEt0CBwT7d9M91mBYBNNHH2Ke6YRUsFHhXdbISe5IKN_cmZWQXs20K44WeibxJA1cyHLbgPigiOMOQbjpgCClgOcr92VZ0_8hVoUqB16trbgHOQXTe3HIhYzt0S98qeVoTC76fnmvF_1JqFTftM58Ge218uzwy_hKUgltZ7butUKtr0C4lPEl777dtjQ02oItzC1jiL8puR3oF7Pi5k5hbQqC4U8qPPm7-A"/>
+<!-- Floating Glass Card -->
+<div class="absolute bottom-8 left-8 right-8 glass-panel rounded-xl p-6 flex items-center justify-between">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant mb-1">Portfolio Value</p>
+<p class="font-headline-md text-headline-md text-on-surface">$2.4M</p>
+</div>
+<div class="h-12 w-24 relative">
+<!-- Simulated Sparkline -->
+<svg class="w-full h-full stroke-tertiary fill-none" stroke-linecap="round" stroke-width="2" viewbox="0 0 100 40">
+<path d="M0,30 Q20,35 40,20 T80,15 T100,5"></path>
+</svg>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Value Proposition -->
+<section class="py-24 bg-surface-container-lowest" id="features">
+<div class="max-w-[1280px] mx-auto px-6">
+<div class="grid md:grid-cols-3 gap-8">
+<!-- Track -->
+<div class="fade-up p-8 rounded-xl bg-surface border border-[#DEE2E6] hover:-translate-y-1 transition-transform duration-300">
+<div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-on-surface">monitoring</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-3">Track</h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                        Consolidate disparate financial data into a singular, immutable ledger. High-fidelity categorization ensures perfect clarity on every transaction.
+                    </p>
+</div>
+<!-- Analyze -->
+<div class="fade-up p-8 rounded-xl bg-surface border border-[#DEE2E6] hover:-translate-y-1 transition-transform duration-300 delay-100">
+<div class="w-12 h-12 rounded-full bg-tertiary-container flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-tertiary">query_stats</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-3">Analyze</h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                        Deploy institutional-grade visual analytics to identify subtle patterns in expenditure and cash flow velocity across all connected accounts.
+                    </p>
+</div>
+<!-- Optimize -->
+<div class="fade-up p-8 rounded-xl bg-surface border border-[#DEE2E6] hover:-translate-y-1 transition-transform duration-300 delay-200">
+<div class="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-on-secondary-container">tune</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-3">Optimize</h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                        Leverage predictive modeling to optimize asset allocation, intelligently manage debt structures, and maximize long-term portfolio resilience.
+                    </p>
+</div>
+</div>
+</div>
+</section>
+<!-- Detailed Features (Bento Grid) -->
+<section class="py-24 bg-surface" id="insights">
+<div class="max-w-[1280px] mx-auto px-6">
+<div class="text-center max-w-2xl mx-auto mb-16 fade-up">
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-4">Precision Instrumentation</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                    Capital Ledger replaces fragmented spreadsheets with a cohesive, beautifully engineered environment designed for decisive financial action.
+                </p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6 auto-rows-[320px]">
+<!-- AI Insights (Large Card) -->
+<div class="fade-up md:col-span-8 bg-surface-container-lowest border border-[#DEE2E6] rounded-xl p-8 relative overflow-hidden group hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.05)] transition-all">
+<div class="relative z-10 w-full md:w-2/3">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-tertiary-container text-tertiary mb-4">
+<span class="material-symbols-outlined text-[14px]">psychology</span>
+<span class="font-label-sm text-label-sm">AI-Powered</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-3">Strategic Insights</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6">
+                            Our proprietary engine continuously analyzes your ledger, surfacing actionable intelligence regarding anomalous spending, tax optimization opportunities, and automated forecast adjustments.
+                        </p>
+<a class="inline-flex items-center gap-2 font-label-md text-label-md text-tertiary hover:text-on-surface transition-colors" href="#">
+                            Explore Capabilities <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</a>
+</div>
+<!-- Abstract decorative element -->
+<div class="absolute -right-20 -bottom-20 w-80 h-80 bg-tertiary/5 rounded-full blur-3xl group-hover:bg-tertiary/10 transition-colors duration-700"></div>
+</div>
+<!-- Visual Analytics (Small Card) -->
+<div class="fade-up md:col-span-4 bg-surface-container-lowest border border-[#DEE2E6] rounded-xl p-8 flex flex-col justify-between group hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.05)] transition-all delay-100">
+<div>
+<span class="material-symbols-outlined text-on-surface mb-4 text-3xl">donut_large</span>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-2" style="font-size: 20px;">Visual Clarity</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">
+                            Complex data structures distilled into elegant, highly readable charts.
+                        </p>
+</div>
+<!-- Mini chart representation -->
+<div class="w-full h-24 flex items-end gap-2 mt-4 opacity-70">
+<div class="w-full bg-surface-variant rounded-t-sm h-[40%] group-hover:h-[50%] transition-all duration-500"></div>
+<div class="w-full bg-surface-variant rounded-t-sm h-[60%] group-hover:h-[70%] transition-all duration-500 delay-75"></div>
+<div class="w-full bg-tertiary rounded-t-sm h-[85%] group-hover:h-[95%] transition-all duration-500 delay-150"></div>
+<div class="w-full bg-surface-variant rounded-t-sm h-[30%] group-hover:h-[40%] transition-all duration-500 delay-200"></div>
+</div>
+</div>
+<!-- Loan Management -->
+<div class="fade-up md:col-span-12 bg-surface-container-lowest border border-[#DEE2E6] rounded-xl p-8 flex flex-col md:flex-row items-center gap-12 group hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.05)] transition-all delay-200">
+<div class="w-full md:w-1/2">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-3">Liability Architecture</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6">
+                            Centralize mortgages, auto loans, and revolving credit. Model payoff scenarios, track amortization schedules in real-time, and optimize your debt-to-equity ratios systematically.
+                        </p>
+<div class="flex gap-4">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Total Liabilities</span>
+<span class="font-headline-md text-headline-md text-on-surface" style="font-size: 20px;">$842,000</span>
+</div>
+<div class="w-[1px] bg-[#DEE2E6] self-stretch"></div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Avg Interest</span>
+<span class="font-headline-md text-headline-md text-on-surface" style="font-size: 20px;">4.2%</span>
+</div>
+</div>
+</div>
+<div class="w-full md:w-1/2 h-full min-h-[200px] bg-surface-container rounded-lg border border-outline-variant/30 flex items-center justify-center relative overflow-hidden">
+<div class="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+<!-- Abstract UI representation -->
+<div class="w-3/4 h-24 bg-white/80 backdrop-blur-sm border border-[#DEE2E6] rounded-md shadow-sm p-4 relative z-10 flex flex-col justify-between">
+<div class="w-1/3 h-2 bg-surface-variant rounded-full"></div>
+<div class="w-full h-8 bg-surface-variant rounded-sm flex overflow-hidden">
+<div class="w-[30%] h-full bg-tertiary"></div>
+<div class="w-[70%] h-full bg-surface-container-high"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Social Proof / Human Touch -->
+<section class="py-32 bg-surface-container-lowest" id="testimonials">
+<div class="max-w-4xl mx-auto px-6 text-center">
+<span class="material-symbols-outlined text-4xl text-tertiary mb-8 fade-up fill-icon">format_quote</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface leading-tight mb-8 fade-up delay-100" style="font-size: 36px; line-height: 1.3;">
+                "Capital Ledger brought editorial clarity to our complex family office structures. It is less a software tool and more a disciplined financial partner."
+            </h2>
+<div class="fade-up delay-200">
+<p class="font-label-md text-label-md text-on-surface">Eleanor Vance</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">Managing Director, Vanguard Partners</p>
+</div>
+</div>
+</section>
+<!-- Final CTA -->
+<section class="py-24 bg-surface border-t border-[#DEE2E6]">
+<div class="max-w-[1280px] mx-auto px-6 text-center fade-up">
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-6">Begin Your Ledger</h2>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-lg mx-auto mb-10">
+                Join thousands of disciplined professionals managing their wealth with unparalleled clarity and precision.
+            </p>
+<button class="bg-[#212529] text-white font-label-md text-label-md px-10 py-4 rounded-full hover:bg-opacity-90 transition-all shadow-sm">
+                Create Account
+            </button>
+</div>
+</section>
+<!-- Footer -->
+<footer class="bg-surface-container-lowest py-12 border-t border-[#DEE2E6]">
+<div class="max-w-[1280px] mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface-variant">account_balance</span>
+<span class="font-label-md text-label-md text-on-surface-variant">Capital Ledger © 2024</span>
+</div>
+<div class="flex gap-6">
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface transition-colors" href="#">Privacy</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface transition-colors" href="#">Terms</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface transition-colors" href="#">Security</a>
+</div>
+</div>
+</footer>
+<!-- Intersection Observer for Fade-Up Animations -->
+<script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.1
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.fade-up').forEach(el => {
+                observer.observe(el);
+            });
+            
+            // Simple nav background transition on scroll
+            const nav = document.getElementById('mainNav');
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 50) {
+                    nav.classList.add('shadow-sm');
+                } else {
+                    nav.classList.remove('shadow-sm');
+                }
+            });
+        });
+    </script>
+</body></html>

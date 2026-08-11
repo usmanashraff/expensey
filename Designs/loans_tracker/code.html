@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Loans Tracker - Capital Ledger</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Playfair+Display:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "background": "#f6fafe",
+                        "on-secondary-fixed": "#181c20",
+                        "inverse-primary": "#c5c7c8",
+                        "tertiary-container": "#f6f9ff",
+                        "surface-tint": "#5c5f60",
+                        "secondary-fixed": "#e0e3e8",
+                        "surface-bright": "#f6fafe",
+                        "on-surface-variant": "#444749",
+                        "on-secondary": "#ffffff",
+                        "surface-container": "#eaeef2",
+                        "on-primary-container": "#707273",
+                        "outline-variant": "#c4c7c8",
+                        "outline": "#747879",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-container": "#5d758b",
+                        "inverse-on-surface": "#edf1f5",
+                        "surface-container-highest": "#dfe3e7",
+                        "inverse-surface": "#2c3134",
+                        "secondary-fixed-dim": "#c3c7cc",
+                        "secondary": "#5b5f63",
+                        "primary-container": "#f8f9fa",
+                        "on-error": "#ffffff",
+                        "primary-fixed-dim": "#c5c7c8",
+                        "primary-fixed": "#e1e3e4",
+                        "surface": "#f6fafe",
+                        "primary": "#5c5f60",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-fixed-variant": "#43474c",
+                        "on-tertiary-fixed-variant": "#31495e",
+                        "tertiary-fixed": "#cce5ff",
+                        "tertiary": "#496177",
+                        "surface-variant": "#dfe3e7",
+                        "secondary-container": "#dde0e5",
+                        "surface-dim": "#d6dade",
+                        "on-secondary-container": "#5f6368",
+                        "on-surface": "#171c1f",
+                        "on-primary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-background": "#171c1f",
+                        "on-primary-fixed": "#191c1d",
+                        "tertiary-fixed-dim": "#b0c9e3",
+                        "error": "#ba1a1a",
+                        "surface-container-high": "#e5e9ed",
+                        "surface-container-low": "#f0f4f8",
+                        "on-tertiary-fixed": "#011d31",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed-variant": "#454748"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-max": "1280px",
+                        "margin-mobile": "16px",
+                        "gutter": "24px",
+                        "unit": "8px",
+                        "margin-desktop": "64px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "display-lg": ["Playfair Display"],
+                        "headline-md": ["Playfair Display"],
+                        "headline-lg": ["Playfair Display"],
+                        "headline-lg-mobile": ["Playfair Display"],
+                        "label-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased min-h-screen flex">
+<!-- SideNavBar -->
+<nav class="bg-surface dark:bg-inverse-surface border-r border-outline-variant dark:border-outline flat no shadows flex flex-col h-screen w-64 fixed left-0 top-0 py-8 px-6 hidden md:flex z-40">
+<div class="mb-12">
+<h1 class="font-display-lg text-display-lg text-on-surface dark:text-inverse-on-surface tracking-tight leading-none">Capital Ledger</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-2">Premium Asset Management</p>
+</div>
+<ul class="flex flex-col space-y-2 flex-grow">
+<li>
+<a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-secondary dark:text-secondary-fixed-dim hover:text-on-surface dark:hover:text-inverse-on-surface hover:bg-surface-container dark:hover:bg-surface-container-highest transition-colors duration-200 opacity-90 transition-all font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</a>
+</li>
+<li>
+<a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-secondary dark:text-secondary-fixed-dim hover:text-on-surface dark:hover:text-inverse-on-surface hover:bg-surface-container dark:hover:bg-surface-container-highest transition-colors duration-200 opacity-90 transition-all font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span>Finance</span>
+</a>
+</li>
+<li>
+<a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-secondary dark:text-secondary-fixed-dim hover:text-on-surface dark:hover:text-inverse-on-surface hover:bg-surface-container dark:hover:bg-surface-container-highest transition-colors duration-200 opacity-90 transition-all font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="monitoring">monitoring</span>
+<span>Charts</span>
+</a>
+</li>
+<li>
+<a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-on-secondary-fixed font-semibold border-r-4 border-on-secondary-fixed dark:border-secondary-fixed bg-secondary-container/10 hover:bg-surface-container dark:hover:bg-surface-container-highest transition-colors duration-200 opacity-90 transition-all font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="account_balance">account_balance</span>
+<span>Loans</span>
+</a>
+</li>
+<li>
+<a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-secondary dark:text-secondary-fixed-dim hover:text-on-surface dark:hover:text-inverse-on-surface hover:bg-surface-container dark:hover:bg-surface-container-highest transition-colors duration-200 opacity-90 transition-all font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="settings_applications">settings_applications</span>
+<span>Manage Utilities</span>
+</a>
+</li>
+<li>
+<a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-secondary dark:text-secondary-fixed-dim hover:text-on-surface dark:hover:text-inverse-on-surface hover:bg-surface-container dark:hover:bg-surface-container-highest transition-colors duration-200 opacity-90 transition-all font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="psychology">psychology</span>
+<span>AI Insights</span>
+</a>
+</li>
+</ul>
+<div class="mt-auto flex items-center space-x-3 px-4 py-3">
+<img class="w-10 h-10 rounded-full object-cover border border-outline-variant" data-alt="A small, high-quality corporate headshot of a professional user in a minimalist bright setting, functioning as a user profile portrait in a premium financial application." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCTgLTEtDNWFUKu-9DDwI3O_Qw6ijTzmT70VXgO7T5yRDSTKs6uH9v9nCWWhSBK9H8ugtDWufvJrfO8wCCf4q4kuJN2NEnih_x7lj7oG3yMmFGRCe-DBJcdXiRnqdiEHm2ISgyxDof8xBAcDqr-MjFI-pIqAyOJSDGGTpsUPwOAnIzoqtoREffmliMHq1p_4nHzrh8vB0oRkOWqDnSC2lG881aYZz2qs10479JtTViKC2DPLJgfsbFogw"/>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Preferences</span>
+<span class="font-label-md text-label-md text-on-surface truncate w-32">Administrator</span>
+</div>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 ml-0 md:ml-64 flex flex-col min-h-screen">
+<!-- TopNavBar -->
+<header class="bg-background dark:bg-background bg-background/80 backdrop-blur-md border-b border-outline-variant/50 flat no shadows docked full-width top-0 h-20 flex justify-between items-center px-6 md:px-12 sticky z-30">
+<div class="flex items-center space-x-4">
+<h2 class="font-headline-md text-headline-md text-primary dark:text-primary-fixed-dim">Loans Tracker</h2>
+</div>
+<div class="flex items-center space-x-6">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 text-on-surface-variant text-[20px]" data-icon="search">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container rounded-full border border-outline-variant focus:ring-1 focus:ring-outline transition-all font-body-md text-body-md text-on-surface w-64 focus:outline-none" placeholder="Search..." type="text"/>
+</div>
+<button class="text-secondary dark:text-secondary-fixed-dim hover:text-on-secondary-fixed dark:hover:text-secondary-fixed transition-colors">
+<span class="material-symbols-outlined" data-icon="dark_mode">dark_mode</span>
+</button>
+<button class="text-secondary dark:text-secondary-fixed-dim hover:text-on-secondary-fixed dark:hover:text-secondary-fixed transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="text-secondary dark:text-secondary-fixed-dim hover:text-on-secondary-fixed dark:hover:text-secondary-fixed transition-colors">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</button>
+</div>
+</header>
+<!-- Page Content -->
+<main class="flex-1 p-6 md:p-8 lg:px-12 max-w-[1280px] w-full mx-auto">
+<!-- Header Section -->
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+<div>
+<h3 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="account_balance">account_balance</span>
+                        Loans Tracker
+                    </h3>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1 max-w-2xl">Manage given (lent) and taken (borrowed) loans. Releasing a loan updates your savings.</p>
+</div>
+<button class="bg-[#212529] text-white font-label-md text-label-md px-6 py-3 rounded-full flex items-center gap-2 hover:bg-black transition-colors whitespace-nowrap">
+<span class="material-symbols-outlined text-[20px]" data-icon="add">add</span>
+                    Add New Loan
+                </button>
+</div>
+<!-- Status Cards Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+<!-- Card 1 -->
+<div class="bg-surface rounded-xl p-6 border border-outline-variant flex flex-col justify-between min-h-[140px]">
+<div class="flex justify-between items-start">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Loans Given (To Collect)</span>
+<span class="material-symbols-outlined text-tertiary" data-icon="call_made">call_made</span>
+</div>
+<div>
+<div class="font-headline-lg text-headline-lg text-on-surface mt-4">PKR 26,700</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant mt-1">2 active given loans</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container rounded-xl p-6 border border-outline-variant flex flex-col justify-between min-h-[140px]">
+<div class="flex justify-between items-start">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Loans Taken (To Pay)</span>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="call_received">call_received</span>
+</div>
+<div>
+<div class="font-headline-lg text-headline-lg text-on-surface mt-4">PKR 0</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant mt-1">0 active taken loans</div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container-low rounded-xl p-6 border border-outline-variant flex flex-col justify-between min-h-[140px]">
+<div class="flex justify-between items-start">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Net Loan Position</span>
+<span class="material-symbols-outlined text-primary" data-icon="account_balance">account_balance</span>
+</div>
+<div>
+<div class="font-headline-lg text-headline-lg text-on-surface mt-4">PKR 26,700</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant mt-1">Net Receivable</div>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant flex flex-col justify-between min-h-[140px]">
+<div class="flex justify-between items-start">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Released / Settled</span>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="check_circle">check_circle</span>
+</div>
+<div>
+<div class="font-headline-lg text-headline-lg text-on-surface mt-4">1</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant mt-1">Completed loan transactions</div>
+</div>
+</div>
+</div>
+<!-- Overview Section -->
+<div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+<h4 class="font-headline-md text-headline-md text-on-surface">Loans Overview</h4>
+<div class="flex bg-surface-container rounded-full p-1 border border-outline-variant">
+<button class="px-4 py-1.5 rounded-full bg-white shadow-[0_4px_32px_rgba(0,0,0,0.04)] text-on-surface font-label-md text-label-md">All</button>
+<button class="px-4 py-1.5 rounded-full text-on-surface-variant hover:text-on-surface font-label-md text-label-md transition-colors">Given</button>
+<button class="px-4 py-1.5 rounded-full text-on-surface-variant hover:text-on-surface font-label-md text-label-md transition-colors">Taken</button>
+<button class="px-4 py-1.5 rounded-full text-on-surface-variant hover:text-on-surface font-label-md text-label-md transition-colors">Released</button>
+</div>
+</div>
+<!-- List -->
+<div class="space-y-4">
+<!-- Item 1 -->
+<div class="bg-white rounded-xl border border-outline-variant p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+<div class="flex-1">
+<div class="flex items-center gap-3 mb-2">
+<h5 class="font-body-lg text-body-lg text-on-surface font-medium">Awais Abid</h5>
+<span class="bg-surface-container px-2 py-1 rounded-full font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+                                Taken (To Pay)
+                            </span>
+<span class="bg-tertiary/10 px-2 py-1 rounded-full font-label-sm text-label-sm text-tertiary flex items-center gap-1 border border-tertiary/20">
+<span class="material-symbols-outlined text-[14px]" data-icon="check_circle">check_circle</span>
+                                Released
+                            </span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">split of pizza that we had</p>
+<div class="flex items-center gap-2 mt-2 font-label-sm text-label-sm text-outline">
+<span>Date: Aug 8, 2026</span>
+<span>•</span>
+<span class="text-tertiary">Released on: Aug 10, 2026</span>
+</div>
+</div>
+<div class="flex items-center gap-6 w-full md:w-auto justify-between md:justify-end">
+<div class="font-headline-md text-headline-md text-on-surface">PKR 500</div>
+<button class="text-outline hover:text-error transition-colors p-2">
+<span class="material-symbols-outlined" data-icon="delete">delete</span>
+</button>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="bg-white rounded-xl border border-outline-variant p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+<div class="flex-1">
+<div class="flex items-center gap-3 mb-2">
+<h5 class="font-body-lg text-body-lg text-on-surface font-medium">Father</h5>
+<span class="bg-surface-container px-2 py-1 rounded-full font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+                                Given (To Collect)
+                            </span>
+<span class="bg-surface-container px-2 py-1 rounded-full font-label-sm text-label-sm text-on-surface flex items-center gap-1 border border-outline-variant">
+<span class="material-symbols-outlined text-[14px]" data-icon="pending">pending</span>
+                                Active (Pending)
+                            </span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Took for loan payment and other utils</p>
+<div class="flex items-center gap-2 mt-2 font-label-sm text-label-sm text-outline">
+<span>Date: Jul 30, 2026</span>
+</div>
+</div>
+<div class="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end flex-wrap">
+<div class="font-headline-md text-headline-md text-on-surface mr-2">PKR 25,000</div>
+<button class="border border-tertiary text-tertiary font-label-md text-label-md px-4 py-2 rounded-full flex items-center gap-2 hover:bg-tertiary hover:text-white transition-colors whitespace-nowrap">
+<span class="material-symbols-outlined text-[18px]" data-icon="check_circle">check_circle</span>
+                            Release Loan
+                        </button>
+<button class="text-outline hover:text-error transition-colors p-2">
+<span class="material-symbols-outlined" data-icon="delete">delete</span>
+</button>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="bg-white rounded-xl border border-outline-variant p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+<div class="flex-1">
+<div class="flex items-center gap-3 mb-2">
+<h5 class="font-body-lg text-body-lg text-on-surface font-medium">Ameer Hamza</h5>
+<span class="bg-surface-container px-2 py-1 rounded-full font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+                                Given (To Collect)
+                            </span>
+<span class="bg-surface-container px-2 py-1 rounded-full font-label-sm text-label-sm text-on-surface flex items-center gap-1 border border-outline-variant">
+<span class="material-symbols-outlined text-[14px]" data-icon="pending">pending</span>
+                                Active (Pending)
+                            </span>
+</div>
+<div class="flex items-center gap-2 mt-2 font-label-sm text-label-sm text-outline">
+<span>Date: Jul 22, 2026</span>
+</div>
+</div>
+<div class="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end flex-wrap">
+<div class="font-headline-md text-headline-md text-on-surface mr-2">PKR 1,700</div>
+<button class="border border-tertiary text-tertiary font-label-md text-label-md px-4 py-2 rounded-full flex items-center gap-2 hover:bg-tertiary hover:text-white transition-colors whitespace-nowrap">
+<span class="material-symbols-outlined text-[18px]" data-icon="check_circle">check_circle</span>
+                            Release Loan
+                        </button>
+<button class="text-outline hover:text-error transition-colors p-2">
+<span class="material-symbols-outlined" data-icon="delete">delete</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

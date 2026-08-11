@@ -2291,7 +2291,7 @@ export function ExpenseList({
 
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-0 sm:space-y-6">
       {/* Monthly Summary Card - Only rendered on Dashboard view */}
       {activeMenu === 'dashboard' && (
         <Card className="relative bg-[#ffffff] dark:bg-[#14171a] border border-outline-variant rounded-xl overflow-hidden shadow-sm hover:border-[#496177]/50 transition-colors p-6 sm:p-8">
@@ -2319,7 +2319,7 @@ export function ExpenseList({
                   {showAmounts ? <span className="material-symbols-outlined text-[18px]">visibility_off</span> : <span className="material-symbols-outlined text-[18px]">visibility</span>}
                 </Button>
               </div>
-              <div className="flex items-center gap-2 justify-center sm:justify-end">
+              <div className="flex items-center gap-2 justify-start sm:justify-end">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -2566,19 +2566,6 @@ export function ExpenseList({
                 </motion.div>
               </div>
             </div>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-              <CardDescription className="text-sm font-sans font-medium text-on-surface-variant">
-                Your spending breakdown for {monthName}
-              </CardDescription>
-              <BudgetDialog
-                selectedMonth={selectedMonth}
-                selectedYear={selectedYear}
-                onBudgetUpdated={() => {
-                  fetchBudget()
-                  fetchExpenses()
-                }}
-              />
-            </div>
           </CardHeader>
           <CardContent className="relative z-10">
             {monthLoading && !optimisticUpdateActive ? (
@@ -2599,7 +2586,7 @@ export function ExpenseList({
                     transition={{ duration: 0.3 }}
                   >
                     <p className="font-sans text-sm text-on-surface-variant mb-1 font-medium">Total Expenses</p>
-                    <p className="font-sans text-lg sm:text-2xl font-bold text-on-surface">
+                    <p className="font-sans text-base sm:text-2xl font-bold text-on-surface">
                       {formatAmount(totalExpenses, 'PKR')}
                     </p>
                   </motion.div>
@@ -2612,7 +2599,7 @@ export function ExpenseList({
                       transition={{ duration: 0.3, delay: index * 0.1 }}
                     >
                       <p className="font-sans text-sm text-on-surface-variant mb-1 font-medium">{config.label}</p>
-                      <p className="font-sans text-base sm:text-xl font-bold text-on-surface">
+                      <p className="font-sans text-sm sm:text-xl font-bold text-on-surface">
                         {formatAmount(expensesByCategory[key] || 0, 'PKR')}
                       </p>
                     </motion.div>
@@ -2646,7 +2633,7 @@ export function ExpenseList({
                           <span className="material-symbols-outlined text-[16px]">edit</span>
                         </Button>
                       </div>
-                      <p className="font-sans text-base sm:text-xl font-bold text-on-surface">
+                      <p className="font-sans text-sm sm:text-xl font-bold text-on-surface">
                         {formatAmount(optimisticMonthlySavings, 'PKR')}
                       </p>
                     </motion.div>
@@ -2668,7 +2655,7 @@ export function ExpenseList({
                           <span className="material-symbols-outlined text-[16px]">edit</span>
                         </Button>
                       </div>
-                      <p className="font-sans text-base sm:text-xl font-bold text-on-surface">
+                      <p className="font-sans text-sm sm:text-xl font-bold text-on-surface">
                         {formatAmount(totalSavings, 'PKR')}
                       </p>
                     </motion.div>
@@ -2702,7 +2689,7 @@ export function ExpenseList({
       )}
 
       {/* Render appropriate content based on activeMenu */}
-      <div className="space-y-6">
+      <div className="space-y-0 sm:space-y-6">
         {activeMenu === 'dashboard' && renderExpensesContent()}
 
         {activeMenu === 'finance' && (

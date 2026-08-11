@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Capital Ledger - Charts</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Playfair+Display:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "background": "#f6fafe",
+                        "on-secondary-fixed": "#181c20",
+                        "inverse-primary": "#c5c7c8",
+                        "tertiary-container": "#f6f9ff",
+                        "surface-tint": "#5c5f60",
+                        "secondary-fixed": "#e0e3e8",
+                        "surface-bright": "#f6fafe",
+                        "on-surface-variant": "#444749",
+                        "on-secondary": "#ffffff",
+                        "surface-container": "#eaeef2",
+                        "on-primary-container": "#707273",
+                        "outline-variant": "#c4c7c8",
+                        "outline": "#747879",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-container": "#5d758b",
+                        "inverse-on-surface": "#edf1f5",
+                        "surface-container-highest": "#dfe3e7",
+                        "inverse-surface": "#2c3134",
+                        "secondary-fixed-dim": "#c3c7cc",
+                        "secondary": "#5b5f63",
+                        "primary-container": "#f8f9fa",
+                        "on-error": "#ffffff",
+                        "primary-fixed-dim": "#c5c7c8",
+                        "primary-fixed": "#e1e3e4",
+                        "surface": "#f6fafe",
+                        "primary": "#5c5f60",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-fixed-variant": "#43474c",
+                        "on-tertiary-fixed-variant": "#31495e",
+                        "tertiary-fixed": "#cce5ff",
+                        "tertiary": "#496177",
+                        "surface-variant": "#dfe3e7",
+                        "secondary-container": "#dde0e5",
+                        "surface-dim": "#d6dade",
+                        "on-secondary-container": "#5f6368",
+                        "on-surface": "#171c1f",
+                        "on-primary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-background": "#171c1f",
+                        "on-primary-fixed": "#191c1d",
+                        "tertiary-fixed-dim": "#b0c9e3",
+                        "error": "#ba1a1a",
+                        "surface-container-high": "#e5e9ed",
+                        "surface-container-low": "#f0f4f8",
+                        "on-tertiary-fixed": "#011d31",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed-variant": "#454748"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-max": "1280px",
+                        "margin-mobile": "16px",
+                        "gutter": "24px",
+                        "unit": "8px",
+                        "margin-desktop": "64px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "display-lg": ["Playfair Display"],
+                        "headline-md": ["Playfair Display"],
+                        "headline-lg": ["Playfair Display"],
+                        "headline-lg-mobile": ["Playfair Display"],
+                        "label-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased flex">
+<!-- SideNavBar -->
+<nav class="hidden md:flex bg-surface border-r border-outline-variant flex-col h-screen w-64 fixed left-0 top-0 py-8 px-6 z-20">
+<div class="mb-10">
+<h1 class="font-display-lg text-display-lg text-on-surface tracking-tight leading-none mb-2">Capital Ledger</h1>
+<p class="font-body-md text-body-md text-secondary">Premium Asset Management</p>
+</div>
+<div class="flex-1 space-y-2">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-secondary hover:bg-surface-container hover:text-on-surface transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-secondary hover:bg-surface-container hover:text-on-surface transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span class="font-label-md text-label-md">Finance</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-secondary-fixed font-semibold border-r-4 border-on-secondary-fixed bg-secondary-container/10 transition-all opacity-90" href="#">
+<span class="material-symbols-outlined" data-icon="monitoring">monitoring</span>
+<span class="font-label-md text-label-md">Charts</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-secondary hover:bg-surface-container hover:text-on-surface transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="account_balance">account_balance</span>
+<span class="font-label-md text-label-md">Loans</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-secondary hover:bg-surface-container hover:text-on-surface transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings_applications">settings_applications</span>
+<span class="font-label-md text-label-md">Manage Utilities</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-secondary hover:bg-surface-container hover:text-on-surface transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="psychology">psychology</span>
+<span class="font-label-md text-label-md">AI Insights</span>
+</a>
+</div>
+<div class="mt-auto pt-6 border-t border-outline-variant flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-container-high overflow-hidden shrink-0">
+<img class="w-full h-full object-cover" data-alt="A highly detailed professional headshot of a corporate executive in a softly lit, modern office environment. The image uses a cool, muted color palette consistent with premium financial branding. The focus is sharp on the subject, exuding authority and quiet confidence." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBTNdNtDcd0uU_5Rlm0-4lASiZ4rymL-NCgfNkzhUo0kTcdjlO536tZtAra52kH2uICja5ae2jKQkcB6XHoEVwNVrWqVqO6xssW0vefRdjChast1AYfGv09quPZq-3U0VWdPZkSqGanwjn46g2Iuihq9Eq49bkCRDtj1FZjj5Up1aYB0h6mOsDlobnLLPSDZxoCnM__yk8fYjhLlgNfNdHBoudp2FlEyEZh7GkKFalkp9PnYGX9RFjE2w"/>
+</div>
+<div class="flex-1 min-w-0">
+<p class="font-label-md text-label-md text-on-surface truncate">Admin User</p>
+<p class="font-label-sm text-label-sm text-secondary truncate">admin@capitalledger.com</p>
+</div>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 md:ml-64 min-h-screen relative">
+<!-- TopNavBar -->
+<header class="hidden md:flex bg-background/80 backdrop-blur-md border-b border-outline-variant/50 docked full-width top-0 h-20 justify-between items-center px-12 w-full sticky z-10">
+<div class="font-headline-md text-headline-md text-on-surface">Visual Analytics</div>
+<div class="flex items-center gap-6">
+<div class="relative hidden lg:block focus-within:ring-1 focus-within:ring-outline rounded-full transition-all">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary text-sm">search</span>
+<input class="w-64 bg-surface-container-low border border-outline-variant rounded-full py-2 pl-10 pr-4 text-sm focus:outline-none focus:border-tertiary focus:ring-1 focus:ring-tertiary/50 transition-all font-body-md text-body-md text-on-surface placeholder:text-secondary" placeholder="Search analytics..." type="text"/>
+</div>
+<div class="flex items-center gap-4 text-secondary">
+<button class="hover:text-on-secondary-fixed transition-colors"><span class="material-symbols-outlined" data-icon="dark_mode">dark_mode</span></button>
+<button class="hover:text-on-secondary-fixed transition-colors relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="hover:text-on-secondary-fixed transition-colors"><span class="material-symbols-outlined" data-icon="help">help</span></button>
+</div>
+</div>
+</header>
+<!-- Content Canvas -->
+<div class="p-6 md:p-12 max-w-[1280px] mx-auto space-y-12">
+<!-- Category Analytics Section -->
+<section class="space-y-6">
+<div class="flex items-center gap-3 border-b border-outline-variant/50 pb-4">
+<div class="w-10 h-10 rounded-full bg-secondary-container/30 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined">donut_large</span>
+</div>
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Category Analytics</h2>
+<p class="font-body-md text-body-md text-secondary">Visual representation of your financial data</p>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+<!-- Expense Distribution (Bento/Card) -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-8 flex flex-col h-[400px]">
+<div>
+<h3 class="font-label-md text-label-md text-on-surface mb-1">Expense Distribution</h3>
+<p class="font-label-sm text-label-sm text-secondary">Percentage breakdown by category</p>
+</div>
+<div class="flex-1 flex items-center justify-center relative">
+<!-- Placeholder for actual chart -->
+<div class="w-48 h-48 rounded-full border-[24px] border-tertiary border-r-surface-tint border-b-secondary-fixed border-l-outline relative opacity-90">
+<div class="absolute inset-0 m-auto w-24 h-24 rounded-full bg-surface-container-lowest"></div>
+</div>
+</div>
+<div class="flex justify-center gap-6 mt-4">
+<div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-tertiary"></span><span class="font-label-sm text-label-sm text-secondary">Needs: 48.2%</span></div>
+<div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-surface-tint"></span><span class="font-label-sm text-label-sm text-secondary">Wants: 34.6%</span></div>
+<div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-outline"></span><span class="font-label-sm text-label-sm text-secondary">Dev: 17.1%</span></div>
+</div>
+</div>
+<!-- Category Analysis (Bento/Card) -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-8 flex flex-col h-[400px]">
+<div>
+<h3 class="font-label-md text-label-md text-on-surface mb-1">Category Analysis</h3>
+<p class="font-label-sm text-label-sm text-secondary">Amount spent in each category</p>
+</div>
+<div class="flex-1 flex items-center justify-center">
+<!-- Placeholder for actual radial chart -->
+<div class="w-48 h-48 relative flex justify-center items-center">
+<div class="absolute w-full h-full rounded-full border-[12px] border-tertiary/20 border-t-tertiary"></div>
+<div class="absolute w-40 h-40 rounded-full border-[12px] border-surface-tint/20 border-r-surface-tint"></div>
+<div class="absolute w-32 h-32 rounded-full border-[12px] border-outline/20 border-b-outline"></div>
+</div>
+</div>
+<div class="space-y-2 mt-4">
+<div class="flex justify-between items-center"><div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-tertiary"></span><span class="font-label-sm text-label-sm text-secondary">Needs</span></div><span class="font-label-sm text-label-sm text-on-surface">PKR 4790</span></div>
+<div class="flex justify-between items-center"><div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-surface-tint"></span><span class="font-label-sm text-label-sm text-secondary">Wants</span></div><span class="font-label-sm text-label-sm text-on-surface">PKR 3440</span></div>
+<div class="flex justify-between items-center"><div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-outline"></span><span class="font-label-sm text-label-sm text-secondary">Self Development</span></div><span class="font-label-sm text-label-sm text-on-surface">PKR 1700</span></div>
+</div>
+</div>
+</div>
+<!-- Savings Over Time (Full width card) -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-8">
+<div class="mb-6">
+<h3 class="font-label-md text-label-md text-on-surface mb-1">Savings Over Time</h3>
+<p class="font-label-sm text-label-sm text-secondary">Your savings journey - Total saved: PKR 105000</p>
+</div>
+<div class="h-64 relative w-full border-l border-b border-outline-variant/30">
+<!-- Abstract area chart representation -->
+<div class="absolute bottom-0 left-0 right-0 h-full bg-gradient-to-t from-tertiary/10 to-transparent clip-path-chart"></div>
+<svg class="absolute inset-0 w-full h-full" preserveaspectratio="none" viewbox="0 0 100 100">
+<path d="M0,80 Q25,75 50,40 T100,10 L100,100 L0,100 Z" fill="rgba(73, 97, 119, 0.05)"></path>
+<path d="M0,80 Q25,75 50,40 T100,10" fill="none" stroke="#496177" stroke-width="0.5"></path>
+<path d="M0,90 Q30,85 60,95 T100,90 L100,100 L0,100 Z" fill="rgba(92, 95, 96, 0.05)"></path>
+<path d="M0,90 Q30,85 60,95 T100,90" fill="none" stroke="#5c5f60" stroke-width="0.5"></path>
+</svg>
+</div>
+<div class="flex justify-center gap-8 mt-6">
+<div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-tertiary"></span><span class="font-label-sm text-label-sm text-secondary">Total Savings (Cumulative)</span></div>
+<div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-surface-tint"></span><span class="font-label-sm text-label-sm text-secondary">Monthly Contributions</span></div>
+</div>
+</div>
+</section>
+<!-- Utility Analytics Section -->
+<section class="space-y-6">
+<div class="flex items-center gap-3 border-b border-outline-variant/50 pb-4">
+<div class="w-10 h-10 rounded-full bg-surface-tint/10 flex items-center justify-center text-surface-tint">
+<span class="material-symbols-outlined">bolt</span>
+</div>
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Utility Analytics</h2>
+<p class="font-body-md text-body-md text-secondary">Breakdown of your spending by utility type</p>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Interactive Overview (2 cols) -->
+<div class="lg:col-span-2 bg-surface-container-lowest border border-outline-variant rounded-xl p-8">
+<div class="mb-6">
+<h3 class="font-label-md text-label-md text-on-surface mb-1">Utility Analytics</h3>
+<p class="font-label-sm text-label-sm text-secondary">Interactive spending overview by utility type</p>
+</div>
+<div class="h-64 relative w-full border-l border-b border-outline-variant/30 flex items-end">
+<svg class="absolute inset-0 w-full h-full" preserveaspectratio="none" viewbox="0 0 100 100">
+<path d="M0,20 C15,20 25,20 30,80 L100,80 L100,100 L0,100 Z" fill="rgba(92, 95, 96, 0.1)"></path>
+<path d="M0,20 C15,20 25,20 30,80 L100,80" fill="none" stroke="#5c5f60" stroke-width="1"></path>
+</svg>
+</div>
+</div>
+<!-- Relative Spending (Radar) -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-8 flex flex-col items-center">
+<div class="w-full mb-6">
+<h3 class="font-label-md text-label-md text-on-surface mb-1">Utility Distribution</h3>
+<p class="font-label-sm text-label-sm text-secondary">Relative spending across utilities</p>
+</div>
+<div class="flex-1 flex items-center justify-center w-full">
+<!-- Abstract radar chart -->
+<div class="relative w-48 h-48 border border-outline-variant/30 rounded-full flex justify-center items-center">
+<div class="absolute w-32 h-32 border border-outline-variant/30 rounded-full"></div>
+<div class="absolute w-16 h-16 border border-outline-variant/30 rounded-full"></div>
+<!-- Polygon -->
+<svg class="absolute inset-0 w-full h-full" viewbox="0 0 100 100">
+<polygon fill="rgba(73, 97, 119, 0.2)" points="50,20 70,40 60,70 40,60 40,30" stroke="#496177" stroke-width="1"></polygon>
+</svg>
+</div>
+</div>
+</div>
+</div>
+<!-- Utility Breakdown Grid -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-8">
+<div class="mb-6">
+<h3 class="font-label-md text-label-md text-on-surface mb-1">Utility Breakdown</h3>
+<p class="font-label-sm text-label-sm text-secondary">Detailed spending by utility type</p>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+<!-- Card 1 -->
+<div class="border border-outline-variant/50 rounded-lg p-4 text-center hover:bg-surface-container-lowest transition-colors bg-background">
+<div class="w-2 h-2 rounded-full bg-tertiary mx-auto mb-2"></div>
+<div class="font-label-sm text-label-sm text-secondary mb-1">Lifestyle</div>
+<div class="font-headline-md text-headline-md text-on-surface">PKR 4890</div>
+<div class="font-label-sm text-label-sm text-outline mt-1">49.2%</div>
+</div>
+<!-- Card 2 -->
+<div class="border border-outline-variant/50 rounded-lg p-4 text-center hover:bg-surface-container-lowest transition-colors bg-background">
+<div class="w-2 h-2 rounded-full bg-surface-tint mx-auto mb-2"></div>
+<div class="font-label-sm text-label-sm text-secondary mb-1">Bills</div>
+<div class="font-headline-md text-headline-md text-on-surface">PKR 4500</div>
+<div class="font-label-sm text-label-sm text-outline mt-1">45.3%</div>
+</div>
+<!-- Card 3 -->
+<div class="border border-outline-variant/50 rounded-lg p-4 text-center hover:bg-surface-container-lowest transition-colors bg-background">
+<div class="w-2 h-2 rounded-full bg-outline mx-auto mb-2"></div>
+<div class="font-label-sm text-label-sm text-secondary mb-1">Fruits</div>
+<div class="font-headline-md text-headline-md text-on-surface">PKR 150</div>
+<div class="font-label-sm text-label-sm text-outline mt-1">1.5%</div>
+</div>
+<!-- Card 4 -->
+<div class="border border-outline-variant/50 rounded-lg p-4 text-center hover:bg-surface-container-lowest transition-colors bg-background">
+<div class="w-2 h-2 rounded-full bg-secondary mx-auto mb-2"></div>
+<div class="font-label-sm text-label-sm text-secondary mb-1">haleem</div>
+<div class="font-headline-md text-headline-md text-on-surface">PKR 100</div>
+<div class="font-label-sm text-label-sm text-outline mt-1">1.0%</div>
+</div>
+<!-- Card 5 -->
+<div class="border border-outline-variant/50 rounded-lg p-4 text-center hover:bg-surface-container-lowest transition-colors bg-background">
+<div class="w-2 h-2 rounded-full bg-secondary mx-auto mb-2"></div>
+<div class="font-label-sm text-label-sm text-secondary mb-1">eggs</div>
+<div class="font-headline-md text-headline-md text-on-surface">PKR 100</div>
+<div class="font-label-sm text-label-sm text-outline mt-1">1.0%</div>
+</div>
+<!-- Card 6 -->
+<div class="border border-outline-variant/50 rounded-lg p-4 text-center hover:bg-surface-container-lowest transition-colors bg-background">
+<div class="w-2 h-2 rounded-full bg-secondary mx-auto mb-2"></div>
+<div class="font-label-sm text-label-sm text-secondary mb-1">Outside Food, Snacks</div>
+<div class="font-headline-md text-headline-md text-on-surface">PKR 100</div>
+<div class="font-label-sm text-label-sm text-outline mt-1">1.0%</div>
+</div>
+<!-- Card 7 -->
+<div class="border border-outline-variant/50 rounded-lg p-4 text-center hover:bg-surface-container-lowest transition-colors bg-background">
+<div class="w-2 h-2 rounded-full bg-secondary mx-auto mb-2"></div>
+<div class="font-label-sm text-label-sm text-secondary mb-1">Misc</div>
+<div class="font-headline-md text-headline-md text-on-surface">PKR 50</div>
+<div class="font-label-sm text-label-sm text-outline mt-1">0.5%</div>
+</div>
+<!-- Card 8 -->
+<div class="border border-outline-variant/50 rounded-lg p-4 text-center hover:bg-surface-container-lowest transition-colors bg-background">
+<div class="w-2 h-2 rounded-full bg-secondary mx-auto mb-2"></div>
+<div class="font-label-sm text-label-sm text-secondary mb-1">home utils</div>
+<div class="font-headline-md text-headline-md text-on-surface">PKR 40</div>
+<div class="font-label-sm text-label-sm text-outline mt-1">0.4%</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+</body></html>

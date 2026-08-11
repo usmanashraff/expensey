@@ -238,11 +238,7 @@ export function FinanceOverview({
           {/* Subtle background decorative element */}
           <div className="absolute inset-0 bg-gradient-to-br from-[#f6f9ff]/30 dark:from-[#f6f9ff]/5 to-transparent pointer-events-none"></div>
           <div className="relative z-10">
-            <div className="flex justify-between items-center mb-8">
-              <h3 className="font-serif-heading text-2xl font-medium text-on-surface flex items-center gap-2">
-                <span className="material-symbols-outlined text-tertiary dark:text-on-surface">health_and_safety</span>
-                {monthName} Financial Health
-              </h3>
+            <div className="flex justify-end items-center mb-6">
               <button 
                 onClick={onToggleAmounts}
                 className="text-on-surface-variant hover:text-on-surface transition-colors"
@@ -252,7 +248,7 @@ export function FinanceOverview({
             </div>
 
             {/* Metrics Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-10">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
               <div className="bg-[#f0f4f8] dark:bg-[#14171a] border border-outline-variant/50 rounded-xl p-5 hover:bg-surface-container transition-colors duration-200">
                 <div className="flex items-center gap-2 text-on-surface-variant font-sans text-sm font-semibold mb-2">
                   <span className="material-symbols-outlined text-[16px] text-[#212529] dark:text-[#f6fafe]">south_east</span> Income

@@ -199,16 +199,7 @@ export function LoansManager({ onSavingsChange, showAmounts = true }: LoansManag
   return (
     <div className="space-y-6">
       {/* Header Section */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-        <div>
-          <h3 className="font-serif-heading text-2xl md:text-3xl font-semibold text-on-surface flex items-center gap-2">
-            <span className="material-symbols-outlined text-tertiary dark:text-on-surface">account_balance</span>
-            Loans Tracker
-          </h3>
-          <p className="font-sans text-base text-on-surface-variant mt-1 max-w-2xl">
-            Manage given (lent) and taken (borrowed) loans. Releasing a loan updates your savings.
-          </p>
-        </div>
+      <div className="flex justify-end items-center mb-6 gap-4">
         <div className="flex items-center gap-2">
           <button
             onClick={() => setIsAmountVisible(!isAmountVisible)}

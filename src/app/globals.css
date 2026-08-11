@@ -16,6 +16,7 @@
   --font-label-md: 'Inter', sans-serif;
   --font-label-sm: 'Inter', sans-serif;
   
+  --color-surface: var(--surface);
   --color-surface-container-lowest: var(--surface-container-lowest);
   --color-surface-container-low: var(--surface-container-low);
   --color-surface-container: var(--surface-container);
@@ -100,6 +101,7 @@
   --surface-container: #eaeef2;
   --surface-container-high: #e5e9ed;
   --surface-container-highest: #dfe3e7;
+  --surface: #f6fafe;
   --on-surface: #171c1f;
   --on-surface-variant: #444749;
   --surface-variant: #dfe3e7;
@@ -144,6 +146,7 @@
   --surface-container: #24282c;
   --surface-container-high: #2c3134;
   --surface-container-highest: #353a40;
+  --surface: #14171a;
   --on-surface: #f6fafe;
   --on-surface-variant: #c5c7c8;
   --surface-variant: #353a40;

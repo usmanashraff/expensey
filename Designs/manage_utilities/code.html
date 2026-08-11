@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Manage Utilities - Capital Ledger</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Playfair+Display:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "background": "#f6fafe",
+                        "on-secondary-fixed": "#181c20",
+                        "inverse-primary": "#c5c7c8",
+                        "tertiary-container": "#f6f9ff",
+                        "surface-tint": "#5c5f60",
+                        "secondary-fixed": "#e0e3e8",
+                        "surface-bright": "#f6fafe",
+                        "on-surface-variant": "#444749",
+                        "on-secondary": "#ffffff",
+                        "surface-container": "#eaeef2",
+                        "on-primary-container": "#707273",
+                        "outline-variant": "#c4c7c8",
+                        "outline": "#747879",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-container": "#5d758b",
+                        "inverse-on-surface": "#edf1f5",
+                        "surface-container-highest": "#dfe3e7",
+                        "inverse-surface": "#2c3134",
+                        "secondary-fixed-dim": "#c3c7cc",
+                        "secondary": "#5b5f63",
+                        "primary-container": "#f8f9fa",
+                        "on-error": "#ffffff",
+                        "primary-fixed-dim": "#c5c7c8",
+                        "primary-fixed": "#e1e3e4",
+                        "surface": "#f6fafe",
+                        "primary": "#5c5f60",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-fixed-variant": "#43474c",
+                        "on-tertiary-fixed-variant": "#31495e",
+                        "tertiary-fixed": "#cce5ff",
+                        "tertiary": "#496177",
+                        "surface-variant": "#dfe3e7",
+                        "secondary-container": "#dde0e5",
+                        "surface-dim": "#d6dade",
+                        "on-secondary-container": "#5f6368",
+                        "on-surface": "#171c1f",
+                        "on-primary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-background": "#171c1f",
+                        "on-primary-fixed": "#191c1d",
+                        "tertiary-fixed-dim": "#b0c9e3",
+                        "error": "#ba1a1a",
+                        "surface-container-high": "#e5e9ed",
+                        "surface-container-low": "#f0f4f8",
+                        "on-tertiary-fixed": "#011d31",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed-variant": "#454748"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-max": "1280px",
+                        "margin-mobile": "16px",
+                        "gutter": "24px",
+                        "unit": "8px",
+                        "margin-desktop": "64px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "display-lg": ["Playfair Display"],
+                        "headline-md": ["Playfair Display"],
+                        "headline-lg": ["Playfair Display"],
+                        "headline-lg-mobile": ["Playfair Display"],
+                        "label-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased h-screen overflow-hidden flex">
+<!-- SideNavBar -->
+<nav aria-label="Sidebar Navigation" class="h-screen w-64 fixed left-0 top-0 border-r border-outline-variant dark:border-outline bg-surface dark:bg-inverse-surface flex flex-col py-8 px-6 z-20 hidden md:flex">
+<div class="mb-12 flex items-center gap-3">
+<span class="material-symbols-outlined text-4xl text-primary" data-weight="fill" style="font-variation-settings: 'FILL' 1;">account_balance</span>
+<div>
+<h1 class="font-display-lg text-headline-md text-on-surface dark:text-inverse-on-surface tracking-tight leading-none">Capital Ledger</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">Premium Asset Management</p>
+</div>
+</div>
+<ul class="flex flex-col gap-2 flex-grow">
+<!-- Dashboard -->
+<li>
+<a class="flex items-center gap-4 px-4 py-3 rounded-DEFAULT text-secondary dark:text-secondary-fixed-dim hover:text-on-surface dark:hover:text-inverse-on-surface hover:bg-surface-container dark:hover:bg-surface-container-highest transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+</li>
+<!-- Finance -->
+<li>
+<a class="flex items-center gap-4 px-4 py-3 rounded-DEFAULT text-secondary dark:text-secondary-fixed-dim hover:text-on-surface dark:hover:text-inverse-on-surface hover:bg-surface-container dark:hover:bg-surface-container-highest transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-label-md text-label-md">Finance</span>
+</a>
+</li>
+<!-- Charts -->
+<li>
+<a class="flex items-center gap-4 px-4 py-3 rounded-DEFAULT text-secondary dark:text-secondary-fixed-dim hover:text-on-surface dark:hover:text-inverse-on-surface hover:bg-surface-container dark:hover:bg-surface-container-highest transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">monitoring</span>
+<span class="font-label-md text-label-md">Charts</span>
+</a>
+</li>
+<!-- Loans -->
+<li>
+<a class="flex items-center gap-4 px-4 py-3 rounded-DEFAULT text-secondary dark:text-secondary-fixed-dim hover:text-on-surface dark:hover:text-inverse-on-surface hover:bg-surface-container dark:hover:bg-surface-container-highest transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">account_balance</span>
+<span class="font-label-md text-label-md">Loans</span>
+</a>
+</li>
+<!-- Manage Utilities (Active) -->
+<li>
+<a aria-current="page" class="flex items-center gap-4 px-4 py-3 rounded-DEFAULT text-on-secondary-fixed font-semibold border-r-4 border-on-secondary-fixed dark:border-secondary-fixed bg-secondary-container/10 opacity-90 transition-all" href="#">
+<span class="material-symbols-outlined">settings_applications</span>
+<span class="font-label-md text-label-md">Manage Utilities</span>
+</a>
+</li>
+<!-- AI Insights -->
+<li>
+<a class="flex items-center gap-4 px-4 py-3 rounded-DEFAULT text-secondary dark:text-secondary-fixed-dim hover:text-on-surface dark:hover:text-inverse-on-surface hover:bg-surface-container dark:hover:bg-surface-container-highest transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">psychology</span>
+<span class="font-label-md text-label-md flex-grow">AI Insights</span>
+<span class="bg-tertiary text-on-tertiary text-[10px] font-bold px-1.5 py-0.5 rounded-sm">AI</span>
+</a>
+</li>
+</ul>
+<div class="mt-auto border-t border-outline-variant pt-6">
+<div class="flex items-center gap-4 px-4">
+<img alt="User profile portrait" class="w-10 h-10 rounded-full object-cover border border-outline-variant" data-alt="A small, high-quality, professional headshot photograph of a sophisticated administrator, brightly lit, looking directly at the camera, conveying trust and authority, isolated against a neutral studio background, suitable for a premium financial dashboard profile avatar." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCaGrnF-0cJU0eVVg39y-UHmxM5kPCT97TD373p3I8kgMUF_70NGNJ26jAZUkX14g4TyVLzRwElrYIkh6I6hZFCdB_VmM42gBiI_NdMi-JByrxFhucLGFBLoMYy6wfRFtEMP7u2DccPpot3KJw6Kyu2jOf8sdgopB5KMzG_kb8YfX7T9zdMEMLf0QX8Fu7JY168L3PCB_SO6CupueMmxpcrYo3zgQoahlqj-fO_9kB5qCWW8X_DBHR2dg"/>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Usman Ashraf</span>
+<span class="text-[10px] text-on-surface-variant uppercase tracking-wider mt-0.5">Administrator</span>
+</div>
+</div>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex flex-col flex-1 w-full md:ml-64 relative bg-background">
+<!-- TopNavBar -->
+<header class="docked full-width top-0 h-20 bg-background/80 backdrop-blur-md z-10 flex justify-between items-center px-6 md:px-12 w-full transition-all">
+<div class="flex items-center">
+<!-- Mobile Menu Button -->
+<button class="md:hidden mr-4 text-on-surface hover:text-on-secondary-fixed transition-colors">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h2 class="font-headline-md text-headline-md text-on-surface dark:text-inverse-on-surface font-bold tracking-tight">Manage Utilities</h2>
+</div>
+<div class="flex items-center gap-6">
+<!-- Search -->
+<div class="hidden lg:flex items-center bg-surface-container-low rounded-full px-4 py-2 border border-outline-variant/50 focus-within:ring-1 focus-within:ring-outline transition-all">
+<span class="material-symbols-outlined text-on-surface-variant mr-2 text-xl">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-md text-on-surface w-48 placeholder:text-on-surface-variant/70" placeholder="Search..." type="text"/>
+</div>
+<!-- Actions -->
+<div class="flex items-center gap-4">
+<button class="text-secondary dark:text-secondary-fixed-dim hover:text-on-secondary-fixed dark:hover:text-secondary-fixed transition-colors">
+<span class="material-symbols-outlined text-xl">dark_mode</span>
+</button>
+<button class="text-secondary dark:text-secondary-fixed-dim hover:text-on-secondary-fixed dark:hover:text-secondary-fixed transition-colors relative">
+<span class="material-symbols-outlined text-xl">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="text-secondary dark:text-secondary-fixed-dim hover:text-on-secondary-fixed dark:hover:text-secondary-fixed transition-colors">
+<span class="material-symbols-outlined text-xl">help</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Canvas -->
+<main class="flex-1 overflow-y-auto p-6 md:p-12">
+<div class="max-w-container-max mx-auto">
+<!-- Manage Utility Types Card -->
+<section class="bg-surface-container-lowest rounded-xl border border-outline-variant p-8 mb-8 relative overflow-hidden">
+<!-- Decorative subtle background element -->
+<div class="absolute top-0 right-0 w-64 h-64 bg-tertiary-fixed-dim/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
+<div class="relative z-10 flex flex-col md:flex-row md:items-center gap-6 mb-8 pb-8 border-b border-outline-variant/50">
+<div class="w-12 h-12 rounded-lg bg-tertiary-container flex items-center justify-center border border-tertiary-fixed-dim shrink-0">
+<span class="material-symbols-outlined text-tertiary text-2xl">settings_applications</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-1">Manage Utility Types</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Create and manage utility categories for financial categorization.</p>
+</div>
+</div>
+<!-- Input Section -->
+<div class="flex flex-col sm:flex-row gap-4 mb-8">
+<div class="relative flex-grow">
+<input class="w-full bg-surface-bright border border-outline-variant rounded-lg px-4 py-3 font-body-md text-on-surface focus:border-tertiary focus:ring-2 focus:ring-tertiary/20 transition-all shadow-sm" placeholder="Enter new utility type" type="text"/>
+</div>
+<button class="bg-[#212529] hover:bg-black text-white font-label-md text-label-md px-6 py-3 rounded-full flex items-center justify-center gap-2 transition-colors whitespace-nowrap shrink-0">
+<span class="material-symbols-outlined text-lg">add</span>
+                            Add
+                        </button>
+</div>
+<!-- List Section -->
+<div>
+<div class="flex justify-between items-center mb-6">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-lg">list</span>
+<span class="font-label-md text-label-md">Utility Types (13 total)</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-1 text-outline hover:text-on-surface transition-colors disabled:opacity-30" disabled="">
+<span class="material-symbols-outlined text-sm">chevron_left</span>
+</button>
+<span class="font-label-sm text-label-sm text-on-surface-variant">1 / 4</span>
+<button class="p-1 text-outline hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Utility Item -->
+<div class="bg-surface border border-outline-variant rounded-lg p-4 flex justify-between items-center hover:bg-surface-container-low hover:border-outline transition-all group">
+<span class="font-body-md text-on-surface">sent home</span>
+<button aria-label="Delete" class="text-error/70 hover:text-error hover:bg-error-container p-2 rounded-full transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 flex items-center justify-center">
+<span class="material-symbols-outlined text-lg">delete</span>
+</button>
+</div>
+<!-- Utility Item -->
+<div class="bg-surface border border-outline-variant rounded-lg p-4 flex justify-between items-center hover:bg-surface-container-low hover:border-outline transition-all group">
+<span class="font-body-md text-on-surface">Transport fare</span>
+<button aria-label="Delete" class="text-error/70 hover:text-error hover:bg-error-container p-2 rounded-full transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 flex items-center justify-center">
+<span class="material-symbols-outlined text-lg">delete</span>
+</button>
+</div>
+<!-- Utility Item -->
+<div class="bg-surface border border-outline-variant rounded-lg p-4 flex justify-between items-center hover:bg-surface-container-low hover:border-outline transition-all group">
+<span class="font-body-md text-on-surface">Outside Food, Snacks</span>
+<button aria-label="Delete" class="text-error/70 hover:text-error hover:bg-error-container p-2 rounded-full transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 flex items-center justify-center">
+<span class="material-symbols-outlined text-lg">delete</span>
+</button>
+</div>
+<!-- Utility Item -->
+<div class="bg-surface border border-outline-variant rounded-lg p-4 flex justify-between items-center hover:bg-surface-container-low hover:border-outline transition-all group">
+<span class="font-body-md text-on-surface">Fruits</span>
+<button aria-label="Delete" class="text-error/70 hover:text-error hover:bg-error-container p-2 rounded-full transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 flex items-center justify-center">
+<span class="material-symbols-outlined text-lg">delete</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+</div>
+</body></html>

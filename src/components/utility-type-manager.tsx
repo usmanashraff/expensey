@@ -135,25 +135,27 @@ export function UtilityTypeManager({ onUtilityTypesChanged, isInDialog = false, 
       {/* Decorative subtle background element */}
       <div className="absolute top-0 right-0 w-64 h-64 bg-[#b0c9e3]/20 dark:bg-[#b0c9e3]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
       
-      <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 pb-8 border-b border-outline-variant/50">
-        <div className="flex flex-col md:flex-row md:items-center gap-6">
-          <div className="w-12 h-12 rounded-lg bg-[#f6f9ff] dark:bg-[#14171a] flex items-center justify-center border border-[#b0c9e3] dark:border-[#353a40] shrink-0">
-            <span className="material-symbols-outlined text-tertiary dark:text-on-surface text-2xl">settings_applications</span>
+      {isInDialog && (
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 pb-8 border-b border-outline-variant/50">
+          <div className="flex flex-col md:flex-row md:items-center gap-6">
+            <div className="w-12 h-12 rounded-lg bg-[#f6f9ff] dark:bg-[#14171a] flex items-center justify-center border border-[#b0c9e3] dark:border-[#353a40] shrink-0">
+              <span className="material-symbols-outlined text-tertiary dark:text-on-surface text-2xl">settings_applications</span>
+            </div>
+            <div>
+              <h3 className="font-serif-heading text-2xl font-medium text-on-surface mb-1">Manage Utility Types</h3>
+              <p className="font-sans text-base text-on-surface-variant">Create and manage utility categories for financial categorization.</p>
+            </div>
           </div>
-          <div>
-            <h3 className="font-serif-heading text-2xl font-medium text-on-surface mb-1">Manage Utility Types</h3>
-            <p className="font-sans text-base text-on-surface-variant">Create and manage utility categories for financial categorization.</p>
-          </div>
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-full transition-colors self-start md:self-auto shrink-0"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          )}
         </div>
-        {isInDialog && onClose && (
-          <button
-            onClick={onClose}
-            className="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors rounded-full self-start md:self-auto"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        )}
-      </div>
+      )}
 
       <div className="relative z-10">
         {/* Input Section */}
