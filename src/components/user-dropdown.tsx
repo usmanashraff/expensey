@@ -59,45 +59,45 @@ export function UserDropdown({ user, isCollapsed = false }: UserDropdownProps) {
             </Avatar>
           </Button>
         ) : (
-          <Button variant="ghost" className="relative h-10 w-auto sm:w-full px-1.5 sm:px-2 justify-between gap-2">
-            <div className="flex items-center gap-2 overflow-hidden">
+          <Button variant="ghost" className="relative h-10 w-full px-2 justify-between gap-2 hover:bg-surface-container rounded-lg">
+            <div className="flex items-center gap-3 overflow-hidden">
               <Avatar className="h-8 w-8 shrink-0">
                 <AvatarImage 
                   src={user.picture || undefined} 
                   alt={userName}
                   className="object-cover"
                 />
-                <AvatarFallback className="text-xs">{userInitials}</AvatarFallback>
+                <AvatarFallback className="text-xs bg-[#eaeef2] text-[#171c1f] dark:bg-[#24282c] dark:text-[#f6fafe]">{userInitials}</AvatarFallback>
               </Avatar>
-              <span className="hidden sm:inline-block text-sm font-medium truncate">{userName}</span>
+              <span className="text-sm font-semibold text-on-surface truncate text-left">{userName}</span>
             </div>
-            <ChevronDown className="hidden sm:inline-block h-4 w-4 opacity-50 shrink-0" />
+            <span className="material-symbols-outlined text-sm text-[#5b5f63] shrink-0">expand_more</span>
           </Button>
         )}
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end" forceMount>
-        <DropdownMenuLabel className="font-normal">
+      <DropdownMenuContent className="w-56 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-lg p-1" align="end" forceMount>
+        <DropdownMenuLabel className="font-normal p-3">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{userName}</p>
-            <p className="text-xs leading-none text-muted-foreground">
+            <p className="font-sans text-sm font-semibold text-on-surface leading-none">{userName}</p>
+            <p className="font-sans text-xs leading-none text-on-surface-variant mt-1">
               {user.email}
             </p>
           </div>
         </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
+        <DropdownMenuSeparator className="bg-[#c4c7c8]/50 dark:bg-[#353a40] mx-1" />
+        <DropdownMenuItem asChild className="focus:bg-[#eaeef2] dark:focus:bg-[#24282c] cursor-pointer rounded-lg mx-1 my-1">
           <Link href="/settings" className="w-full">
-            <div className="flex items-center gap-2 text-muted-foreground cursor-pointer">
-              <Settings className="h-4 w-4" />
-              <span className="text-sm">Settings</span>
+            <div className="flex items-center gap-3 text-on-surface-variant hover:text-on-surface transition-colors py-1">
+              <span className="material-symbols-outlined text-[20px]">settings</span>
+              <span className="font-sans text-sm font-medium">Settings</span>
             </div>
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
-          <div className="flex items-center gap-2 text-destructive">
-            <LogOut className="h-4 w-4" />
-            <span className="text-sm">Log out</span>
+        <DropdownMenuSeparator className="bg-[#c4c7c8]/50 dark:bg-[#353a40] mx-1" />
+        <DropdownMenuItem onClick={handleLogout} className="focus:bg-[#ffdad6]/50 dark:focus:bg-[#93000a]/20 cursor-pointer rounded-lg mx-1 my-1">
+          <div className="flex items-center gap-3 text-[#ba1a1a] transition-colors py-1">
+            <span className="material-symbols-outlined text-[20px]">logout</span>
+            <span className="font-sans text-sm font-medium">Log out</span>
           </div>
         </DropdownMenuItem>
       </DropdownMenuContent>

@@ -3,13 +3,12 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
+import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { UserPlus, Eye, EyeOff, Loader2, ArrowRight } from 'lucide-react'
+import { Eye, EyeOff, Loader2 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { getCurrencyList } from '@/lib/currency'
 import { toast } from 'sonner'
@@ -77,173 +76,152 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-[oklch(0.13_0.02_250)] dark:via-[oklch(0.14_0.02_260)] dark:to-[oklch(0.15_0.02_270)] flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Background Blobs */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-20 -left-40 w-80 h-80 bg-purple-300 dark:bg-purple-600/20 rounded-full filter blur-3xl opacity-30 animate-blob" />
-        <div className="absolute bottom-20 -right-40 w-80 h-80 bg-blue-300 dark:bg-blue-600/20 rounded-full filter blur-3xl opacity-30 animate-blob animation-delay-2000" />
-      </div>
-
+    <div className="min-h-screen bg-surface flex items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md relative z-10"
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="w-full max-w-[500px]"
       >
-        <div className="text-center mb-6">
-          <Link href="/" className="inline-block hover:opacity-80 transition-opacity mb-3">
-            <Image
-              src="/logo.png"
-              alt="Expensey Logo"
-              width={100}
-              height={30}
-              className="object-contain mx-auto"
-              priority
-            />
+        <div className="text-center mb-8">
+          <Link href="/" className="inline-flex items-center justify-center gap-2 mb-4 hover:opacity-80 transition-opacity">
+            <span className="material-symbols-outlined text-primary text-3xl">account_balance</span>
+            <span className="font-display-lg text-[24px] font-bold text-on-surface tracking-tight">Expensey</span>
           </Link>
-          <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-            Create Account
+          <h1 className="font-display-lg text-[32px] font-bold text-on-surface mb-2 leading-tight">
+            Begin Your Ledger
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Start tracking expenses & savings with Expensey
+          <p className="font-body-md text-on-surface-variant">
+            Create an account to start managing your wealth
           </p>
         </div>
 
-        <Card className="backdrop-blur-xl bg-white/70 dark:bg-[oklch(0.2_0.02_250)]/60 border-white/30 dark:border-white/10 shadow-2xl rounded-3xl">
-          <CardHeader className="space-y-1 pb-4">
-            <CardTitle className="text-xl flex items-center gap-2">
-              <UserPlus className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-              Sign Up
-            </CardTitle>
-            <CardDescription>Enter your details below to register</CardDescription>
+        <Card className="bg-surface-container-lowest border-outline-variant shadow-sm rounded-xl overflow-hidden">
+          <CardHeader className="pb-6 border-b border-outline-variant/30 bg-surface/50 text-center">
+            <CardTitle className="font-headline-md text-xl font-bold text-on-surface">Account Setup</CardTitle>
+            <CardDescription className="text-on-surface-variant">Configure your institutional profile</CardDescription>
           </CardHeader>
 
-          <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-4">
-              {error && (
-                <div className="p-3 text-sm rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400">
-                  {error}
-                </div>
-              )}
-
-              {/* Name row */}
-              <div className="grid grid-cols-2 gap-3">
+          <form onSubmit={handleSubmit} className="p-6">
+            <div className="space-y-5">
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name *</Label>
+                  <Label className="text-on-surface font-semibold">First Name</Label>
                   <Input
-                    id="firstName"
-                    placeholder="John"
+                    placeholder="Eleanor"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
+                    className="bg-surface border-outline-variant focus:border-tertiary focus:ring-tertiary/20 text-on-surface h-12 rounded-lg"
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name</Label>
+                  <Label className="text-on-surface font-semibold">Last Name</Label>
                   <Input
-                    id="lastName"
-                    placeholder="Doe"
+                    placeholder="Vance"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
+                    className="bg-surface border-outline-variant focus:border-tertiary focus:ring-tertiary/20 text-on-surface h-12 rounded-lg"
                   />
                 </div>
               </div>
 
-              {/* Email */}
               <div className="space-y-2">
-                <Label htmlFor="email">Email Address *</Label>
+                <Label className="text-on-surface font-semibold">Email Address</Label>
                 <Input
-                  id="email"
                   type="email"
-                  placeholder="john@example.com"
+                  placeholder="eleanor@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  className="bg-surface border-outline-variant focus:border-tertiary focus:ring-tertiary/20 text-on-surface h-12 rounded-lg"
                   required
                 />
               </div>
 
-              {/* Default Currency */}
               <div className="space-y-2">
-                <Label htmlFor="defaultCurrency">Default Currency *</Label>
+                <Label className="text-on-surface font-semibold">Base Currency</Label>
                 <Select value={defaultCurrency} onValueChange={setDefaultCurrency}>
-                  <SelectTrigger id="defaultCurrency" className="w-full">
+                  <SelectTrigger className="bg-surface border-outline-variant focus:border-tertiary focus:ring-tertiary/20 text-on-surface h-12 rounded-lg">
                     <SelectValue placeholder="Select currency" />
                   </SelectTrigger>
-                  <SelectContent>
-                    {getCurrencyList().map((curr) => (
-                      <SelectItem key={curr.value} value={curr.value}>
-                        <span className="font-mono mr-2">{curr.symbol}</span>
-                        {curr.label}
+                  <SelectContent className="bg-surface-container-lowest border-outline-variant rounded-lg">
+                    {getCurrencyList().map((currency) => (
+                      <SelectItem 
+                        key={currency.value} 
+                        value={currency.value}
+                        className="hover:bg-surface focus:bg-surface text-on-surface cursor-pointer rounded-md my-0.5"
+                      >
+                        {currency.value} - {currency.label} ({currency.symbol})
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
-              {/* Password */}
               <div className="space-y-2">
-                <Label htmlFor="password">Password *</Label>
+                <Label className="text-on-surface font-semibold">Password</Label>
                 <div className="relative">
                   <Input
-                    id="password"
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="At least 6 characters"
+                    placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    className="bg-surface border-outline-variant focus:border-tertiary focus:ring-tertiary/20 text-on-surface h-12 rounded-lg pr-10"
                     required
                   />
-                  <Button
+                  <button
                     type="button"
-                    variant="ghost"
-                    size="icon"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface transition-colors"
                   >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </Button>
+                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
                 </div>
               </div>
 
-              {/* Confirm Password */}
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password *</Label>
+                <Label className="text-on-surface font-semibold">Confirm Password</Label>
                 <Input
-                  id="confirmPassword"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="Re-enter password"
+                  placeholder="••••••••"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="bg-surface border-outline-variant focus:border-tertiary focus:ring-tertiary/20 text-on-surface h-12 rounded-lg"
                   required
                 />
               </div>
-            </CardContent>
 
-            <CardFooter className="flex flex-col gap-4 pt-2">
+              {error && (
+                <div className="p-3 rounded-lg bg-[#ba1a1a]/10 border border-[#ba1a1a]/20 flex items-start gap-2">
+                  <span className="material-symbols-outlined text-[#ba1a1a] text-sm mt-0.5">error</span>
+                  <p className="text-sm text-[#ba1a1a] font-medium">{error}</p>
+                </div>
+              )}
+
               <Button
                 type="submit"
+                className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-lg shadow-sm mt-4"
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl shadow-lg h-11"
               >
                 {loading ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creating account...
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Initializing Account...
                   </>
                 ) : (
-                  <>
-                    Create Account
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </>
+                  'Create Account'
                 )}
               </Button>
-
-              <p className="text-xs text-center text-muted-foreground">
+            </div>
+            
+            <div className="mt-8 text-center border-t border-outline-variant/30 pt-6">
+              <p className="text-sm text-on-surface-variant">
                 Already have an account?{' '}
-                <Link href="/login" className="text-purple-600 dark:text-purple-400 font-semibold hover:underline">
-                  Sign in
+                <Link href="/login" className="text-tertiary hover:text-tertiary/80 font-semibold transition-colors">
+                  Sign In
                 </Link>
               </p>
-            </CardFooter>
+            </div>
           </form>
         </Card>
       </motion.div>

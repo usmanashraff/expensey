@@ -198,280 +198,226 @@ export function LoansManager({ onSavingsChange, showAmounts = true }: LoansManag
 
   return (
     <div className="space-y-6">
-      {/* Header with Add Button */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      {/* Header Section */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
-              <HandCoins className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-              Loans Tracker
-            </h2>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsAmountVisible(!isAmountVisible)}
-              className="h-8 w-8 text-muted-foreground hover:text-foreground rounded-lg"
-              title={isAmountVisible ? "Hide amounts" : "Show amounts"}
-            >
-              {isAmountVisible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-            </Button>
-          </div>
-          <p className="text-sm text-muted-foreground mt-0.5">
+          <h3 className="font-serif-heading text-2xl md:text-3xl font-semibold text-on-surface flex items-center gap-2">
+            <span className="material-symbols-outlined text-tertiary dark:text-on-surface">account_balance</span>
+            Loans Tracker
+          </h3>
+          <p className="font-sans text-base text-on-surface-variant mt-1 max-w-2xl">
             Manage given (lent) and taken (borrowed) loans. Releasing a loan updates your savings.
           </p>
         </div>
-        <Button
-          onClick={() => setShowAddDialog(true)}
-          className="bg-purple-600 hover:bg-purple-700 text-white shadow-md rounded-xl transition-colors"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Add New Loan
-        </Button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsAmountVisible(!isAmountVisible)}
+            className="p-3 text-on-surface-variant hover:text-on-surface transition-colors rounded-full hover:bg-surface-container"
+            title={isAmountVisible ? "Hide amounts" : "Show amounts"}
+          >
+            <span className="material-symbols-outlined">{isAmountVisible ? 'visibility' : 'visibility_off'}</span>
+          </button>
+          <button
+            onClick={() => setShowAddDialog(true)}
+            className="bg-[#212529] dark:bg-[#f6fafe] text-white dark:text-[#14171a] font-sans text-sm font-semibold tracking-wide px-6 py-3 rounded-full flex items-center gap-2 hover:bg-black dark:hover:bg-white transition-colors whitespace-nowrap"
+          >
+            <span className="material-symbols-outlined text-[20px]">add</span>
+            Add New Loan
+          </button>
+        </div>
       </div>
 
-      {/* Summary Cards (Hidden on small screens) */}
-      <div className="hidden sm:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Given Loans (To Collect) */}
+      {/* Status Cards Bento Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        {/* Card 1 */}
         <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-          <Card className="bg-gradient-to-br from-purple-500/10 to-indigo-500/10 border-purple-500/20 shadow-sm rounded-2xl">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold uppercase tracking-wider text-purple-600 dark:text-purple-400">
-                  Loans Given (To Collect)
-                </span>
-                <div className="p-2 rounded-xl bg-purple-500/20 text-purple-600 dark:text-purple-300">
-                  <ArrowUpRight className="h-4 w-4" />
-                </div>
-              </div>
-              <p className="text-lg sm:text-2xl font-bold text-purple-700 dark:text-purple-300">
-                {formatDisplayAmount(totalGivenAmount)}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                {activeGivenLoans.length} active given loan{activeGivenLoans.length === 1 ? '' : 's'}
-              </p>
-            </CardContent>
-          </Card>
+          <div className="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant flex flex-col justify-between min-h-[140px] shadow-sm hover:border-[#496177]/50 transition-colors">
+            <div className="flex justify-between items-start">
+              <span className="font-sans text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Loans Given (To Collect)</span>
+              <span className="material-symbols-outlined text-tertiary dark:text-on-surface">call_made</span>
+            </div>
+            <div>
+              <div className="font-serif-heading text-2xl font-medium text-on-surface mt-4">{formatDisplayAmount(totalGivenAmount)}</div>
+              <div className="font-sans text-xs text-on-surface-variant mt-1">{activeGivenLoans.length} active given loans</div>
+            </div>
+          </div>
         </motion.div>
 
-        {/* Taken Loans (To Pay) */}
+        {/* Card 2 */}
         <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.05 }}>
-          <Card className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 border-amber-500/20 shadow-sm rounded-2xl">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400">
-                  Loans Taken (To Pay)
-                </span>
-                <div className="p-2 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-300">
-                  <ArrowDownRight className="h-4 w-4" />
-                </div>
-              </div>
-              <p className="text-lg sm:text-2xl font-bold text-amber-700 dark:text-amber-300">
-                {formatDisplayAmount(totalTakenAmount)}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                {activeTakenLoans.length} active taken loan{activeTakenLoans.length === 1 ? '' : 's'}
-              </p>
-            </CardContent>
-          </Card>
+          <div className="bg-surface-container rounded-xl p-6 border border-outline-variant flex flex-col justify-between min-h-[140px] shadow-sm hover:border-[#496177]/50 transition-colors">
+            <div className="flex justify-between items-start">
+              <span className="font-sans text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Loans Taken (To Pay)</span>
+              <span className="material-symbols-outlined text-on-surface-variant">call_received</span>
+            </div>
+            <div>
+              <div className="font-serif-heading text-2xl font-medium text-on-surface mt-4">{formatDisplayAmount(totalTakenAmount)}</div>
+              <div className="font-sans text-xs text-on-surface-variant mt-1">{activeTakenLoans.length} active taken loans</div>
+            </div>
+          </div>
         </motion.div>
 
-        {/* Net Position */}
+        {/* Card 3 */}
         <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.1 }}>
-          <Card className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/20 shadow-sm rounded-2xl">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">
-                  Net Loan Position
-                </span>
-                <div className="p-2 rounded-xl bg-blue-500/20 text-blue-600 dark:text-blue-300">
-                  <Landmark className="h-4 w-4" />
-                </div>
-              </div>
-              <p className={`text-lg sm:text-2xl font-bold ${netLoanBalance >= 0 ? 'text-blue-700 dark:text-blue-300' : 'text-rose-600 dark:text-rose-400'}`}>
-                {formatDisplayAmount(netLoanBalance)}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                {netLoanBalance >= 0 ? 'Net Receivable' : 'Net Payable'}
-              </p>
-            </CardContent>
-          </Card>
+          <div className="bg-surface-container-low rounded-xl p-6 border border-outline-variant flex flex-col justify-between min-h-[140px] shadow-sm hover:border-[#496177]/50 transition-colors">
+            <div className="flex justify-between items-start">
+              <span className="font-sans text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Net Loan Position</span>
+              <span className="material-symbols-outlined text-tertiary dark:text-on-surface">account_balance</span>
+            </div>
+            <div>
+              <div className={`font-serif-heading text-2xl font-medium mt-4 ${netLoanBalance >= 0 ? 'text-on-surface' : 'text-[#ba1a1a]'}`}>{formatDisplayAmount(netLoanBalance)}</div>
+              <div className="font-sans text-xs text-on-surface-variant mt-1">{netLoanBalance >= 0 ? 'Net Receivable' : 'Net Payable'}</div>
+            </div>
+          </div>
         </motion.div>
 
-        {/* Released Loans */}
+        {/* Card 4 */}
         <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.15 }}>
-          <Card className="bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border-emerald-500/20 shadow-sm rounded-2xl">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                  Released / Settled
-                </span>
-                <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-300">
-                  <CheckCircle2 className="h-4 w-4" />
-                </div>
-              </div>
-              <p className="text-lg sm:text-2xl font-bold text-emerald-700 dark:text-emerald-300">
-                {releasedLoans.length}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Completed loan transactions
-              </p>
-            </CardContent>
-          </Card>
+          <div className="bg-[#ffffff] dark:bg-[#14171a] rounded-xl p-6 border border-outline-variant flex flex-col justify-between min-h-[140px] shadow-sm hover:border-[#496177]/50 transition-colors">
+            <div className="flex justify-between items-start">
+              <span className="font-sans text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Released / Settled</span>
+              <span className="material-symbols-outlined text-on-surface-variant">check_circle</span>
+            </div>
+            <div>
+              <div className="font-serif-heading text-2xl font-medium text-on-surface mt-4">{releasedLoans.length}</div>
+              <div className="font-sans text-xs text-on-surface-variant mt-1">Completed loan transactions</div>
+            </div>
+          </div>
         </motion.div>
       </div>
 
-      {/* Filter Tabs & Main Card List */}
-      <Card className="backdrop-blur-xl bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 border-white/20 dark:border-white/10 rounded-3xl overflow-hidden">
-        <CardHeader className="pb-3">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <CardTitle className="text-lg sm:text-xl">Loans Overview</CardTitle>
-            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="w-full sm:w-auto">
-              <TabsList className="grid grid-cols-4 w-full sm:w-auto bg-white/60 dark:bg-[oklch(0.25_0.02_250)]/60">
-                <TabsTrigger value="all" className="text-xs sm:text-sm">All</TabsTrigger>
-                <TabsTrigger value="given" className="text-xs sm:text-sm">Given</TabsTrigger>
-                <TabsTrigger value="taken" className="text-xs sm:text-sm">Taken</TabsTrigger>
-                <TabsTrigger value="released" className="text-xs sm:text-sm">Released</TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
-        </CardHeader>
+      {/* Overview Section */}
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+        <h4 className="font-serif-heading text-xl font-medium text-on-surface">Loans Overview</h4>
+        <div className="flex bg-surface-container rounded-full p-1 border border-outline-variant">
+          <button 
+            onClick={() => setActiveTab('all')}
+            className={`px-4 py-1.5 rounded-full font-sans text-sm font-semibold tracking-wide transition-all ${activeTab === 'all' ? 'bg-surface-container-lowest text-on-surface shadow-sm' : 'text-on-surface-variant hover:text-on-surface'}`}
+          >All</button>
+          <button 
+            onClick={() => setActiveTab('given')}
+            className={`px-4 py-1.5 rounded-full font-sans text-sm font-semibold tracking-wide transition-all ${activeTab === 'given' ? 'bg-surface-container-lowest text-on-surface shadow-sm' : 'text-on-surface-variant hover:text-on-surface'}`}
+          >Given</button>
+          <button 
+            onClick={() => setActiveTab('taken')}
+            className={`px-4 py-1.5 rounded-full font-sans text-sm font-semibold tracking-wide transition-all ${activeTab === 'taken' ? 'bg-surface-container-lowest text-on-surface shadow-sm' : 'text-on-surface-variant hover:text-on-surface'}`}
+          >Taken</button>
+          <button 
+            onClick={() => setActiveTab('released')}
+            className={`px-4 py-1.5 rounded-full font-sans text-sm font-semibold tracking-wide transition-all ${activeTab === 'released' ? 'bg-surface-container-lowest text-on-surface shadow-sm' : 'text-on-surface-variant hover:text-on-surface'}`}
+          >Released</button>
+        </div>
+      </div>
 
-        <CardContent>
-          {loading ? (
-            <div className="py-12 text-center text-muted-foreground flex items-center justify-center gap-2">
-              <Loader2 className="h-5 w-5 animate-spin text-purple-600" />
-              Loading loans...
-            </div>
-          ) : filteredLoans.length === 0 ? (
-            <div className="py-12 text-center text-muted-foreground space-y-3">
-              <HandCoins className="h-12 w-12 mx-auto text-muted-foreground/40" />
-              <p className="text-base font-medium">No loans found</p>
-              <p className="text-sm text-muted-foreground">
-                {activeTab === 'all' ? 'Start by adding a given or taken loan!' : `No ${activeTab} loans present.`}
-              </p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowAddDialog(true)}
-                className="mt-2"
+      {/* List */}
+      {loading ? (
+        <div className="py-12 text-center text-[#5b5f63] flex flex-col items-center justify-center gap-2">
+          <Loader2 className="h-8 w-8 animate-spin text-[#496177] mb-2" />
+          <p className="font-sans text-sm">Loading loans...</p>
+        </div>
+      ) : filteredLoans.length === 0 ? (
+        <div className="py-12 text-center text-[#5b5f63] space-y-3 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm">
+          <span className="material-symbols-outlined text-[48px] text-[#5b5f63]/40">account_balance</span>
+          <p className="text-base font-medium text-on-surface">No loans found</p>
+          <p className="text-sm font-sans">
+            {activeTab === 'all' ? 'Start by adding a given or taken loan!' : `No ${activeTab} loans present.`}
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <AnimatePresence>
+            {filteredLoans.map((loan) => (
+              <motion.div
+                key={loan.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 shadow-sm hover:border-[#496177]/50 transition-colors"
               >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Loan
-              </Button>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <AnimatePresence>
-                {filteredLoans.map((loan) => (
-                  <motion.div
-                    key={loan.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    className="p-4 rounded-2xl bg-white/40 dark:bg-white/5 border border-gray-200/50 dark:border-gray-700/50 flex flex-col md:flex-row md:items-center md:justify-between gap-4 hover:border-purple-500/30 transition-all shadow-sm"
-                  >
-                    {/* Left details */}
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-semibold text-base sm:text-lg text-foreground">
-                          {loan.personName}
-                        </span>
-                        
-                        {/* Type Badge */}
-                        {loan.type === 'GIVEN' ? (
-                          <Badge className="bg-purple-500/15 text-purple-700 dark:text-purple-300 border-purple-500/30 hover:bg-purple-500/20">
-                            Given (To Collect)
-                          </Badge>
-                        ) : (
-                          <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 hover:bg-amber-500/20">
-                            Taken (To Pay)
-                          </Badge>
-                        )}
+                <div className="flex-1">
+                  <div className="flex flex-wrap items-center gap-3 mb-2">
+                    <h5 className="font-sans text-lg font-medium text-on-surface">{loan.personName}</h5>
+                    
+                    {/* Type Pill */}
+                    {loan.type === 'GIVEN' ? (
+                      <span className="bg-surface-container px-2.5 py-1 rounded-full font-sans text-xs font-semibold text-on-surface-variant flex items-center gap-1 border border-outline-variant/50">
+                        Given (To Collect)
+                      </span>
+                    ) : (
+                      <span className="bg-surface-container px-2.5 py-1 rounded-full font-sans text-xs font-semibold text-on-surface-variant flex items-center gap-1 border border-outline-variant/50">
+                        Taken (To Pay)
+                      </span>
+                    )}
 
-                        {/* Status Badge */}
-                        {loan.status === 'RELEASED' ? (
-                          <Badge variant="outline" className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 flex items-center gap-1">
-                            <CheckCircle2 className="h-3 w-3" />
-                            Released
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30 flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            Active (Pending)
-                          </Badge>
-                        )}
-                      </div>
+                    {/* Status Pill */}
+                    {loan.status === 'RELEASED' ? (
+                      <span className="bg-[#cce5ff]/20 dark:bg-[#cce5ff]/10 px-2.5 py-1 rounded-full font-sans text-xs font-semibold text-tertiary flex items-center gap-1 border border-[#496177]/30">
+                        <span className="material-symbols-outlined text-[14px]">check_circle</span>
+                        Released
+                      </span>
+                    ) : (
+                      <span className="bg-[#ffffff] dark:bg-[#14171a] px-2.5 py-1 rounded-full font-sans text-xs font-semibold text-on-surface flex items-center gap-1 border border-outline-variant">
+                        <span className="material-symbols-outlined text-[14px]">pending</span>
+                        Active (Pending)
+                      </span>
+                    )}
+                  </div>
+                  
+                  {loan.description && (
+                    <p className="font-sans text-base text-on-surface-variant">{loan.description}</p>
+                  )}
+                  
+                  <div className="flex items-center gap-2 mt-2 font-sans text-xs font-medium text-on-surface-variant">
+                    <span>Date: {new Date(loan.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+                    {loan.status === 'RELEASED' && loan.releasedAt && (
+                      <>
+                        <span>•</span>
+                        <span className="text-tertiary">Released on: {new Date(loan.releasedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+                      </>
+                    )}
+                  </div>
+                </div>
 
-                      {loan.description && (
-                        <p className="text-sm text-muted-foreground">{loan.description}</p>
+                <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end flex-wrap">
+                  <div className="font-serif-heading text-2xl font-medium text-on-surface mr-2">
+                    {formatDisplayAmount(loan.amount, loan.currency)}
+                  </div>
+                  
+                  {loan.status === 'PENDING' && (
+                    <button
+                      onClick={() => setReleasingLoan(loan)}
+                      disabled={releasingId === loan.id}
+                      className="border border-[#496177] dark:border-[#f6fafe] text-tertiary dark:text-on-surface font-sans text-sm font-semibold tracking-wide px-4 py-2 rounded-full flex items-center gap-2 hover:bg-[#496177] hover:text-white dark:hover:bg-white dark:hover:text-[#14171a] transition-colors whitespace-nowrap disabled:opacity-50"
+                    >
+                      {releasingId === loan.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <>
+                          <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                          Release Loan
+                        </>
                       )}
+                    </button>
+                  )}
+                  
+                  <button
+                    onClick={() => handleDeleteLoan(loan.id)}
+                    disabled={deletingId === loan.id}
+                    className="text-on-surface-variant hover:text-[#ba1a1a] dark:hover:text-[#ffdad6] transition-colors p-2 disabled:opacity-50"
+                  >
+                    {deletingId === loan.id ? (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                      <span className="material-symbols-outlined">delete</span>
+                    )}
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+      )}
 
-                      <p className="text-xs text-muted-foreground">
-                        Date: {new Date(loan.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
-                        {loan.status === 'RELEASED' && loan.releasedAt && (
-                          <span className="ml-2 text-emerald-600 dark:text-emerald-400">
-                            • Released on: {new Date(loan.releasedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
-                          </span>
-                        )}
-                      </p>
-                    </div>
-
-                    {/* Right actions & amount */}
-                    <div className="flex items-center justify-between md:justify-end gap-4 border-t md:border-t-0 pt-3 md:pt-0">
-                      <div className="text-left md:text-right">
-                        <p className={`text-lg sm:text-xl font-bold ${
-                          loan.type === 'GIVEN' ? 'text-purple-600 dark:text-purple-400' : 'text-amber-600 dark:text-amber-400'
-                        }`}>
-                          {formatDisplayAmount(loan.amount, loan.currency)}
-                        </p>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        {loan.status === 'PENDING' && (
-                          <Button
-                            size="sm"
-                            onClick={() => setReleasingLoan(loan)}
-                            disabled={releasingId === loan.id}
-                            className={
-                              loan.type === 'GIVEN'
-                                ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700 shadow-sm text-xs sm:text-sm'
-                                : 'bg-gradient-to-r from-amber-600 to-orange-600 text-white hover:from-amber-700 hover:to-orange-700 shadow-sm text-xs sm:text-sm'
-                            }
-                          >
-                            {releasingId === loan.id ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <>
-                                <CheckCircle2 className="h-4 w-4 mr-1.5" />
-                                Release Loan
-                              </>
-                            )}
-                          </Button>
-                        )}
-
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDeleteLoan(loan.id)}
-                          disabled={deletingId === loan.id}
-                          className="h-8 w-8 text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors"
-                          title="Delete Loan"
-                        >
-                          {deletingId === loan.id ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Trash2 className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
-          )}
-        </CardContent>
-      </Card>
 
       {/* Add Loan Dialog */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>

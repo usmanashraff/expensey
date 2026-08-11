@@ -1,16 +1,14 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
-import { ThemeToggle } from '@/components/theme-toggle'
-import { ArrowRight, TrendingUp, Shield, PieChart, Sparkles, Zap, BarChart3, Users } from 'lucide-react'
-import Image from 'next/image'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { useEffect, useState } from 'react'
+import { HeroShader } from '@/components/hero-shader'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 export default function Home() {
   const [authenticated, setAuthenticated] = useState(false)
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+  const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
     // Check authentication status
@@ -18,250 +16,363 @@ export default function Home() {
       .then(res => res.json())
       .then(data => setAuthenticated(data.authenticated))
       .catch(() => setAuthenticated(false))
+
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50)
+    }
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY })
+  const fadeUpVariant = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      transition: { duration: 0.8, ease: "easeOut" } 
     }
-    window.addEventListener('mousemove', handleMouseMove)
-    return () => window.removeEventListener('mousemove', handleMouseMove)
-  }, [])
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-[oklch(0.13_0.02_250)] dark:via-[oklch(0.14_0.02_260)] dark:to-[oklch(0.15_0.02_270)] overflow-hidden relative">
-      {/* Animated background elements */}
-      <div className="absolute inset-0">
-        <div className="absolute top-20 -left-40 w-80 h-80 bg-purple-300 dark:bg-purple-600/20 rounded-full filter blur-3xl opacity-30 animate-blob" />
-        <div className="absolute top-40 -right-40 w-80 h-80 bg-blue-300 dark:bg-blue-600/20 rounded-full filter blur-3xl opacity-30 animate-blob animation-delay-2000" />
-        <div className="absolute -bottom-20 left-40 w-80 h-80 bg-pink-300 dark:bg-pink-600/20 rounded-full filter blur-3xl opacity-30 animate-blob animation-delay-4000" />
-        <div 
-          className="absolute w-96 h-96 bg-gradient-to-r from-blue-400/10 to-purple-400/10 rounded-full filter blur-3xl transition-all duration-1000"
-          style={{
-            left: `${mousePosition.x * 0.05}px`,
-            top: `${mousePosition.y * 0.05}px`,
-          }}
-        />
-      </div>
-
-      <div className="container mx-auto pl-4 pr-2 sm:px-4 py-2 relative z-10">
-        <motion.nav 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="flex justify-between items-center mb-16"
-        >
-          <Link href="/" className="hidden sm:block hover:opacity-80 transition-opacity">
-            <Image 
-              src="/logo.png" 
-              alt="Expensey Logo" 
-              width={80} 
-              height={20}
-              className="object-contain"
-              priority
-            />
+    <div className="bg-background text-on-surface font-body-md overflow-x-hidden selection:bg-tertiary-fixed selection:text-on-tertiary-fixed">
+      {/* Navigation */}
+      <nav 
+        className={`fixed top-0 w-full z-50 bg-background/80 backdrop-blur-md border-b border-outline-variant/50 h-20 transition-all duration-300 ${scrolled ? 'shadow-sm' : ''}`}
+        id="mainNav"
+      >
+        <div className="max-w-[1280px] mx-auto px-6 h-full flex justify-between items-center">
+          <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <span className="material-symbols-outlined text-primary text-3xl">account_balance</span>
+            <span className="font-display-lg text-display-lg text-on-surface tracking-tight text-[24px] leading-none">Expensey</span>
           </Link>
-          <div className="sm:hidden" />
+          <div className="hidden md:flex items-center gap-8">
+            <a className="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors" href="#features">Features</a>
+            <a className="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors" href="#insights">AI Insights</a>
+            <a className="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors" href="#testimonials">Clients</a>
+            <Link href="/about" className="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors">Developer</Link>
+          </div>
           <div className="flex items-center gap-4">
-            <Link href="/about">
-              <Button variant="ghost" size="sm">About Developer</Button>
-            </Link>
             <ThemeToggle />
             {authenticated ? (
               <Link href="/dashboard">
-                <Button size="sm">Dashboard</Button>
+                <button className="bg-[#212529] dark:bg-[#f6fafe] dark:text-[#14171a] text-white font-label-md text-label-md px-6 py-2.5 rounded-full hover:bg-opacity-90 transition-all">Dashboard</button>
               </Link>
             ) : (
               <>
                 <Link href="/login">
-                  <Button variant="ghost" size="sm">Login</Button>
+                  <button className="hidden md:block font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors px-4 py-2">Log In</button>
                 </Link>
                 <Link href="/register">
-                  <Button size="sm">Get Started</Button>
+                  <button className="bg-[#212529] dark:bg-[#f6fafe] dark:text-[#14171a] text-white font-label-md text-label-md px-6 py-2.5 rounded-full hover:bg-opacity-90 transition-all">Get Started</button>
                 </Link>
               </>
             )}
           </div>
-        </motion.nav>
+        </div>
+      </nav>
 
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="text-center max-w-4xl mx-auto mt-20 relative"
-        >
-          <motion.div
-            animate={{ 
-              rotate: [0, 5, -5, 0],
-              scale: [1, 1.05, 1]
-            }}
-            transition={{ 
-              duration: 4,
-              repeat: Infinity,
-              repeatType: "reverse"
-            }}
-            className="absolute -top-10 left-1/2 -translate-x-1/2"
-          >
-            <Sparkles className="w-8 h-8 text-yellow-500/40" />
-          </motion.div>
-          <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold mb-6 relative">
-            <motion.span
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.3 }}
-            >
-              Take Control of Your{' '}
-            </motion.span>
-            <motion.span 
-              className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent relative"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.5 }}
-            >
-              Finances
-              <motion.span
-                className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full"
-                initial={{ scaleX: 0 }}
-                animate={{ scaleX: 1 }}
-                transition={{ duration: 0.8, delay: 0.8 }}
-              />
-            </motion.span>
-          </h1>
-          <motion.p 
-            className="text-lg sm:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-          >
-            Track expenses, monitor savings, and achieve your financial goals with our intuitive expense tracking platform.
-          </motion.p>
+      {/* Hero Section */}
+      <section className="relative min-h-[90vh] flex items-center pt-20 overflow-hidden">
+        <div className="absolute inset-0 w-full h-full -z-10 opacity-40 dark:opacity-10">
+          <HeroShader />
+        </div>
+        
+        <div className="max-w-[1280px] mx-auto px-6 w-full grid md:grid-cols-2 gap-12 items-center relative z-10">
           <motion.div 
-            className="flex gap-4 justify-center"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.8 }}
+            initial="hidden"
+            animate="visible"
+            variants={fadeUpVariant}
+            className="pr-0 md:pr-12"
           >
-            {authenticated ? (
-              <Link href="/dashboard">
-                <Button size="lg" className="gap-2">
-                  Go to Dashboard <ArrowRight className="h-4 w-4" />
-                </Button>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container-high border border-outline-variant/50 mb-6">
+              <span className="material-symbols-outlined text-sm text-tertiary">psychology</span>
+              <span className="font-label-sm text-label-sm text-on-surface-variant">Smart Personal Finance</span>
+            </div>
+            <h1 className="font-display-lg text-[48px] sm:text-[56px] text-on-surface mb-6 leading-[1.1] font-bold tracking-tight">
+              Take Control of <br/>
+              <span className="text-tertiary">Your Finances</span>
+            </h1>
+            <p className="font-body-lg text-body-lg text-on-surface-variant mb-10 max-w-lg">
+              Track expenses, monitor budgets, and achieve financial clarity with our intuitive, AI-powered expense tracking platform designed for modern professionals.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Link href={authenticated ? "/dashboard" : "/register"}>
+                <button className="w-full sm:w-auto bg-[#212529] dark:bg-[#f6fafe] dark:text-[#14171a] text-white font-label-md text-label-md px-8 py-4 rounded-full hover:bg-opacity-90 transition-all shadow-sm flex items-center justify-center gap-2 group">
+                  {authenticated ? "Open Dashboard" : "Get Started"}
+                  <span className="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                </button>
               </Link>
-            ) : (
-              <>
-                <Link href="/register">
-                  <Button size="lg" className="gap-2">
-                    Start Free <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </Link>
+              {!authenticated && (
                 <Link href="/login">
-                  <Button size="lg" variant="outline">
-                    Sign In
-                  </Button>
+                  <button className="w-full sm:w-auto border border-outline-variant text-on-surface font-label-md text-label-md px-8 py-4 rounded-full hover:bg-surface-container-low transition-all flex items-center justify-center gap-2">
+                    View Demo
+                  </button>
                 </Link>
-              </>
-            )}
+              )}
+            </div>
           </motion.div>
-        </motion.div>
+          
+          <motion.div 
+            initial="hidden"
+            animate="visible"
+            variants={fadeUpVariant}
+            className="relative h-[500px] mt-12 rounded-xl overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.08)] border border-outline-variant/30 hidden md:block"
+          >
+            <img 
+              alt="Professional workspace" 
+              className="object-cover w-full h-full" 
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuDrTxBNRe_bNjlT8Ku2WpNjEt0CBwT7d9M91mBYBNNHH2Ke6YRUsFHhXdbISe5IKN_cmZWQXs20K44WeibxJA1cyHLbgPigiOMOQbjpgCClgOcr92VZ0_8hVoUqB16trbgHOQXTe3HIhYzt0S98qeVoTC76fnmvF_1JqFTftM58Ge218uzwy_hKUgltZ7butUKtr0C4lPEl777dtjQ02oItzC1jiL8puR3oF7Pi5k5hbQqC4U8qPPm7-A"
+            />
+            {/* Floating Glass Card */}
+            <div className="absolute bottom-8 left-8 right-8 glass-panel rounded-xl p-6 flex items-center justify-between">
+              <div>
+                <p className="font-label-sm text-label-sm text-on-surface-variant mb-1">Portfolio Value</p>
+                <p className="font-headline-md text-headline-md text-on-surface">$2.4M</p>
+              </div>
+              <div className="h-12 w-24 relative">
+                {/* Simulated Sparkline */}
+                <svg className="w-full h-full stroke-tertiary fill-none" strokeLinecap="round" strokeWidth="2" viewBox="0 0 100 40">
+                  <path d="M0,30 Q20,35 40,20 T80,15 T100,5"></path>
+                </svg>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
 
-        <div className="grid md:grid-cols-3 gap-8 mt-32 max-w-5xl mx-auto md:items-stretch">
-          {[
-            {
-              icon: TrendingUp,
-              title: "Track Expenses",
-              description: "Categorize and monitor your spending habits with detailed insights.",
-              color: "blue",
-              delay: 1
-            },
-            {
-              icon: Shield,
-              title: "Secure & Private",
-              description: "Your financial data is encrypted and protected with enterprise-grade security.",
-              color: "purple",
-              delay: 1.2
-            },
-            {
-              icon: PieChart,
-              title: "Visual Analytics",
-              description: "Beautiful charts and graphs to visualize your financial journey.",
-              color: "green",
-              delay: 1.4
-            }
-          ].map((feature, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: feature.delay }}
-              whileHover={{ scale: 1.05, y: -5 }}
-              className="relative group flex"
+      {/* Value Proposition */}
+      <section className="py-24 bg-surface-container-lowest" id="features">
+        <div className="max-w-[1280px] mx-auto px-6">
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Track */}
+            <motion.div 
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              variants={fadeUpVariant}
+              className="p-8 rounded-xl bg-surface border border-outline-variant hover:-translate-y-1 transition-transform duration-300"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-purple-400/20 dark:from-blue-600/10 dark:to-purple-600/10 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-300" />
-              <div className="relative text-center p-8 rounded-3xl bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/30 backdrop-blur-lg border border-white/20 dark:border-white/10 shadow-xl flex-1 flex flex-col">
-                <motion.div 
-                  className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-${feature.color}-100 dark:bg-${feature.color}-900/30 mb-4 relative`}
-                  whileHover={{ rotate: 360 }}
-                  transition={{ duration: 0.5 }}
-                >
-                  <feature.icon className={`h-8 w-8 text-${feature.color}-600 dark:text-${feature.color}-400`} />
-                  <div className={`absolute inset-0 rounded-2xl bg-${feature.color}-400/20 blur-lg`} />
-                </motion.div>
-                <h3 className="text-base sm:text-lg font-semibold mb-2">{feature.title}</h3>
-                <p className="text-muted-foreground flex-1">
-                  {feature.description}
+              <div className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center mb-6">
+                <span className="material-symbols-outlined text-on-surface fill-icon">monitoring</span>
+              </div>
+              <h3 className="font-headline-md text-headline-md text-on-surface mb-3">Smart Logging</h3>
+              <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                Log expenses instantly using our advanced AI natural language input, or use the robust manual entry forms to record every detail.
+              </p>
+            </motion.div>
+            
+            {/* Analyze */}
+            <motion.div 
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              variants={{...fadeUpVariant, visible: { ...fadeUpVariant.visible, transition: { ...fadeUpVariant.visible.transition, delay: 0.1 }}}}
+              className="p-8 rounded-xl bg-surface border border-outline-variant hover:-translate-y-1 transition-transform duration-300"
+            >
+              <div className="w-12 h-12 rounded-full bg-tertiary-container flex items-center justify-center mb-6">
+                <span className="material-symbols-outlined text-tertiary fill-icon">query_stats</span>
+              </div>
+              <h3 className="font-headline-md text-headline-md text-on-surface mb-3">Visual Analytics</h3>
+              <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                Understand your spending instantly with beautiful charts and visual breakdowns separating your Needs, Wants, and Savings goals.
+              </p>
+            </motion.div>
+            
+            {/* Optimize */}
+            <motion.div 
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              variants={{...fadeUpVariant, visible: { ...fadeUpVariant.visible, transition: { ...fadeUpVariant.visible.transition, delay: 0.2 }}}}
+              className="p-8 rounded-xl bg-surface border border-outline-variant hover:-translate-y-1 transition-transform duration-300"
+            >
+              <div className="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center mb-6">
+                <span className="material-symbols-outlined text-on-secondary-container fill-icon">tune</span>
+              </div>
+              <h3 className="font-headline-md text-headline-md text-on-surface mb-3">Budget Control</h3>
+              <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                Set strict monthly limits by category. Our real-time trackers ensure you always know exactly how much you have left before you overspend.
+              </p>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Detailed Features (Bento Grid) */}
+      <section className="py-24 bg-surface" id="insights">
+        <div className="max-w-[1280px] mx-auto px-6">
+          <motion.div 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={fadeUpVariant}
+            className="text-center max-w-2xl mx-auto mb-16"
+          >
+            <h2 className="font-headline-lg text-[32px] font-bold text-on-surface mb-4">Precision Instrumentation</h2>
+            <p className="font-body-md text-body-md text-on-surface-variant">
+              Expensey replaces fragmented spreadsheets with a cohesive, beautifully engineered environment designed for decisive financial action.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 auto-rows-[320px]">
+            {/* AI Insights (Large Card) */}
+            <motion.div 
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              variants={fadeUpVariant}
+              className="md:col-span-8 bg-surface-container-lowest border border-outline-variant rounded-xl p-8 relative overflow-hidden group hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.05)] transition-all"
+            >
+              <div className="relative z-10 w-full md:w-2/3">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-tertiary-container text-tertiary mb-4">
+                  <span className="material-symbols-outlined text-[14px]">psychology</span>
+                  <span className="font-label-sm text-label-sm">AI-Powered</span>
+                </div>
+                <h3 className="font-headline-md text-headline-md text-on-surface mb-3">Natural Language AI</h3>
+                <p className="font-body-md text-body-md text-on-surface-variant mb-6">
+                  Just type "Coffee at Starbucks for 500" and let our proprietary AI engine automatically parse the amount, description, and assign the correct category in seconds.
+                </p>
+                <a className="inline-flex items-center gap-2 font-label-md text-label-md text-tertiary hover:text-on-surface transition-colors cursor-pointer">
+                  Explore Capabilities <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                </a>
+              </div>
+              {/* Abstract decorative element */}
+              <div className="absolute -right-20 -bottom-20 w-80 h-80 bg-tertiary/5 rounded-full blur-3xl group-hover:bg-tertiary/10 transition-colors duration-700"></div>
+            </motion.div>
+
+            {/* Visual Analytics (Small Card) */}
+            <motion.div 
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              variants={{...fadeUpVariant, visible: { ...fadeUpVariant.visible, transition: { ...fadeUpVariant.visible.transition, delay: 0.1 }}}}
+              className="md:col-span-4 bg-surface-container-lowest border border-outline-variant rounded-xl p-8 flex flex-col justify-between group hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.05)] transition-all"
+            >
+              <div>
+                <span className="material-symbols-outlined text-on-surface mb-4 text-3xl">receipt_long</span>
+                <h3 className="font-headline-md text-headline-md text-on-surface mb-2 text-[20px]">Smart Receipts</h3>
+                <p className="font-body-md text-body-md text-on-surface-variant text-sm">
+                  Upload and securely store receipts alongside every transaction.
                 </p>
               </div>
+              {/* Mini chart representation */}
+              <div className="w-full h-24 flex items-end gap-2 mt-4 opacity-70">
+                <div className="w-full bg-surface-variant rounded-t-sm h-[40%] group-hover:h-[50%] transition-all duration-500"></div>
+                <div className="w-full bg-surface-variant rounded-t-sm h-[60%] group-hover:h-[70%] transition-all duration-500 delay-75"></div>
+                <div className="w-full bg-tertiary rounded-t-sm h-[85%] group-hover:h-[95%] transition-all duration-500 delay-150"></div>
+                <div className="w-full bg-surface-variant rounded-t-sm h-[30%] group-hover:h-[40%] transition-all duration-500 delay-200"></div>
+              </div>
             </motion.div>
-          ))}
-        </div>
 
-        {/* Additional premium features section */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 1.6 }}
-          className="mt-32 text-center"
-        >
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-16">
-            Why Choose{' '}
-            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Expensey
-            </span>
-          </h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-            {[
-              { icon: Zap, title: "Lightning Fast", desc: "Real-time updates" },
-              { icon: BarChart3, title: "Smart Insights", desc: "AI-powered analytics" },
-              { icon: Sparkles, title: "Beautiful UI", desc: "Premium experience" }
-            ].map((item, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5, delay: 1.8 + i * 0.1 }}
-                whileHover={{ scale: 1.1 }}
-                className="relative p-6 rounded-2xl bg-gradient-to-br from-white/40 to-white/20 dark:from-white/5 dark:to-white/10 backdrop-blur-lg border border-white/20 dark:border-white/10"
-              >
-                <item.icon className="w-8 h-8 mx-auto mb-3 text-primary" />
-                <h3 className="text-sm sm:text-base font-semibold mb-1">{item.title}</h3>
-                <p className="text-sm text-muted-foreground">{item.desc}</p>
-              </motion.div>
-            ))}
+            {/* Loan Management */}
+            <motion.div 
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              variants={{...fadeUpVariant, visible: { ...fadeUpVariant.visible, transition: { ...fadeUpVariant.visible.transition, delay: 0.2 }}}}
+              className="md:col-span-12 bg-surface-container-lowest border border-outline-variant rounded-xl p-8 flex flex-col md:flex-row items-center gap-12 group hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.05)] transition-all"
+            >
+              <div className="w-full md:w-1/2">
+                <h3 className="font-headline-md text-headline-md text-on-surface mb-3">Loans & Utilities Manager</h3>
+                <p className="font-body-md text-body-md text-on-surface-variant mb-6">
+                  Centralize your recurring utility bills to never miss a due date. Track every personal loan, recording exactly who owes you money or who you owe, ensuring a perfectly balanced ledger.
+                </p>
+                <div className="flex gap-4">
+                  <div className="flex flex-col">
+                    <span className="font-label-sm text-label-sm text-on-surface-variant">Total Tracked</span>
+                    <span className="font-headline-md text-[20px] font-bold text-on-surface">$1,450</span>
+                  </div>
+                  <div className="w-[1px] bg-outline-variant self-stretch"></div>
+                  <div className="flex flex-col">
+                    <span className="font-label-sm text-label-sm text-on-surface-variant">Active Loans</span>
+                    <span className="font-headline-md text-[20px] font-bold text-on-surface">3</span>
+                  </div>
+                </div>
+              </div>
+              <div className="w-full md:w-1/2 h-full min-h-[200px] bg-surface-container rounded-lg border border-outline-variant/30 flex items-center justify-center relative overflow-hidden">
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+                {/* Abstract UI representation */}
+                <div className="w-3/4 h-24 bg-white/80 dark:bg-[#14171a]/80 backdrop-blur-sm border border-outline-variant rounded-md shadow-sm p-4 relative z-10 flex flex-col justify-between">
+                  <div className="w-1/3 h-2 bg-surface-variant rounded-full"></div>
+                  <div className="w-full h-8 bg-surface-variant rounded-sm flex overflow-hidden">
+                    <div className="w-[30%] h-full bg-tertiary"></div>
+                    <div className="w-[70%] h-full bg-surface-container-high"></div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
           </div>
-        </motion.div>
+        </div>
+      </section>
 
-        {/* About Developer Link */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 2.2 }}
-          className="mt-20 text-center pb-8"
+      {/* Social Proof / Human Touch */}
+      <section className="py-32 bg-surface-container-lowest" id="testimonials">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <motion.span 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeUpVariant}
+            className="material-symbols-outlined text-4xl text-tertiary mb-8 fill-icon"
+          >
+            format_quote
+          </motion.span>
+          <motion.h2 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={{...fadeUpVariant, visible: { ...fadeUpVariant.visible, transition: { ...fadeUpVariant.visible.transition, delay: 0.1 }}}}
+            className="font-headline-lg font-bold text-on-surface leading-tight mb-8 text-[28px] sm:text-[36px]"
+          >
+            "Expensey brought incredible clarity to my personal finances. The AI natural language input feels like magic, making logging expenses completely frictionless."
+          </motion.h2>
+          <motion.div 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={{...fadeUpVariant, visible: { ...fadeUpVariant.visible, transition: { ...fadeUpVariant.visible.transition, delay: 0.2 }}}}
+          >
+            <p className="font-label-md text-label-md text-on-surface">Eleanor Vance</p>
+            <p className="font-label-sm text-label-sm text-on-surface-variant mt-1">Managing Director, Vanguard Partners</p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="py-24 bg-surface border-t border-outline-variant">
+        <motion.div 
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeUpVariant}
+          className="max-w-[1280px] mx-auto px-6 text-center"
         >
-          <Link href="/about" className="text-muted-foreground hover:text-primary transition-colors">
-            About the Developer →
+          <h2 className="font-headline-lg text-[32px] font-bold text-on-surface mb-6">Begin Your Ledger</h2>
+          <p className="font-body-md text-body-md text-on-surface-variant max-w-lg mx-auto mb-10">
+            Join thousands of disciplined professionals managing their wealth with unparalleled clarity and precision.
+          </p>
+          <Link href="/register">
+            <button className="bg-[#212529] dark:bg-[#f6fafe] dark:text-[#14171a] text-white font-label-md text-label-md px-10 py-4 rounded-full hover:bg-opacity-90 transition-all shadow-sm">
+              Create Account
+            </button>
           </Link>
         </motion.div>
-      </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-surface-container-lowest py-12 border-t border-outline-variant">
+        <div className="max-w-[1280px] mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-on-surface-variant">account_balance</span>
+            <span className="font-label-md text-label-md text-on-surface-variant">Expensey &copy; 2024</span>
+          </div>
+          <div className="flex gap-6">
+            <a href="https://github.com/usmanashraff" target="_blank" rel="noopener noreferrer" className="font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer">GitHub</a>
+            <a href="https://www.linkedin.com/in/usman-ashraf-304145274/" target="_blank" rel="noopener noreferrer" className="font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer">LinkedIn</a>
+            <a href="https://usman-codes.vercel.app/" target="_blank" rel="noopener noreferrer" className="font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer">Portfolio</a>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }

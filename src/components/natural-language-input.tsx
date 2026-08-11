@@ -288,7 +288,7 @@ export default function NaturalLanguageInput({ onExpenseAdded, utilityTypes = []
                   handleSubmit()
                 }
               }}
-              className="min-h-[60px] bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm resize-none"
+              className="min-h-[80px] font-sans font-medium text-sm bg-[#ffffff] dark:bg-[#14171a] border-outline-variant text-on-surface placeholder:text-[#8b9196] focus:ring-1 focus:ring-[#496177] rounded-lg resize-none"
               disabled={isProcessing}
             />
             
@@ -310,7 +310,7 @@ export default function NaturalLanguageInput({ onExpenseAdded, utilityTypes = []
               <Button
                 onClick={handleSubmit}
                 disabled={!input.trim() || isProcessing}
-                className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                className="flex-1 h-10 font-sans font-semibold bg-[#171c1f] text-[#ffffff] hover:bg-[#2c3134] dark:bg-[#f6fafe] dark:text-[#14171a] dark:hover:bg-[#d6dade] rounded-lg shadow-sm"
               >
                 {isProcessing ? (
                   <>
@@ -319,7 +319,7 @@ export default function NaturalLanguageInput({ onExpenseAdded, utilityTypes = []
                   </>
                 ) : (
                   <>
-                    <Send className="mr-2 h-4 w-4" />
+                    <span className="material-symbols-outlined text-[18px] mr-2">send</span>
                     Process
                   </>
                 )}
@@ -347,7 +347,7 @@ export default function NaturalLanguageInput({ onExpenseAdded, utilityTypes = []
               {parsedExpenses.map((expense, index) => (
                 <div
                   key={index}
-                  className="p-2 bg-white/60 dark:bg-gray-900/60 rounded-lg border border-gray-200 dark:border-gray-700"
+                  className="p-3 bg-[#ffffff] dark:bg-[#14171a] rounded-lg border border-outline-variant/50"
                 >
                   {editingIndex === index ? (
                     <div className="space-y-2">
@@ -476,7 +476,7 @@ export default function NaturalLanguageInput({ onExpenseAdded, utilityTypes = []
                 onClick={confirmExpenses}
                 size="sm"
                 disabled={isSaving}
-                className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
+                className="flex-1 font-sans font-semibold bg-[#171c1f] text-[#ffffff] hover:bg-[#2c3134] dark:bg-[#f6fafe] dark:text-[#14171a] dark:hover:bg-[#d6dade] rounded-lg shadow-sm"
               >
                 {isSaving ? (
                   <>

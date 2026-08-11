@@ -239,92 +239,91 @@ export function ExpenseDetailsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] backdrop-blur-xl bg-white/80 dark:bg-[oklch(0.2_0.02_250)]/80 border-white/20 dark:border-white/10 shadow-2xl rounded-3xl overflow-hidden max-h-[90vh] overflow-y-auto">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 dark:from-blue-500/10 dark:to-purple-500/10" />
-        
-        <DialogHeader className="relative z-10">
+      <DialogContent className="sm:max-w-[600px] bg-[#ffffff] dark:bg-[#14171a] border border-outline-variant rounded-xl shadow-xl p-0 overflow-hidden max-h-[90vh] flex flex-col">
+        <DialogHeader className="p-6 pb-2">
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: "spring", duration: 0.5 }}
             className="mx-auto mb-4"
           >
-            <div className={`inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br ${config.color} shadow-lg`}>
-              <Receipt className="h-7 w-7 text-white" />
+            <div className={`inline-flex items-center justify-center w-14 h-14 rounded-xl bg-surface-container-low border border-outline-variant/50 shadow-sm`}>
+              <span className="material-symbols-outlined text-[28px] text-tertiary">receipt_long</span>
             </div>
           </motion.div>
           
-          <DialogTitle className="text-lg sm:text-xl font-bold text-center">Expense Details</DialogTitle>
-          <DialogDescription className="text-center text-muted-foreground">
+          <DialogTitle className="text-xl sm:text-2xl font-bold font-serif-heading text-center text-on-surface">Expense Details</DialogTitle>
+          <DialogDescription className="text-center font-sans font-medium text-on-surface-variant mt-1">
             {format(new Date(expense.date), 'EEEE, MMMM d, yyyy')}
           </DialogDescription>
         </DialogHeader>
         
-        <div className="space-y-4 my-6 relative z-10">
-          {/* Main Details */}
-          <motion.div 
-            className="p-4 rounded-2xl bg-white/50 dark:bg-white/5 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/30"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Tag className="h-4 w-4" />
-                  <span className="text-sm">Description</span>
-                </div>
-                <span className="font-medium">{expense.description}</span>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Wallet className="h-4 w-4" />
-                  <span className="text-sm">Amount</span>
-                </div>
-                <span className={`font-bold text-xl bg-gradient-to-r ${config.color} bg-clip-text text-transparent`}>
-                  {formatCurrencyWithMask(showAmounts, expense.amount, expense.currency || 'PKR')}
-                </span>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Calendar className="h-4 w-4" />
-                  <span className="text-sm">Date & Time</span>
-                </div>
-                <span className="text-sm">
-                  {format(new Date(expense.date), 'MMM d, yyyy')} at {format(new Date(expense.date), 'h:mm a')}
-                </span>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Category</span>
-                <span className={`text-xs px-3 py-1 rounded-full ${config.bgColor} ${config.textColor} font-medium`}>
-                  {config.label}
-                </span>
-              </div>
-              
-              {expense.subcategory && (
+        <div className="flex-1 overflow-y-auto px-6 pb-6 custom-scrollbar">
+          <div className="space-y-6 mt-4">
+            {/* Main Details */}
+            <motion.div 
+              className="p-5 rounded-xl bg-surface-container-low border border-outline-variant/50"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Utility Type</span>
-                  <span className="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300">
-                    {expense.subcategory}
+                  <div className="flex items-center gap-3 text-on-surface-variant">
+                    <span className="material-symbols-outlined text-[18px]">sell</span>
+                    <span className="font-sans font-medium text-sm">Description</span>
+                  </div>
+                  <span className="font-sans font-semibold text-on-surface">{expense.description}</span>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 text-on-surface-variant">
+                    <span className="material-symbols-outlined text-[18px]">account_balance_wallet</span>
+                    <span className="font-sans font-medium text-sm">Amount</span>
+                  </div>
+                  <span className="font-sans font-bold text-xl text-on-surface">
+                    {formatCurrencyWithMask(showAmounts, expense.amount, expense.currency || 'PKR')}
                   </span>
                 </div>
-              )}
-            </div>
-          </motion.div>
+                
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 text-on-surface-variant">
+                    <span className="material-symbols-outlined text-[18px]">calendar_month</span>
+                    <span className="font-sans font-medium text-sm">Date & Time</span>
+                  </div>
+                  <span className="font-sans font-medium text-sm text-on-surface">
+                    {format(new Date(expense.date), 'MMM d, yyyy')} at {format(new Date(expense.date), 'h:mm a')}
+                  </span>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className="font-sans font-medium text-sm text-on-surface-variant">Category</span>
+                  <span className={`font-sans font-semibold text-xs px-3 py-1 rounded-lg ${config.bgColor} ${config.textColor}`}>
+                    {config.label}
+                  </span>
+                </div>
+                
+                {expense.subcategory && (
+                  <div className="flex items-center justify-between">
+                    <span className="font-sans font-medium text-sm text-on-surface-variant">Utility Type</span>
+                    <span className="font-sans font-semibold text-xs px-3 py-1 rounded-lg bg-[#ffffff] text-[#171c1f] dark:bg-[#14171a] dark:text-[#f6fafe] border border-outline-variant">
+                      {expense.subcategory}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </motion.div>
 
           {/* Receipt Section */}
           <motion.div 
-            className="p-4 rounded-2xl bg-white/50 dark:bg-white/5 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/30"
+            className="p-5 rounded-xl bg-[#ffffff] dark:bg-[#14171a] border border-outline-variant/50"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm sm:text-base font-medium flex items-center gap-2">
-                <Paperclip className="h-4 w-4" />
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-sans text-base font-semibold flex items-center gap-2 text-on-surface">
+                <span className="material-symbols-outlined text-[18px]">attach_file</span>
                 Receipts {allReceipts.length > 0 && `(${allReceipts.length})`}
               </h3>
               {allReceipts.length < 5 && (
@@ -351,9 +350,9 @@ export function ExpenseDetailsDialog({
             {allReceipts.length > 0 ? (
               <div className="space-y-3">
                 {allReceipts.map((receiptData, index) => (
-                  <div key={index} className="space-y-2 p-3 rounded-lg bg-gray-50 dark:bg-gray-900/50">
+                  <div key={index} className="space-y-3 p-4 rounded-lg bg-surface-container-low border border-outline-variant/50">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">Receipt {index + 1}</span>
+                      <span className="font-sans font-medium text-sm text-on-surface">Receipt {index + 1}</span>
                       <div className="flex items-center gap-2">
                         <Button
                           variant="ghost"
@@ -363,9 +362,9 @@ export function ExpenseDetailsDialog({
                             newShowReceipts[index] = !newShowReceipts[index]
                             setShowReceipts(newShowReceipts)
                           }}
-                          className="h-8 w-8 p-0"
+                          className="h-8 w-8 p-0 text-on-surface-variant hover:text-[#171c1f] hover:bg-[#eaeef2] dark:hover:text-[#f6fafe] dark:hover:bg-[#24282c] rounded-lg"
                         >
-                          {showReceipts[index] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          {showReceipts[index] ? <span className="material-symbols-outlined text-[18px]">visibility_off</span> : <span className="material-symbols-outlined text-[18px]">visibility</span>}
                         </Button>
                       </div>
                     </div>
@@ -392,9 +391,9 @@ export function ExpenseDetailsDialog({
                         variant="outline"
                         size="sm"
                         onClick={() => handleDownloadReceipt(receiptData, index)}
-                        className="flex-1"
+                        className="flex-1 font-sans font-semibold rounded-lg bg-[#ffffff] hover:bg-[#eaeef2] text-[#171c1f] dark:bg-[#14171a] dark:hover:bg-[#24282c] dark:text-[#f6fafe] border-outline-variant"
                       >
-                        <Download className="h-4 w-4 mr-2" />
+                        <span className="material-symbols-outlined text-[18px] mr-2">download</span>
                         Download
                       </Button>
                       <Button
@@ -402,12 +401,12 @@ export function ExpenseDetailsDialog({
                         size="sm"
                         onClick={() => handleRemoveReceipt(index)}
                         disabled={deletingReceiptIndex === index}
-                        className="flex-1"
+                        className="flex-1 font-sans font-semibold rounded-lg border-outline-variant text-[#ba1a1a] hover:bg-[#ffdad6] hover:border-[#ba1a1a] dark:hover:bg-[#93000a]/20"
                       >
                         {deletingReceiptIndex === index ? (
                           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                         ) : (
-                          <X className="h-4 w-4 mr-2" />
+                          <span className="material-symbols-outlined text-[18px] mr-2">close</span>
                         )}
                         Remove
                       </Button>
@@ -416,8 +415,8 @@ export function ExpenseDetailsDialog({
                 ))}
               </div>
             ) : (
-              <div className="text-center py-4">
-                <p className="text-sm text-muted-foreground mb-3">No receipts attached</p>
+              <div className="text-center py-6 border-2 border-dashed border-outline-variant rounded-xl">
+                <p className="font-sans text-sm text-on-surface-variant mb-3">No receipts attached</p>
                 <div className="flex justify-center">
                   <label htmlFor="receipt-upload-dialog">
                     <Button
@@ -425,12 +424,13 @@ export function ExpenseDetailsDialog({
                       size="sm"
                       disabled={uploadingReceipt}
                       asChild
+                      className="font-sans font-semibold rounded-lg bg-[#ffffff] hover:bg-[#eaeef2] text-[#171c1f] dark:bg-[#14171a] dark:hover:bg-[#24282c] dark:text-[#f6fafe] border-outline-variant"
                     >
-                      <span>
+                      <span className="flex items-center cursor-pointer">
                         {uploadingReceipt ? (
                           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                         ) : (
-                          <Plus className="h-4 w-4 mr-2" />
+                          <span className="material-symbols-outlined text-[18px] mr-2">add</span>
                         )}
                         Add Receipts
                       </span>
@@ -450,14 +450,15 @@ export function ExpenseDetailsDialog({
               multiple
             />
           </motion.div>
+          </div>
         </div>
         
-        <DialogFooter className="relative z-10 flex-col sm:flex-row gap-2">
+        <DialogFooter className="p-6 pt-4 border-t border-outline-variant flex-col sm:flex-row gap-2 mt-auto">
           <Button
-            variant="destructive"
+            variant="outline"
             onClick={handleDelete}
             disabled={isDeleting}
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto font-sans font-semibold rounded-lg border-outline-variant text-[#ba1a1a] hover:bg-[#ffdad6] hover:border-[#ba1a1a] dark:hover:bg-[#93000a]/20"
           >
             {isDeleting ? (
               <>
@@ -466,7 +467,7 @@ export function ExpenseDetailsDialog({
               </>
             ) : (
               <>
-                <Trash2 className="h-4 w-4 mr-2" />
+                <span className="material-symbols-outlined text-[18px] mr-2">delete</span>
                 Delete Expense
               </>
             )}
@@ -474,26 +475,14 @@ export function ExpenseDetailsDialog({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto font-sans font-semibold rounded-lg bg-[#f0f4f8] hover:bg-[#eaeef2] text-[#171c1f] dark:bg-[#1c2024] dark:hover:bg-[#24282c] dark:text-[#f6fafe] border-outline-variant"
           >
-            <X className="h-4 w-4 mr-2" />
+            <span className="material-symbols-outlined text-[18px] mr-2">close</span>
             Close
           </Button>
         </DialogFooter>
         
-        {/* Decorative elements */}
-        <motion.div
-          className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-gradient-to-br from-blue-400/10 to-purple-400/10 blur-2xl"
-          animate={{ 
-            scale: [1, 1.2, 1],
-            rotate: [0, 90, 0]
-          }}
-          transition={{ 
-            duration: 8,
-            repeat: Infinity,
-            repeatType: "reverse"
-          }}
-        />
+        {/* Decorative elements removed for minimal styling */}
       </DialogContent>
     </Dialog>
   )

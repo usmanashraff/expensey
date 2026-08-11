@@ -85,13 +85,8 @@ export function DashboardClient({ user }: DashboardClientProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-[oklch(0.13_0.02_250)] dark:via-[oklch(0.14_0.02_260)] dark:to-[oklch(0.15_0.02_270)] relative">
-      {/* Background Blobs */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-20 -left-40 w-80 h-80 bg-purple-300 dark:bg-purple-600/20 rounded-full filter blur-3xl opacity-30 animate-blob" />
-        <div className="absolute top-40 -right-40 w-80 h-80 bg-blue-300 dark:bg-blue-600/20 rounded-full filter blur-3xl opacity-30 animate-blob animation-delay-2000" />
-        <div className="absolute -bottom-20 left-40 w-80 h-80 bg-pink-300 dark:bg-pink-600/20 rounded-full filter blur-3xl opacity-30 animate-blob animation-delay-4000" />
-      </div>
+    <div className="min-h-screen bg-surface text-on-surface relative">
+      {/* Clean minimal background, no ambient glow */}
 
       {/* Sidebar Navigation */}
       <DashboardSidebar
@@ -108,20 +103,20 @@ export function DashboardClient({ user }: DashboardClientProps) {
       <div className={`transition-all duration-300 ${isDesktopCollapsed ? 'lg:pl-20' : 'lg:pl-64'
         } min-h-screen flex flex-col relative z-10`}>
         {/* Top Header Bar */}
-        <header className="px-4 py-3.5 sm:px-8 border-b border-white/20 dark:border-white/10 backdrop-blur-xl bg-white/40 dark:bg-[oklch(0.18_0.02_250)]/40 flex items-center justify-between sticky top-0 z-30 shadow-xs">
+        <header className="px-4 py-4 sm:px-8 border-b border-outline-variant/50 bg-surface/90 backdrop-blur-md flex items-center justify-between sticky top-0 z-30 shadow-2xs">
           <div className="flex items-center gap-3">
             {/* Mobile Hamburger Menu */}
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setIsMobileSidebarOpen(true)}
-              className="lg:hidden h-9 w-9 text-foreground"
+              className="lg:hidden h-9 w-9 text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-md"
             >
-              <Menu className="h-5 w-5" />
+              <span className="material-symbols-outlined">menu</span>
             </Button>
 
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-foreground">
+              <h1 className="text-xl sm:text-2xl font-semibold font-serif-heading tracking-tight text-on-surface">
                 {menuTitles[activeMenu]}
               </h1>
             </div>
@@ -131,7 +126,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
             {activeMenu === 'dashboard' && (
               <Button
                 onClick={() => setShowExpenseDialog(true)}
-                className="hidden sm:flex bg-purple-600 hover:bg-purple-700 text-white rounded-xl shadow-md h-9.5 px-4 gap-2 font-medium transition-colors"
+                className="hidden sm:flex bg-[#212529] hover:bg-black text-white dark:bg-[#f6fafe] dark:hover:bg-white dark:text-[#14171a] rounded-full font-semibold tracking-wider text-xs uppercase px-5 py-2.5 shadow-xs transition-all gap-2"
               >
                 <Plus className="h-4 w-4" />
                 <span>Add Expense</span>
@@ -154,7 +149,6 @@ export function DashboardClient({ user }: DashboardClientProps) {
             onOptimisticExpenseConfirmed={handleOptimisticExpenseConfirmed}
             utilityTypeManagerNode={
               <div className="relative w-full pt-2">
-                <div className="absolute inset-0 bg-gradient-to-r from-green-400/20 to-emerald-400/20 dark:from-green-600/10 dark:to-emerald-600/10 rounded-3xl blur-xl" />
                 <UtilityTypeManager onUtilityTypesChanged={handleUtilityTypesChanged} />
               </div>
             }
@@ -168,7 +162,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
           <Button
             onClick={() => setShowExpenseDialog(true)}
             size="lg"
-            className="rounded-full h-14 w-14 shadow-2xl bg-purple-600 hover:bg-purple-700 text-white p-0 flex items-center justify-center transition-colors"
+            className="rounded-full h-14 w-14 shadow-xl bg-[#212529] hover:bg-[#343a40] text-[#fcf9f5] dark:bg-[#e4e4cc] dark:text-[#1c1c1a] p-0 flex items-center justify-center transition-colors"
           >
             <Plus className="h-6 w-6" />
           </Button>

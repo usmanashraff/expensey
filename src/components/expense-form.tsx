@@ -233,7 +233,7 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger, isInDialog 
   if (compact) {
     return (
       <form onSubmit={handleSubmit} className="space-y-3">
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-3">
           <div>
             <Input
               type="number"
@@ -242,7 +242,7 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger, isInDialog 
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               required
-              className="h-9 text-sm backdrop-blur-sm bg-white/50 dark:bg-white/5"
+              className="h-10 text-sm font-sans font-medium bg-[#ffffff] dark:bg-[#14171a] border-outline-variant text-on-surface placeholder:text-[#8b9196] focus:ring-1 focus:ring-[#496177] rounded-lg"
             />
           </div>
           <div>
@@ -250,15 +250,15 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger, isInDialog 
               setCategory(value as ExpenseCategory)
               if (value === 'SAVINGS') setUtilityType('')
             }}>
-              <SelectTrigger className="h-9 text-sm backdrop-blur-sm bg-white/50 dark:bg-white/5">
+              <SelectTrigger className="h-10 text-sm font-sans font-medium bg-[#ffffff] dark:bg-[#14171a] border-outline-variant text-on-surface rounded-lg">
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>
                 {Object.entries(categoryConfig).map(([value, config]) => (
                   <SelectItem key={value} value={value}>
                     <div className="flex items-center gap-1">
-                      <div className={`w-2 h-2 rounded-full bg-gradient-to-r ${config.color}`} />
-                      <span className="text-xs">{config.label}</span>
+                      <div className={`w-2.5 h-2.5 rounded-full`} style={{ background: config.color.includes('from') ? 'linear-gradient(to right, var(--tw-gradient-stops))' : config.color }} />
+                      <span className="text-sm font-sans font-medium">{config.label}</span>
                     </div>
                   </SelectItem>
                 ))}
@@ -273,23 +273,23 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger, isInDialog 
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           required
-          className="h-9 text-sm backdrop-blur-sm bg-white/50 dark:bg-white/5"
+          className="h-10 text-sm font-sans font-medium bg-[#ffffff] dark:bg-[#14171a] border-outline-variant text-on-surface placeholder:text-[#8b9196] focus:ring-1 focus:ring-[#496177] rounded-lg"
         />
         
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-3">
           <Select 
             value={utilityType} 
             onValueChange={setUtilityType} 
             required={category !== 'SAVINGS'}
             disabled={loadingUtilities || category === 'SAVINGS'}
           >
-            <SelectTrigger className="h-9 text-sm backdrop-blur-sm bg-white/50 dark:bg-white/5">
+            <SelectTrigger className="h-10 text-sm font-sans font-medium bg-[#ffffff] dark:bg-[#14171a] border-outline-variant text-on-surface rounded-lg">
               <SelectValue placeholder="Utility" />
             </SelectTrigger>
             <SelectContent>
               {utilityTypes.map((type) => (
                 <SelectItem key={type.id} value={type.name}>
-                  <span className="text-xs">{type.name}</span>
+                  <span className="text-sm font-sans font-medium">{type.name}</span>
                 </SelectItem>
               ))}
             </SelectContent>
@@ -299,9 +299,9 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger, isInDialog 
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
-                className="h-9 text-xs justify-start text-left font-normal backdrop-blur-sm bg-white/50 dark:bg-white/5"
+                className="h-10 text-sm font-sans font-medium justify-start text-left bg-[#ffffff] dark:bg-[#14171a] border-outline-variant text-on-surface rounded-lg hover:bg-surface-container"
               >
-                <CalendarIcon className="mr-1 h-3 w-3" />
+                <span className="material-symbols-outlined text-[18px] mr-2">calendar_month</span>
                 {date ? format(date, 'MMM d') : 'Date'}
               </Button>
             </PopoverTrigger>
@@ -320,11 +320,11 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger, isInDialog 
         {/* Receipt Upload - Compact Version */}
         <div className="space-y-2">
           {!receipt ? (
-            <div className="flex items-center justify-center w-full">
-              <label htmlFor="receipt-upload-compact" className="flex items-center justify-center w-full h-9 border border-dashed rounded-lg cursor-pointer bg-white/50 dark:bg-white/5 hover:bg-white/70 dark:hover:bg-white/10 transition-colors">
+            <div className="flex items-center justify-center w-full mt-2">
+              <label htmlFor="receipt-upload-compact" className="flex items-center justify-center w-full h-10 border border-dashed border-outline-variant rounded-lg cursor-pointer bg-[#f0f4f8] hover:bg-[#eaeef2] dark:bg-[#1c2024] dark:hover:bg-[#24282c] transition-colors">
                 <div className="flex items-center gap-2">
-                  <Paperclip className="w-4 h-4 text-gray-400" />
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                  <span className="material-symbols-outlined text-[18px] text-on-surface-variant">attach_file</span>
+                  <span className="text-sm font-sans font-medium text-on-surface-variant">
                     Add receipt (optional)
                   </span>
                 </div>
@@ -338,13 +338,13 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger, isInDialog 
               </label>
             </div>
           ) : (
-            <div className="relative p-2 border rounded-lg bg-white/50 dark:bg-white/5">
+            <div className="relative p-2 border border-outline-variant rounded-lg bg-surface-container-low mt-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <Paperclip className="w-4 h-4 text-gray-400" />
+                  <span className="material-symbols-outlined text-[18px] text-on-surface-variant">attach_file</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium truncate">{receipt.name}</p>
-                    <p className="text-[10px] text-gray-500">
+                    <p className="text-sm font-sans font-semibold text-on-surface truncate">{receipt.name}</p>
+                    <p className="text-xs font-sans font-medium text-on-surface-variant">
                       {(receipt.size / 1024).toFixed(1)} KB
                     </p>
                   </div>
@@ -354,7 +354,7 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger, isInDialog 
                   onClick={removeReceipt}
                   className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                 >
-                  <X className="w-3 h-3" />
+                  <span className="material-symbols-outlined text-[16px]">close</span>
                 </button>
               </div>
             </div>
@@ -363,10 +363,9 @@ export function ExpenseForm({ onExpenseAdded, utilityRefreshTrigger, isInDialog 
         
         <Button 
           type="submit" 
-          className="w-full h-9 text-sm bg-purple-600 hover:bg-purple-700 text-white transition-colors" 
+          className="w-full h-10 mt-2 text-sm font-sans font-semibold bg-[#171c1f] text-[#ffffff] hover:bg-[#2c3134] dark:bg-[#f6fafe] dark:text-[#14171a] dark:hover:bg-[#d6dade] rounded-lg shadow-sm" 
           disabled={isSubmitting}
         >
-          <PlusCircle className="mr-1 h-3 w-3" />
           {isSubmitting ? 'Adding...' : 'Add Expense'}
         </Button>
       </form>

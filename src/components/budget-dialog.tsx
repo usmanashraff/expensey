@@ -14,6 +14,7 @@ interface BudgetDialogProps {
   selectedMonth: number
   selectedYear: number
   onBudgetUpdated?: () => void
+  trigger?: React.ReactNode
 }
 
 interface Budget {
@@ -23,7 +24,7 @@ interface Budget {
   SAVINGS: number
 }
 
-export function BudgetDialog({ selectedMonth, selectedYear, onBudgetUpdated }: BudgetDialogProps) {
+export function BudgetDialog({ selectedMonth, selectedYear, onBudgetUpdated, trigger }: BudgetDialogProps) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [budget, setBudget] = useState<Budget>({
@@ -39,26 +40,22 @@ export function BudgetDialog({ selectedMonth, selectedYear, onBudgetUpdated }: B
   const categoryConfig = {
     NEED: {
       label: 'Needs',
-      icon: Wallet,
-      color: 'from-yellow-500 to-orange-500',
+      icon: 'account_balance_wallet',
       description: 'Essential expenses like rent, utilities, groceries'
     },
     WANT: {
       label: 'Wants',
-      icon: TrendingUp,
-      color: 'from-red-500 to-pink-500',
+      icon: 'trending_up',
       description: 'Non-essential purchases and entertainment'
     },
     SELF_DEVELOPMENT: {
       label: 'Self Development',
-      icon: Sparkles,
-      color: 'from-green-500 to-emerald-500',
+      icon: 'auto_awesome',
       description: 'Investments in personal growth and learning'
     },
     SAVINGS: {
       label: 'Minimum Savings',
-      icon: PiggyBank,
-      color: 'from-blue-500 to-cyan-500',
+      icon: 'savings',
       description: 'Minimum amount to save each month'
     }
   }
@@ -160,84 +157,57 @@ export function BudgetDialog({ selectedMonth, selectedYear, onBudgetUpdated }: B
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <motion.div
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          transition={{ duration: 0.2 }}
-        >
-          <Button 
-            variant="outline" 
-            size="sm"
-            className="relative flex items-center gap-2 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 hover:from-indigo-500/20 hover:to-purple-500/20 border-indigo-300/50 dark:border-indigo-700/50 hover:border-indigo-400 dark:hover:border-indigo-600 transition-all duration-300 shadow-sm hover:shadow-lg hover:shadow-indigo-500/20 dark:hover:shadow-indigo-400/20 group overflow-hidden"
+        {trigger ? (
+          trigger
+        ) : (
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ duration: 0.2 }}
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
-            <motion.div
-              animate={{ 
-                rotate: [0, -10, 10, -10, 0],
-              }}
-              transition={{ 
-                duration: 2,
-                repeat: Infinity,
-                repeatDelay: 3,
-                ease: "easeInOut"
-              }}
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="flex items-center gap-2 bg-[#f0f4f8] hover:bg-[#eaeef2] text-[#171c1f] dark:bg-[#1c2024] dark:hover:bg-[#24282c] dark:text-[#f6fafe] border border-outline-variant transition-colors rounded-lg font-sans font-semibold shadow-sm h-9 px-3"
             >
-              <Wallet className="h-4 w-4 text-indigo-600 dark:text-indigo-400 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 transition-colors relative z-10" />
-            </motion.div>
-            <span className="font-medium text-indigo-700 dark:text-indigo-300 group-hover:text-indigo-800 dark:group-hover:text-indigo-200 transition-colors relative z-10">
-              Set Budget
-            </span>
-            <motion.div
-              className="absolute -right-1 -top-1"
-              animate={{ 
-                scale: [1, 1.2, 1],
-                opacity: [0.7, 1, 0.7]
-              }}
-              transition={{ 
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-            >
-              <div className="w-2 h-2 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full" />
-            </motion.div>
-          </Button>
-        </motion.div>
+              <span className="material-symbols-outlined text-[18px]">account_balance_wallet</span>
+              <span>Set Budget</span>
+            </Button>
+          </motion.div>
+        )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px] backdrop-blur-xl bg-white/80 dark:bg-[oklch(0.2_0.02_250)]/80 border-white/20 dark:border-white/10 shadow-2xl">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 dark:from-blue-500/20 dark:to-purple-500/20 rounded-lg" />
-        <DialogHeader className="relative z-10">
-          <DialogTitle className="text-gray-900 dark:text-gray-100 text-lg sm:text-xl font-semibold">Set Monthly Budget</DialogTitle>
-          <DialogDescription className="text-gray-600 dark:text-gray-400">
+      <DialogContent className="sm:max-w-[500px] bg-[#ffffff] dark:bg-[#14171a] border border-outline-variant rounded-xl shadow-xl p-0 overflow-hidden">
+        <DialogHeader className="p-6 pb-2">
+          <DialogTitle className="text-on-surface text-xl font-serif-heading font-bold">Set Monthly Budget</DialogTitle>
+          <DialogDescription className="text-on-surface-variant font-sans font-medium mt-1">
             Configure your budget for {monthName}
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-3 py-2 relative z-10 max-h-[50vh] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent">
+        <div className="grid gap-4 px-6 py-4 max-h-[60vh] overflow-y-auto custom-scrollbar">
           {Object.entries(categoryConfig).map(([key, config], index) => {
-            const Icon = config.icon
             return (
               <motion.div
                 key={key}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="space-y-1 p-3 rounded-xl bg-white/50 dark:bg-white/5 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/30"
+                className="space-y-3 p-4 rounded-xl bg-surface-container-low border border-outline-variant/50"
               >
                 <div className="flex items-center justify-between">
-                  <Label htmlFor={key} className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
-                    <div className={`inline-flex items-center justify-center w-7 h-7 rounded-lg bg-gradient-to-r ${config.color} shadow-sm`}>
-                      <Icon className="h-3.5 w-3.5 text-white" />
+                  <Label htmlFor={key} className="flex items-center gap-3 text-on-surface">
+                    <div className={`inline-flex items-center justify-center w-8 h-8 rounded-lg bg-[#ffffff] dark:bg-[#14171a] border border-outline-variant/50 text-tertiary shadow-sm`}>
+                      <span className="material-symbols-outlined text-[18px]">{config.icon}</span>
                     </div>
                     <div>
-                      <span className="font-medium text-sm">{config.label}</span>
+                      <span className="font-sans font-semibold text-sm">{config.label}</span>
                       {key === 'SAVINGS' && (
-                        <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">(Min)</span>
+                        <span className="text-xs text-on-surface-variant ml-1 font-sans font-medium">(Min)</span>
                       )}
-                      <p className="text-[10px] text-gray-600 dark:text-gray-400 leading-tight">{config.description}</p>
+                      <p className="text-xs text-on-surface-variant leading-tight font-sans mt-0.5">{config.description}</p>
                     </div>
                   </Label>
                 </div>
-                <div className="relative mt-1">
+                <div className="relative">
                   <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-gray-500 dark:text-gray-400 z-10">
                     {settings.defaultCurrency || 'PKR'}
                   </span>
@@ -259,8 +229,8 @@ export function BudgetDialog({ selectedMonth, selectedYear, onBudgetUpdated }: B
                         }))
                       }
                     }}
-                    className={`h-9 pl-10 text-sm bg-white/50 dark:bg-white/5 backdrop-blur-sm border-gray-300/50 dark:border-gray-700/50 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/50 transition-all duration-200 ${
-                      errors[key as keyof Budget] ? 'border-red-500/50 dark:border-red-400/50' : ''
+                    className={`h-10 pl-10 text-sm font-sans font-medium bg-[#ffffff] dark:bg-[#14171a] border-outline-variant text-on-surface placeholder:text-[#8b9196] focus:ring-1 focus:ring-[#496177] transition-all duration-200 rounded-lg ${
+                      errors[key as keyof Budget] ? 'border-[#ba1a1a] focus:ring-[#ba1a1a]' : ''
                     }`}
                     placeholder="0"
                     min="0"
@@ -290,29 +260,29 @@ export function BudgetDialog({ selectedMonth, selectedYear, onBudgetUpdated }: B
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="flex items-center gap-2 p-2 rounded-lg bg-red-500/10 dark:bg-red-400/10 backdrop-blur-sm border border-red-200/50 dark:border-red-400/30"
+                className="flex items-center gap-2 p-3 rounded-lg bg-[#ffdad6] dark:bg-[#93000a]/20 border border-[#ba1a1a]/30"
               >
-                <AlertCircle className="h-3.5 w-3.5 text-red-600 dark:text-red-400 flex-shrink-0" />
-                <p className="text-xs text-red-600 dark:text-red-400">
+                <span className="material-symbols-outlined text-[16px] text-[#ba1a1a] flex-shrink-0">error</span>
+                <p className="text-sm font-sans font-medium text-[#ba1a1a]">
                   Set at least one budget amount
                 </p>
               </motion.div>
             </AnimatePresence>
           )}
         </div>
-        <DialogFooter className="relative z-10">
+        <DialogFooter className="p-6 pt-4 border-t border-outline-variant">
           <Button 
             variant="outline" 
             onClick={() => setOpen(false)}
             disabled={loading}
-            className="bg-white/50 dark:bg-white/5 backdrop-blur-sm border-gray-300/50 dark:border-gray-700/50 hover:bg-white/70 dark:hover:bg-white/10"
+            className="font-sans font-semibold rounded-lg bg-[#f0f4f8] hover:bg-[#eaeef2] text-[#171c1f] dark:bg-[#1c2024] dark:hover:bg-[#24282c] dark:text-[#f6fafe] border-outline-variant"
           >
             Cancel
           </Button>
           <Button 
             onClick={handleSubmit}
             disabled={loading}
-            className="bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600 shadow-lg"
+            className="bg-[#171c1f] text-[#ffffff] hover:bg-[#2c3134] dark:bg-[#f6fafe] dark:text-[#14171a] dark:hover:bg-[#d6dade] font-sans font-semibold rounded-lg shadow-sm"
           >
             {loading ? 'Saving...' : 'Save Budget'}
           </Button>

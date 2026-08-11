@@ -91,47 +91,31 @@ export default function AIInsights({ month, year }: AIInsightsProps) {
   const parsedAnalysis = analysis ? parseAnalysisContent(analysis) : null
 
   return (
-    <Card className="relative backdrop-blur-xl bg-white/50 dark:bg-[oklch(0.2_0.02_250)]/40 border-white/20 dark:border-white/10 rounded-3xl overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5 dark:from-purple-500/10 dark:to-pink-500/10" />
-      
-      <CardHeader className="relative z-10">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <motion.div
-              initial={{ rotate: -10 }}
-              animate={{ rotate: 10 }}
-              transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }}
-              className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 shadow-lg"
-            >
-              <Brain className="h-5 w-5 text-white" />
-            </motion.div>
-            <div>
-              <CardTitle className="text-base sm:text-xl">AI Spending Insights</CardTitle>
-              <CardDescription className="text-xs sm:text-sm">
-                Powered by advanced pattern analysis
-              </CardDescription>
-            </div>
+    <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-8 shadow-sm">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-outline-variant/50 pb-6 mb-8 gap-4">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-[#496177]/10 flex items-center justify-center text-tertiary dark:text-on-surface border border-[#496177]/20">
+            <span className="material-symbols-outlined text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
           </div>
-          
-          <Button
-            onClick={analyzeSpending}
-            disabled={loading}
-            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Analyzing...
-              </>
-            ) : (
-              <>
-                <Sparkles className="mr-2 h-4 w-4" />
-                Analyze Spending
-              </>
-            )}
-          </Button>
+          <div>
+            <h3 className="font-serif-heading text-2xl font-medium text-on-surface">AI Spending Insights</h3>
+            <p className="font-sans text-base text-on-surface-variant">Powered by advanced pattern analysis</p>
+          </div>
         </div>
-      </CardHeader>
+        <button
+          onClick={analyzeSpending}
+          disabled={loading}
+          className="bg-[#212529] hover:bg-black text-white dark:bg-[#f6fafe] dark:hover:bg-white dark:text-[#14171a] px-6 py-3 rounded-full font-sans text-xs font-semibold uppercase tracking-wider flex items-center gap-2 self-start md:self-auto transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+        >
+          {loading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <span className="material-symbols-outlined text-sm">analytics</span>
+          )}
+          {loading ? 'Analyzing...' : 'Analyze Spending'}
+        </button>
+      </div>
 
       <AnimatePresence>
         {showInsights && (
@@ -140,152 +124,155 @@ export default function AIInsights({ month, year }: AIInsightsProps) {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
+            className="overflow-hidden"
           >
-            <CardContent className="relative z-10 space-y-4">
-              {loading ? (
-                <div className="flex flex-col items-center justify-center py-8">
-                  <Loader2 className="h-8 w-8 animate-spin text-purple-500 mb-4" />
-                  <p className="text-sm text-muted-foreground">Analyzing your spending patterns...</p>
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-[#496177] mb-4" />
+                <p className="text-sm text-on-surface-variant">Analyzing your spending patterns...</p>
+              </div>
+            ) : parsedAnalysis ? (
+              <>
+                {/* Bento Grid Content */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                  {/* Left Column: Core Insights */}
+                  <div className="lg:col-span-7 flex flex-col gap-6">
+                    {/* Financial Health Score */}
+                    {parsedAnalysis.healthScore && (
+                      <div className="bg-[#ffffff] dark:bg-[#14171a] border border-outline-variant rounded-lg p-6 flex items-start gap-4 hover:border-[#496177]/50 transition-colors">
+                        <span className="material-symbols-outlined text-tertiary dark:text-on-surface mt-1">trending_up</span>
+                        <div>
+                          <h4 className="font-sans text-sm font-semibold tracking-wide text-on-surface mb-2">Financial Health Score</h4>
+                          <div className="text-sm text-on-surface-variant space-y-1">
+                            {parsedAnalysis.healthScore.split('\n').map((line: string, i: number) => (
+                              <div key={i}>{line}</div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Spending Patterns */}
+                    {parsedAnalysis.patterns && (
+                      <div className="bg-[#ffffff] dark:bg-[#14171a] border border-outline-variant rounded-lg p-6 hover:border-[#496177]/50 transition-colors">
+                        <div className="flex items-center gap-3 mb-4">
+                          <span className="material-symbols-outlined text-on-surface-variant">donut_small</span>
+                          <h4 className="font-sans text-sm font-semibold tracking-wide text-on-surface">Spending Patterns</h4>
+                        </div>
+                        <ul className="space-y-3 font-sans text-base text-[#444749] dark:text-[#f6fafe]">
+                          {parsedAnalysis.patterns.split('\n').filter(Boolean).map((line: string, i: number) => (
+                            <li key={i} className="flex justify-between items-center py-2 border-b border-outline-variant/30 last:border-0">
+                              <span className={line.startsWith('•') || line.startsWith('-') ? 'ml-2' : ''}>{line}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Next Month Forecast */}
+                    {parsedAnalysis.forecast && (
+                      <div className="bg-[#ffffff] dark:bg-[#14171a] border border-outline-variant rounded-lg p-6 hover:border-[#496177]/50 transition-colors">
+                        <div className="flex items-center gap-3 mb-4">
+                          <span className="material-symbols-outlined text-on-surface-variant">calendar_month</span>
+                          <h4 className="font-sans text-sm font-semibold tracking-wide text-on-surface">Next Month Forecast</h4>
+                        </div>
+                        <ul className="space-y-3 font-sans text-base text-[#444749] dark:text-[#f6fafe]">
+                          {parsedAnalysis.forecast.split('\n').filter(Boolean).map((line: string, i: number) => (
+                            <li key={i} className="flex justify-between items-center">
+                              <span className={line.startsWith('•') || line.startsWith('-') ? 'ml-2 text-on-surface-variant' : ''}>{line}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right Column: Alerts & Recommendations */}
+                  <div className="lg:col-span-5 flex flex-col gap-6">
+                    {/* Areas of Concern */}
+                    {parsedAnalysis.concerns && (
+                      <div className="bg-[#ffffff] dark:bg-[#14171a] border border-[#ba1a1a]/30 rounded-lg p-6 relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-1 h-full bg-[#ba1a1a]"></div>
+                        <div className="flex items-center gap-3 mb-4">
+                          <span className="material-symbols-outlined text-[#ba1a1a]">error</span>
+                          <h4 className="font-sans text-sm font-semibold tracking-wide text-on-surface">Areas of Concern</h4>
+                        </div>
+                        <ul className="space-y-3 font-sans text-base text-[#444749] dark:text-[#f6fafe]">
+                          {parsedAnalysis.concerns.split('\n').filter(Boolean).map((line: string, i: number) => (
+                            <li key={i} className="flex items-start gap-2">
+                              <span className="material-symbols-outlined text-[#ba1a1a] text-sm mt-1">remove</span>
+                              <span>{line.replace(/^[•-]\s*/, '')}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Smart Recommendations */}
+                    {parsedAnalysis.recommendations && (
+                      <div className="bg-[#f0f4f8] dark:bg-[#24282c] border border-outline-variant rounded-lg p-6">
+                        <div className="flex items-center gap-3 mb-4">
+                          <span className="material-symbols-outlined text-tertiary dark:text-on-surface">lightbulb</span>
+                          <h4 className="font-sans text-sm font-semibold tracking-wide text-on-surface">Smart Recommendations</h4>
+                        </div>
+                        <ul className="space-y-3 font-sans text-base text-[#444749] dark:text-[#f6fafe]">
+                          {parsedAnalysis.recommendations.split('\n').filter(Boolean).map((line: string, i: number) => (
+                            <li key={i} className="flex items-center gap-2">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#496177] dark:bg-[#f6fafe] shrink-0"></span>
+                              <span>{line.replace(/^[•-]\s*/, '')}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Positive Reinforcement */}
+                    {parsedAnalysis.positives && (
+                      <div className="bg-[#ffffff] dark:bg-[#14171a] border border-outline-variant rounded-lg p-6 flex flex-col items-center text-center justify-center flex-grow">
+                        <span className="material-symbols-outlined text-3xl mb-3 text-[#181c20] dark:text-[#f6fafe]">verified</span>
+                        <h4 className="font-sans text-sm font-semibold tracking-wide text-on-surface mb-2">You're Doing Great!</h4>
+                        <div className="font-sans text-base text-on-surface-variant space-y-1">
+                          {parsedAnalysis.positives.split('\n').filter(Boolean).map((line: string, i: number) => (
+                            <div key={i}>{line.replace(/^[•-]\s*/, '')}</div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              ) : parsedAnalysis ? (
-                <div className="space-y-6">
-                  {/* Health Score */}
-                  {parsedAnalysis.healthScore && (
-                    <div className="rounded-xl bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-950/20 dark:to-blue-950/20 p-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <TrendingUp className="h-5 w-5 text-green-600 dark:text-green-400" />
-                        <h3 className="font-semibold">Financial Health Score</h3>
-                      </div>
-                      <div className="text-sm text-gray-700 dark:text-gray-300">
-                        {parsedAnalysis.healthScore.split('\n').map((line: string, i: number) => (
-                          <div key={i} className={line.startsWith('•') || line.startsWith('-') ? 'ml-2' : ''}>
-                            {line}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
 
-                  {/* Spending Patterns */}
-                  {parsedAnalysis.patterns && (
-                    <div className="rounded-xl border border-gray-200 dark:border-gray-700 p-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Brain className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                        <h3 className="font-semibold">Spending Patterns</h3>
-                      </div>
-                      <div className="text-sm text-gray-700 dark:text-gray-300 space-y-1">
-                        {parsedAnalysis.patterns.split('\n').map((line: string, i: number) => (
-                          <div key={i} className={line.startsWith('•') || line.startsWith('-') ? 'ml-2' : ''}>
-                            {line}
-                          </div>
-                        ))}
+                {/* Footer Summary Stats */}
+                {statistics && (
+                  <div className="mt-10 pt-8 border-t border-outline-variant/50 grid grid-cols-2 lg:grid-cols-4 gap-6 text-center">
+                    <div>
+                      <div className="font-sans text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Net Balance</div>
+                      <div className="font-serif-heading text-2xl font-medium text-on-surface">
+                        {statistics.netBalance.toLocaleString()} <span className="text-sm font-normal text-on-surface-variant">PKR</span>
                       </div>
                     </div>
-                  )}
-
-                  {/* Top Concerns */}
-                  {parsedAnalysis.concerns && (
-                    <div className="rounded-xl bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/20 dark:to-orange-950/20 p-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
-                        <h3 className="font-semibold">Areas of Concern</h3>
-                      </div>
-                      <div className="text-sm text-gray-700 dark:text-gray-300 space-y-1">
-                        {parsedAnalysis.concerns.split('\n').map((line: string, i: number) => (
-                          <div key={i} className={line.startsWith('•') || line.startsWith('-') ? 'ml-2 text-red-700 dark:text-red-300' : ''}>
-                            {line}
-                          </div>
-                        ))}
+                    <div className="border-l border-outline-variant/30">
+                      <div className="font-sans text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Savings Rate</div>
+                      <div className="font-serif-heading text-2xl font-medium text-tertiary dark:text-on-surface">{statistics.savingsRate}%</div>
+                    </div>
+                    <div className="border-l border-outline-variant/30 hidden lg:block">
+                      <div className="font-sans text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Daily Avg</div>
+                      <div className="font-serif-heading text-2xl font-medium text-on-surface">
+                        {statistics.avgDailySpending} <span className="text-sm font-normal text-on-surface-variant">PKR</span>
                       </div>
                     </div>
-                  )}
-
-                  {/* Recommendations */}
-                  {parsedAnalysis.recommendations && (
-                    <div className="rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 p-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Sparkles className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                        <h3 className="font-semibold">Smart Recommendations</h3>
-                      </div>
-                      <div className="text-sm text-gray-700 dark:text-gray-300 space-y-1">
-                        {parsedAnalysis.recommendations.split('\n').map((line: string, i: number) => (
-                          <div key={i} className={line.startsWith('•') || line.startsWith('-') ? 'ml-2 font-medium' : ''}>
-                            {line}
-                          </div>
-                        ))}
+                    <div className="border-l border-outline-variant/30 hidden lg:block">
+                      <div className="font-sans text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Total Spent</div>
+                      <div className="font-serif-heading text-2xl font-medium text-[#ba1a1a]">
+                        {statistics.totalExpenses.toLocaleString()} <span className="text-sm font-normal text-on-surface-variant">PKR</span>
                       </div>
                     </div>
-                  )}
-
-                  {/* Positive Observations */}
-                  {parsedAnalysis.positives && (
-                    <div className="rounded-xl bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 p-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
-                        <h3 className="font-semibold">You're Doing Great!</h3>
-                      </div>
-                      <div className="text-sm text-gray-700 dark:text-gray-300 space-y-1">
-                        {parsedAnalysis.positives.split('\n').map((line: string, i: number) => (
-                          <div key={i} className={line.startsWith('•') || line.startsWith('-') ? 'ml-2 text-green-700 dark:text-green-300' : ''}>
-                            {line}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Forecast */}
-                  {parsedAnalysis.forecast && (
-                    <div className="rounded-xl bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 p-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Calendar className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                        <h3 className="font-semibold">Next Month Forecast</h3>
-                      </div>
-                      <div className="text-sm text-gray-700 dark:text-gray-300 space-y-1">
-                        {parsedAnalysis.forecast.split('\n').map((line: string, i: number) => (
-                          <div key={i} className={line.startsWith('•') || line.startsWith('-') ? 'ml-2' : ''}>
-                            {line}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Quick Stats */}
-                  {statistics && (
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
-                      <div className="text-center p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50">
-                        <p className="text-xs text-muted-foreground">Net Balance</p>
-                        <p className="text-lg font-bold text-primary">
-                          PKR {statistics.netBalance.toLocaleString()}
-                        </p>
-                      </div>
-                      <div className="text-center p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50">
-                        <p className="text-xs text-muted-foreground">Savings Rate</p>
-                        <p className="text-lg font-bold text-green-600 dark:text-green-400">
-                          {statistics.savingsRate}%
-                        </p>
-                      </div>
-                      <div className="text-center p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50">
-                        <p className="text-xs text-muted-foreground">Daily Avg</p>
-                        <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                          PKR {statistics.avgDailySpending}
-                        </p>
-                      </div>
-                      <div className="text-center p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50">
-                        <p className="text-xs text-muted-foreground">Total Spent</p>
-                        <p className="text-lg font-bold text-orange-600 dark:text-orange-400">
-                          PKR {statistics.totalExpenses.toLocaleString()}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ) : null}
-            </CardContent>
+                  </div>
+                )}
+              </>
+            ) : null}
           </motion.div>
         )}
       </AnimatePresence>
-    </Card>
+    </div>
   )
 }

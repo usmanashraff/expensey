@@ -234,168 +234,114 @@ export function FinanceOverview({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <Card className="relative backdrop-blur-xl bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/20 dark:to-purple-950/20 border-white/20 dark:border-white/10 rounded-3xl overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-purple-500/10" />
-          
-          <CardContent className="relative z-10 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-indigo-500" />
+        <section className="bg-white dark:bg-[#1c2024] border border-outline-variant rounded-xl p-8 relative overflow-hidden">
+          {/* Subtle background decorative element */}
+          <div className="absolute inset-0 bg-gradient-to-br from-[#f6f9ff]/30 dark:from-[#f6f9ff]/5 to-transparent pointer-events-none"></div>
+          <div className="relative z-10">
+            <div className="flex justify-between items-center mb-8">
+              <h3 className="font-serif-heading text-2xl font-medium text-on-surface flex items-center gap-2">
+                <span className="material-symbols-outlined text-tertiary dark:text-on-surface">health_and_safety</span>
                 {monthName} Financial Health
               </h3>
-              <Button
-                variant="ghost"
-                size="sm"
+              <button 
                 onClick={onToggleAmounts}
-                className="hover:bg-white/20"
+                className="text-on-surface-variant hover:text-on-surface transition-colors"
               >
-                {showAmounts ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-              </Button>
+                <span className="material-symbols-outlined">{showAmounts ? 'visibility' : 'visibility_off'}</span>
+              </button>
             </div>
 
-            {/* Key Metrics Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              {/* Income */}
-              <div className="bg-white/60 dark:bg-gray-900/40 rounded-xl p-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <ArrowDownRight className="h-4 w-4 text-green-600" />
-                  <span className="text-xs text-muted-foreground">Income</span>
+            {/* Metrics Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-10">
+              <div className="bg-[#f0f4f8] dark:bg-[#14171a] border border-outline-variant/50 rounded-xl p-5 hover:bg-surface-container transition-colors duration-200">
+                <div className="flex items-center gap-2 text-on-surface-variant font-sans text-sm font-semibold mb-2">
+                  <span className="material-symbols-outlined text-[16px] text-[#212529] dark:text-[#f6fafe]">south_east</span> Income
                 </div>
-                <p className="text-lg font-bold text-green-600">
-                  {formatAmount(totalIncome)}
-                </p>
-                {income.length === 0 && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-6 text-xs mt-1 p-0"
-                    onClick={() => setShowIncomeDialog(true)}
-                  >
-                    <Plus className="h-3 w-3 mr-1" />
-                    Add
-                  </Button>
-                )}
+                <div className="font-serif-heading text-2xl font-medium text-[#212529] dark:text-[#f6fafe]">{formatAmount(totalIncome)}</div>
               </div>
 
-              {/* Expenses */}
-              <div className="bg-white/60 dark:bg-gray-900/40 rounded-xl p-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <ArrowUpRight className="h-4 w-4 text-red-600" />
-                  <span className="text-xs text-muted-foreground">Expenses</span>
+              <div className="bg-[#f0f4f8] dark:bg-[#14171a] border border-outline-variant/50 rounded-xl p-5 hover:bg-surface-container transition-colors duration-200">
+                <div className="flex items-center gap-2 text-on-surface-variant font-sans text-sm font-semibold mb-2">
+                  <span className="material-symbols-outlined text-[16px] text-[#ba1a1a]">north_east</span> Expenses
                 </div>
-                <p className="text-lg font-bold text-red-600">
-                  {formatAmount(totalExpenses)}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {budgetUsage.toFixed(0)}% of budget
-                </p>
+                <div className="font-serif-heading text-2xl font-medium text-[#ba1a1a]">{formatAmount(totalExpenses)}</div>
+                <div className="font-sans text-xs text-on-surface-variant mt-1">{budgetUsage.toFixed(0)}% of budget</div>
               </div>
 
-              {/* Net Balance */}
-              <div className="bg-white/60 dark:bg-gray-900/40 rounded-xl p-3">
-                <div className="flex items-center gap-2 mb-1">
-                  {netBalance >= 0 ? (
-                    <TrendingUp className="h-4 w-4 text-blue-600" />
-                  ) : (
-                    <TrendingDown className="h-4 w-4 text-orange-600" />
-                  )}
-                  <span className="text-xs text-muted-foreground">Balance</span>
+              <div className="bg-[#f0f4f8] dark:bg-[#14171a] border border-outline-variant/50 rounded-xl p-5 hover:bg-surface-container transition-colors duration-200">
+                <div className="flex items-center gap-2 text-on-surface-variant font-sans text-sm font-semibold mb-2">
+                  <span className="material-symbols-outlined text-[16px] text-tertiary dark:text-on-surface">{netBalance >= 0 ? 'trending_up' : 'trending_down'}</span> Balance
                 </div>
-                <p className={`text-lg font-bold ${netBalance >= 0 ? 'text-blue-600' : 'text-orange-600'}`}>
-                  {formatAmount(Math.abs(netBalance))}
-                </p>
-                {netBalance < 0 && (
-                  <p className="text-xs text-orange-600">Deficit</p>
-                )}
+                <div className={`font-serif-heading text-2xl font-medium ${netBalance >= 0 ? 'text-tertiary dark:text-on-surface' : 'text-[#ba1a1a]'}`}>{formatAmount(Math.abs(netBalance))}</div>
+                {netBalance < 0 && <div className="font-sans text-xs text-[#ba1a1a] mt-1">Deficit</div>}
               </div>
 
-              {/* Savings Rate */}
-              <div className="bg-white/60 dark:bg-gray-900/40 rounded-xl p-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <PiggyBank className="h-4 w-4 text-purple-600" />
-                  <span className="text-xs text-muted-foreground">Saved</span>
+              <div className="bg-[#f0f4f8] dark:bg-[#14171a] border border-outline-variant/50 rounded-xl p-5 hover:bg-surface-container transition-colors duration-200">
+                <div className="flex items-center gap-2 text-on-surface-variant font-sans text-sm font-semibold mb-2">
+                  <span className="material-symbols-outlined text-[16px] text-tertiary dark:text-on-surface">savings</span> Saved
                 </div>
-                <p className="text-lg font-bold text-purple-600">
-                  {savingsRate.toFixed(0)}%
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {formatAmount(netBalance > 0 ? netBalance : 0)}
-                </p>
+                <div className="font-serif-heading text-2xl font-medium text-tertiary dark:text-on-surface">{savingsRate.toFixed(0)}%</div>
+                <div className="font-sans text-xs text-on-surface-variant mt-1">{formatAmount(netBalance > 0 ? netBalance : 0)}</div>
               </div>
             </div>
 
-            {/* Budget Progress Bars */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="text-sm font-medium">Budget Allocation</h4>
-                {!budget && (
-                  <BudgetDialog 
-                    selectedMonth={selectedMonth} 
-                    selectedYear={selectedYear}
-                    onBudgetUpdated={fetchFinancialData}
-                  />
-                )}
-              </div>
-
+            {/* Budget Allocation */}
+            <div className="space-y-6">
+              <h4 className="font-sans text-sm font-semibold tracking-wide text-on-surface border-b border-outline-variant/50 pb-2">Budget Allocation</h4>
+              
               {Object.entries(categoryConfig).map(([key, config]) => {
-                const percentage = config.budget > 0 ? 
-                  (config.spent / config.budget) * 100 : 0
-                const isOverBudget = percentage > 100
-                const isSavings = key === 'SAVINGS'
-                
+                const percentage = config.budget > 0 ? (config.spent / config.budget) * 100 : 0
                 return (
-                  <div key={key} className="space-y-1">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-medium">{config.label}</span>
-                      <div className="flex items-center gap-2">
-                        <span className={`${isOverBudget && !isSavings ? 'text-red-600' : ''}`}>
-                          {formatAmount(config.spent)} / {formatAmount(config.budget)}
-                        </span>
-                        <Badge 
-                          variant={isOverBudget && !isSavings ? "destructive" : "secondary"}
-                          className="text-xs px-1.5 py-0"
-                        >
-                          {percentage.toFixed(0)}%
-                        </Badge>
-                      </div>
+                  <div key={key} className="space-y-2">
+                    <div className="flex justify-between font-sans text-xs font-medium">
+                      <span className="text-on-surface">{config.label}</span>
+                      <span className="text-on-surface-variant">
+                        {formatAmount(config.spent)} / {formatAmount(config.budget)} 
+                        <span className="font-semibold text-on-surface ml-2">{percentage.toFixed(0)}%</span>
+                      </span>
                     </div>
-                    <div className="relative">
-                      <Progress 
-                        value={Math.min(percentage, 100)} 
-                        className="h-2"
-                      />
-                      {isOverBudget && !isSavings && (
-                        <div className="absolute inset-y-0 right-0 w-1 bg-red-500 animate-pulse rounded-r" />
-                      )}
-                    </div>
+                    {/* Native progress element customized in globals.css */}
+                    <progress className="w-full h-2 rounded-full overflow-hidden appearance-none" max="100" value={percentage}></progress>
                   </div>
                 )
               })}
             </div>
 
-            {/* Quick Actions */}
-            <div className="flex gap-2 mt-4">
-              {income.length > 0 && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setShowIncomeDialog(true)}
-                  className="flex-1"
-                >
-                  <Plus className="h-3 w-3 mr-1" />
-                  Income
-                </Button>
-              )}
-              {budget && (
+            {/* Actions */}
+            <div className="mt-8 flex gap-4">
+              <button 
+                onClick={() => setShowIncomeDialog(true)}
+                className="flex-1 bg-[#f0f4f8] dark:bg-[#14171a] border border-outline-variant hover:border-[#496177] dark:hover:border-[#f6fafe] hover:bg-surface-container text-on-surface font-sans text-sm font-semibold tracking-wide py-3 rounded-full flex items-center justify-center gap-2 transition-all duration-200"
+              >
+                <span className="material-symbols-outlined text-[20px]">add</span> Add Income
+              </button>
+              
+              {budget ? (
                 <BudgetDialog 
                   selectedMonth={selectedMonth} 
                   selectedYear={selectedYear}
                   onBudgetUpdated={fetchFinancialData}
+                  trigger={
+                    <button className="bg-[#212529] dark:bg-[#f6fafe] hover:bg-black dark:hover:bg-white text-white dark:text-[#14171a] font-sans text-sm font-semibold tracking-wide py-3 px-6 rounded-full flex items-center justify-center gap-2 transition-all duration-200 shadow-sm">
+                      <span className="material-symbols-outlined text-[20px]">account_balance_wallet</span> Edit Budget
+                    </button>
+                  }
+                />
+              ) : (
+                <BudgetDialog 
+                  selectedMonth={selectedMonth} 
+                  selectedYear={selectedYear}
+                  onBudgetUpdated={fetchFinancialData}
+                  trigger={
+                    <button className="bg-[#212529] dark:bg-[#f6fafe] hover:bg-black dark:hover:bg-white text-white dark:text-[#14171a] font-sans text-sm font-semibold tracking-wide py-3 px-6 rounded-full flex items-center justify-center gap-2 transition-all duration-200 shadow-sm">
+                      <span className="material-symbols-outlined text-[20px]">account_balance_wallet</span> Set Budget
+                    </button>
+                  }
                 />
               )}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </section>
       </motion.div>
 
       {/* Recent Income List (Compact) */}

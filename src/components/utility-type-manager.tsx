@@ -131,174 +131,128 @@ export function UtilityTypeManager({ onUtilityTypesChanged, isInDialog = false, 
   }, [utilityTypes.length, currentPage, totalPages])
 
   return (
-    <Card className="relative backdrop-blur-xl bg-white/80 dark:bg-[oklch(0.2_0.02_250)]/40 border-white/20 dark:border-white/10 rounded-3xl overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 to-indigo-500/5 dark:from-violet-500/10 dark:to-indigo-500/10" />
+    <section className="bg-surface-container-lowest rounded-xl border border-outline-variant p-8 relative overflow-hidden shadow-sm">
+      {/* Decorative subtle background element */}
+      <div className="absolute top-0 right-0 w-64 h-64 bg-[#b0c9e3]/20 dark:bg-[#b0c9e3]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
       
-      <CardHeader className="relative z-10">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 0.5, type: "spring" }}
-              className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-500 shadow-lg"
-            >
-              <Settings className="h-5 w-5 text-white" />
-            </motion.div>
-            <div>
-              <CardTitle className="text-base sm:text-xl">Manage Utility Types</CardTitle>
-              <CardDescription className="mt-1">Create and manage utility categories</CardDescription>
+      <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 pb-8 border-b border-outline-variant/50">
+        <div className="flex flex-col md:flex-row md:items-center gap-6">
+          <div className="w-12 h-12 rounded-lg bg-[#f6f9ff] dark:bg-[#14171a] flex items-center justify-center border border-[#b0c9e3] dark:border-[#353a40] shrink-0">
+            <span className="material-symbols-outlined text-tertiary dark:text-on-surface text-2xl">settings_applications</span>
+          </div>
+          <div>
+            <h3 className="font-serif-heading text-2xl font-medium text-on-surface mb-1">Manage Utility Types</h3>
+            <p className="font-sans text-base text-on-surface-variant">Create and manage utility categories for financial categorization.</p>
+          </div>
+        </div>
+        {isInDialog && onClose && (
+          <button
+            onClick={onClose}
+            className="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors rounded-full self-start md:self-auto"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        )}
+      </div>
+
+      <div className="relative z-10">
+        {/* Input Section */}
+        <form onSubmit={handleAddType} className="flex flex-col sm:flex-row gap-4 mb-8">
+          <div className="relative flex-grow">
+            <input
+              type="text"
+              value={newTypeName}
+              onChange={(e) => setNewTypeName(e.target.value)}
+              disabled={isAdding}
+              placeholder="Enter new utility type"
+              className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-sans text-base text-on-surface focus:border-[#496177] dark:focus:border-[#f6fafe] focus:ring-1 focus:ring-[#496177]/20 dark:focus:ring-[#f6fafe]/20 transition-all shadow-sm outline-none"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={isAdding}
+            className="bg-[#212529] hover:bg-black text-white dark:bg-[#f6fafe] dark:hover:bg-white dark:text-[#14171a] font-sans text-sm font-semibold tracking-wide px-6 py-3 rounded-full flex items-center justify-center gap-2 transition-colors whitespace-nowrap shrink-0 disabled:opacity-70"
+          >
+            {isAdding ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              <span className="material-symbols-outlined text-lg">add</span>
+            )}
+            Add
+          </button>
+        </form>
+
+        {/* List Section */}
+        {isFetching ? (
+          <div className="py-12 flex justify-center items-center gap-2 text-on-surface-variant">
+            <Loader2 className="h-6 w-6 animate-spin" />
+            <span className="font-sans text-sm">Loading types...</span>
+          </div>
+        ) : utilityTypes.length === 0 ? (
+          <div className="py-12 text-center text-on-surface-variant">
+            <Settings className="h-12 w-12 mx-auto text-[#c4c7c8] dark:text-[#353a40] mb-4" />
+            <p className="font-sans text-base">No utility types created yet</p>
+            <p className="font-sans text-sm mt-1">Add your first category above</p>
+          </div>
+        ) : (
+          <div>
+            <div className="flex justify-between items-center mb-6">
+              <div className="flex items-center gap-2 text-on-surface-variant">
+                <span className="material-symbols-outlined text-lg">list</span>
+                <span className="font-sans text-sm font-semibold tracking-wide">Utility Types ({utilityTypes.length} total)</span>
+              </div>
+              
+              {totalPages > 1 && (
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={() => setCurrentPage(prev => Math.max(0, prev - 1))}
+                    disabled={currentPage === 0}
+                    className="p-1 text-on-surface-variant hover:text-on-surface transition-colors disabled:opacity-30 rounded-full hover:bg-surface-container"
+                  >
+                    <span className="material-symbols-outlined text-sm">chevron_left</span>
+                  </button>
+                  <span className="font-sans text-xs text-on-surface-variant font-medium">{currentPage + 1} / {totalPages}</span>
+                  <button 
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages - 1, prev + 1))}
+                    disabled={currentPage >= totalPages - 1}
+                    className="p-1 text-on-surface-variant hover:text-on-surface transition-colors disabled:opacity-30 rounded-full hover:bg-surface-container"
+                  >
+                    <span className="material-symbols-outlined text-sm">chevron_right</span>
+                  </button>
+                </div>
+              )}
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <AnimatePresence mode="popLayout">
+                {getCurrentPageItems().map((type) => (
+                  <motion.div
+                    key={type.id}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="bg-surface-container-lowest border border-outline-variant rounded-lg p-4 flex justify-between items-center hover:bg-surface-container hover:border-[#747879] dark:hover:border-[#5b5f63] transition-all group shadow-xs"
+                  >
+                    <span className="font-sans text-base text-on-surface">{type.name}</span>
+                    <button 
+                      onClick={() => handleDeleteType(type.id, type.name)}
+                      disabled={isLoading}
+                      className="text-[#ba1a1a]/70 hover:text-[#ba1a1a] hover:bg-[#ffdad6] dark:hover:bg-[#93000a] p-2 rounded-full transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 flex items-center justify-center disabled:opacity-50"
+                      aria-label="Delete"
+                    >
+                      {isLoading ? (
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                      ) : (
+                        <span className="material-symbols-outlined text-lg">delete</span>
+                      )}
+                    </button>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             </div>
           </div>
-          {isInDialog && onClose && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="h-8 w-8 p-0 hover:bg-destructive/10"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent className="relative z-10">
-              <motion.form 
-                onSubmit={handleAddType} 
-                className="flex flex-col sm:flex-row gap-2 mb-6"
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Input
-                  placeholder="Enter new utility type"
-                  value={newTypeName}
-                  onChange={(e) => setNewTypeName(e.target.value)}
-                  disabled={isAdding}
-                  className="flex-1 backdrop-blur-sm bg-white/50 dark:bg-white/5 text-sm min-h-[48px] py-3"
-                />
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Button 
-                    type="submit" 
-                    disabled={isAdding}
-                    className="bg-violet-600 hover:bg-violet-700 text-white shadow-md transition-colors"
-                  >
-                    <Plus className="h-4 w-4 mr-1" />
-                    Add
-                  </Button>
-                </motion.div>
-              </motion.form>
-
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm text-muted-foreground flex items-center gap-2">
-                    <Sparkles className="h-4 w-4" />
-                    Utility Types {utilityTypes.length > 0 && `(${utilityTypes.length} total)`}
-                  </Label>
-                  {totalPages > 1 && (
-                    <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setCurrentPage(prev => Math.max(0, prev - 1))}
-                        disabled={currentPage === 0}
-                        className="h-8 w-8 p-0"
-                      >
-                        <ChevronLeft className="h-4 w-4" />
-                      </Button>
-                      <span className="text-xs text-muted-foreground px-2">
-                        {currentPage + 1} / {totalPages}
-                      </span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setCurrentPage(prev => Math.min(totalPages - 1, prev + 1))}
-                        disabled={currentPage === totalPages - 1}
-                        className="h-8 w-8 p-0"
-                      >
-                        <ChevronRight className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  )}
-                </div>
-                
-                {isFetching ? (
-                  <motion.div 
-                    className="flex items-center justify-center py-8"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <Loader2 className="h-6 w-6 animate-spin text-violet-500" />
-                    <span className="ml-2 text-sm text-muted-foreground">Loading utility types...</span>
-                  </motion.div>
-                ) : utilityTypes.length === 0 ? (
-                  <motion.p 
-                    className="text-center text-muted-foreground py-8"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    No utility types yet. Add your first one above!
-                  </motion.p>
-                ) : (
-                  <div className="relative overflow-hidden">
-                    <AnimatePresence mode="wait">
-                      <motion.div
-                        key={currentPage}
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        transition={{ duration: 0.2 }}
-                        className="grid grid-cols-1 sm:grid-cols-2 gap-3"
-                      >
-                        {getCurrentPageItems().map((type, index) => (
-                          <motion.div
-                            key={type.id}
-                            layout
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.9 }}
-                            transition={{ duration: 0.2, delay: index * 0.05 }}
-                            whileHover={{ scale: 1.02 }}
-                            className="flex items-center justify-between p-3 sm:p-4 rounded-2xl border bg-white/30 dark:bg-white/5 backdrop-blur-sm hover:shadow-lg transition-all duration-300"
-                          >
-                            <span className="font-medium text-sm break-all mr-2">
-                              {type.name}
-                            </span>
-                            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleDeleteType(type.id, type.name)}
-                                disabled={isLoading}
-                                className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 w-8 p-0 flex-shrink-0"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </motion.div>
-                          </motion.div>
-                        ))}
-                      </motion.div>
-                    </AnimatePresence>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-      
-      {/* Decorative element */}
-      <motion.div
-        className="absolute -top-10 -left-10 w-32 h-32 rounded-full bg-gradient-to-br from-violet-400/20 to-indigo-400/20 blur-2xl"
-        animate={{ 
-          scale: [1, 1.2, 1],
-          rotate: [0, 180, 0]
-        }}
-        transition={{ 
-          duration: 12,
-          repeat: Infinity,
-          repeatType: "reverse"
-        }}
-      />
-    </Card>
+        )}
+      </div>
+    </section>
   )
 }

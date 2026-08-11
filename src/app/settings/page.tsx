@@ -2,18 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Settings, ArrowLeft, Save, User, Mail, LogOut, Camera } from 'lucide-react'
 import { toast } from 'sonner'
-import { motion } from 'framer-motion'
 import { getCurrencyList } from '@/lib/currency'
 import Link from 'next/link'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Skeleton } from '@/components/ui/skeleton'
+import { motion } from 'framer-motion'
 
 export default function SettingsPage() {
   const router = useRouter()
@@ -73,14 +65,12 @@ export default function SettingsPage() {
   const handleSave = async () => {
     setSaving(true)
     try {
-      // Save user settings
       const settingsResponse = await fetch('/api/user-settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ defaultCurrency })
       })
 
-      // Save user profile
       const profileResponse = await fetch('/api/user', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -93,19 +83,14 @@ export default function SettingsPage() {
 
       if (settingsResponse.ok && profileResponse.ok) {
         toast.success('Settings saved successfully!')
-        // Update local user state
         setUser(prev => ({
           ...prev,
           given_name: firstName,
           family_name: lastName,
           picture: profilePicture
         }))
-        // Refresh user data to ensure it's saved
         await fetchUserData()
       } else {
-        const settingsError = !settingsResponse.ok ? await settingsResponse.text() : null
-        const profileError = !profileResponse.ok ? await profileResponse.text() : null
-        console.error('Save failed:', { settingsError, profileError })
         throw new Error('Failed to save settings')
       }
     } catch (error) {
@@ -140,13 +125,10 @@ export default function SettingsPage() {
       }
     } catch (error) {
       toast.error('Failed to upload profile picture')
-      console.error('Error uploading avatar:', error)
     } finally {
       setUploadingAvatar(false)
     }
   }
-
-  const userInitials = `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U'
 
   const handleLogout = async () => {
     try {
@@ -159,251 +141,173 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4">
-      <div className="max-w-4xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="mb-6"
-        >
-          <Link href="/dashboard">
-            <Button variant="ghost" size="sm" className="mb-4">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
-            </Button>
-          </Link>
-        </motion.div>
-
-        <motion.div
+    <div className="bg-surface text-on-surface font-body-md min-h-screen flex selection:bg-tertiary-fixed selection:text-on-tertiary-fixed">
+      {/* We make this a standalone full page since layout doesn't wrap it */}
+      <main className="flex-1 w-full max-w-[1280px] mx-auto px-6 md:px-16 pt-16 pb-24">
+        <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.1 }}
-          className="space-y-6"
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          className="mb-10 flex items-center gap-4"
         >
-          {/* Profile Card */}
-          <Card className="backdrop-blur-xl bg-white/90 dark:bg-gray-900/90 border-white/20 dark:border-gray-700/50 shadow-xl">
-            <CardHeader className="pb-6 space-y-1">
-              <div className="flex items-center gap-2">
-                <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg">
-                  <User className="h-5 w-5 text-white" />
-                </div>
-                <CardTitle className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  Profile
-                </CardTitle>
-              </div>
-              <CardDescription>
-                Your personal information
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Avatar Section */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3, delay: 0.2 }}
-                className="flex flex-col items-center space-y-4"
-              >
-                <div className="relative">
-                  {profileLoading ? (
-                    <Skeleton className="h-24 w-24 rounded-full" />
-                  ) : (
-                    <>
-                      <Avatar className="h-24 w-24">
-                        <AvatarImage 
-                          src={profilePicture || undefined} 
-                          alt={`${firstName} ${lastName}`}
-                          className="object-cover"
-                        />
-                        <AvatarFallback className="text-lg sm:text-2xl">{userInitials}</AvatarFallback>
-                      </Avatar>
-                      <input
-                        type="file"
-                        id="avatar-upload"
-                        className="hidden"
-                        accept="image/jpeg,image/jpg,image/png,image/webp"
-                        onChange={handleAvatarUpload}
-                        disabled={uploadingAvatar}
-                      />
-                      <label htmlFor="avatar-upload">
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          className="absolute bottom-0 right-0 rounded-full p-2 h-8 w-8"
-                          disabled={uploadingAvatar}
-                          asChild
-                        >
-                          <span className="cursor-pointer">
-                            <Camera className="h-4 w-4" />
-                          </span>
-                        </Button>
-                      </label>
-                    </>
-                  )}
-                </div>
-              </motion.div>
-
-              {/* Profile Form */}
-              <div className="space-y-4">
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: 0.3 }}
-                  className="grid grid-cols-1 md:grid-cols-2 gap-4"
-                >
-                  <div className="space-y-2">
-                    <Label htmlFor="firstName">First Name</Label>
-                    {profileLoading ? (
-                      <Skeleton className="h-10 w-full" />
-                    ) : (
-                      <Input
-                        id="firstName"
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
-                        placeholder="Enter your first name"
-                        className="backdrop-blur-sm bg-white/50 dark:bg-white/5"
-                      />
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="lastName">Last Name</Label>
-                    {profileLoading ? (
-                      <Skeleton className="h-10 w-full" />
-                    ) : (
-                      <Input
-                        id="lastName"
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
-                        placeholder="Enter your last name"
-                        className="backdrop-blur-sm bg-white/50 dark:bg-white/5"
-                      />
-                    )}
-                  </div>
-                </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: 0.4 }}
-                  className="space-y-2"
-                >
-                  <Label htmlFor="email">Email</Label>
-                  <div className="flex items-center space-x-2">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
-                    {profileLoading ? (
-                      <Skeleton className="h-10 w-full" />
-                    ) : (
-                      <Input
-                        id="email"
-                        value={user?.email || ''}
-                        disabled
-                        className="backdrop-blur-sm bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
-                      />
-                    )}
-                  </div>
-                  <p className="text-xs text-muted-foreground">Email cannot be changed</p>
-                </motion.div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Settings Card */}
-          <Card className="backdrop-blur-xl bg-white/90 dark:bg-gray-900/90 border-white/20 dark:border-gray-700/50 shadow-xl">
-            <CardHeader className="pb-6 space-y-1">
-              <div className="flex items-center gap-2">
-                <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg">
-                  <Settings className="h-5 w-5 text-white" />
-                </div>
-                <CardTitle className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  Settings
-                </CardTitle>
-              </div>
-              <CardDescription>
-                Manage your application preferences
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: 0.2 }}
-                className="space-y-3"
-              >
-                <Label htmlFor="defaultCurrency" className="text-base font-medium">
-                  Default Currency
-                </Label>
-                <p className="text-sm text-muted-foreground">
-                  This currency will be pre-selected when creating new expenses and budgets
-                </p>
-                {loading ? (
-                  <Skeleton className="h-10 w-full md:w-[300px]" />
-                ) : (
-                  <Select 
-                    value={defaultCurrency} 
-                    onValueChange={setDefaultCurrency}
-                    disabled={loading}
-                  >
-                    <SelectTrigger 
-                      id="defaultCurrency" 
-                      className="w-full md:w-[300px] backdrop-blur-sm bg-white/50 dark:bg-white/5"
-                    >
-                      <SelectValue placeholder="Select default currency" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {getCurrencyList().map((curr) => (
-                        <SelectItem key={curr.value} value={curr.value}>
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono text-lg">{curr.symbol}</span>
-                            <span>{curr.label}</span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              </motion.div>
-
-            </CardContent>
-          </Card>
-
-          {/* Actions Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.5 }}
-            className="flex flex-col sm:flex-row gap-4 justify-between"
-          >
-            <Button 
-              onClick={handleSave}
-              disabled={loading || profileLoading || saving}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
-            >
-              {saving ? (
-                <>
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                    className="mr-2"
-                  >
-                    <Save className="h-4 w-4" />
-                  </motion.div>
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="h-4 w-4 mr-2" />
-                  Save All Changes
-                </>
-              )}
-            </Button>
-
-            <Button onClick={handleLogout} variant="destructive" className="w-full sm:w-auto">
-              <LogOut className="h-4 w-4 mr-2" />
-              Log Out
-            </Button>
-          </motion.div>
+          <Link href="/dashboard" className="text-on-surface-variant hover:text-on-surface transition-colors flex items-center justify-center p-2 rounded-full hover:bg-surface-container">
+            <span className="material-symbols-outlined">arrow_back</span>
+          </Link>
+          <h2 className="font-display-lg text-[28px] md:text-[32px] text-on-surface tracking-tight font-semibold">Settings</h2>
         </motion.div>
-      </div>
+
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut", delay: 0.1 }}
+          className="flex flex-col gap-8"
+        >
+          {/* Profile Section */}
+          <section className="bg-white dark:bg-[#1c2024] border border-outline-variant/50 shadow-sm rounded-xl p-8 md:p-10 relative overflow-hidden group">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant">
+                <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>person</span>
+              </div>
+              <div>
+                <h3 className="font-serif-heading text-[24px] font-medium text-on-surface leading-tight">Profile</h3>
+                <p className="font-sans text-sm text-on-surface-variant mt-1">Your personal information</p>
+              </div>
+            </div>
+
+            <div className="flex flex-col md:flex-row gap-10 items-start">
+              <div className="relative group/avatar cursor-pointer">
+                <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-surface-container ring-1 ring-outline-variant shadow-sm relative bg-surface-container flex items-center justify-center">
+                  {profilePicture ? (
+                    <img 
+                      className="w-full h-full object-cover" 
+                      src={profilePicture} 
+                      alt="Profile"
+                    />
+                  ) : (
+                    <span className="text-4xl text-on-surface-variant font-medium">
+                      {(firstName?.charAt(0) || user?.email?.charAt(0) || 'U').toUpperCase()}
+                    </span>
+                  )}
+                  <input
+                    type="file"
+                    id="avatar-upload"
+                    className="hidden"
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    onChange={handleAvatarUpload}
+                    disabled={uploadingAvatar}
+                  />
+                  <label htmlFor="avatar-upload" className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-200 cursor-pointer">
+                    <span className="material-symbols-outlined text-white">photo_camera</span>
+                  </label>
+                </div>
+                {uploadingAvatar && (
+                  <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-surface-container-high px-3 py-1 rounded-full text-xs shadow-sm border border-outline-variant">
+                    Uploading...
+                  </div>
+                )}
+              </div>
+
+              <div className="flex-1 w-full grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                <div className="flex flex-col gap-2">
+                  <label className="font-sans text-sm font-semibold tracking-wide text-on-surface-variant">First Name</label>
+                  <input 
+                    className="w-full bg-surface-container-lowest border border-outline-variant rounded-xl px-4 py-3 font-sans text-base text-on-surface focus:border-tertiary focus:ring-1 focus:ring-tertiary transition-colors outline-none hover:border-outline" 
+                    type="text" 
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="font-sans text-sm font-semibold tracking-wide text-on-surface-variant">Last Name</label>
+                  <input 
+                    className="w-full bg-surface-container-lowest border border-outline-variant rounded-xl px-4 py-3 font-sans text-base text-on-surface focus:border-tertiary focus:ring-1 focus:ring-tertiary transition-colors outline-none hover:border-outline" 
+                    type="text" 
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                  />
+                </div>
+                <div className="flex flex-col gap-2 md:col-span-2">
+                  <label className="font-sans text-sm font-semibold tracking-wide text-on-surface-variant">Email</label>
+                  <div className="relative">
+                    <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">mail</span>
+                    <input 
+                      className="w-full bg-surface-container border border-outline-variant rounded-xl pl-12 pr-4 py-3 font-sans text-base text-on-surface-variant cursor-not-allowed opacity-70 outline-none" 
+                      disabled 
+                      type="email" 
+                      value={user?.email || ''}
+                    />
+                  </div>
+                  <span className="font-sans text-xs text-on-surface-variant mt-1">Email cannot be changed</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Settings Section */}
+          <section className="bg-white dark:bg-[#1c2024] border border-outline-variant/50 shadow-sm rounded-xl p-8 md:p-10 relative overflow-hidden group">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant">
+                <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>settings</span>
+              </div>
+              <div>
+                <h3 className="font-serif-heading text-[24px] font-medium text-on-surface leading-tight">Preferences</h3>
+                <p className="font-sans text-sm text-on-surface-variant mt-1">Manage your application settings</p>
+              </div>
+            </div>
+            
+            <div className="max-w-xl">
+              <h4 className="font-sans text-base text-on-surface mb-1 font-semibold">Default Currency</h4>
+              <p className="font-sans text-sm text-on-surface-variant mb-4">This currency will be pre-selected when creating new expenses.</p>
+              
+              <div className="relative">
+                <select 
+                  className="w-full appearance-none bg-surface-container-lowest border border-outline-variant rounded-xl pl-12 pr-12 py-3 font-sans text-base text-on-surface focus:border-tertiary focus:ring-1 focus:ring-tertiary transition-colors outline-none hover:border-outline cursor-pointer"
+                  value={defaultCurrency}
+                  onChange={(e) => setDefaultCurrency(e.target.value)}
+                >
+                  {getCurrencyList().map((curr) => (
+                    <option key={curr.value} value={curr.value}>
+                      {curr.value} - {curr.label}
+                    </option>
+                  ))}
+                </select>
+                <span className="font-mono text-base text-on-surface font-semibold absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                  {getCurrencyList().find(c => c.value === defaultCurrency)?.symbol || '$'}
+                </span>
+                <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+              </div>
+            </div>
+          </section>
+        </motion.div>
+
+        {/* Action Buttons */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut", delay: 0.2 }}
+          className="mt-12 flex flex-col-reverse md:flex-row justify-between items-center gap-6 border-t border-outline-variant/50 pt-8"
+        >
+          <button 
+            onClick={handleLogout}
+            className="w-full md:w-auto px-6 py-3 rounded-full bg-[#ba1a1a]/10 dark:bg-[#93000a]/20 text-[#ba1a1a] dark:text-[#ffb4ab] font-sans text-sm font-semibold flex items-center justify-center gap-2 hover:bg-[#ba1a1a]/20 dark:hover:bg-[#93000a]/40 transition-colors duration-200"
+          >
+            <span className="material-symbols-outlined text-[20px]">logout</span>
+            Log Out
+          </button>
+          <button 
+            onClick={handleSave}
+            disabled={saving}
+            className="w-full md:w-auto px-8 py-3 rounded-full bg-[#212529] hover:bg-[#343a40] text-white dark:bg-[#f6fafe] dark:text-[#14171a] dark:hover:bg-[#e4e4cc] font-sans text-sm font-semibold flex items-center justify-center gap-2 transition-colors duration-200 shadow-sm disabled:opacity-50"
+          >
+            {saving ? (
+              <span className="material-symbols-outlined text-[20px] animate-spin">refresh</span>
+            ) : (
+              <span className="material-symbols-outlined text-[20px]">save</span>
+            )}
+            Save All Changes
+          </button>
+        </motion.div>
+      </main>
     </div>
   )
 }
